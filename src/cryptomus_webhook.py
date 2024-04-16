@@ -7,7 +7,7 @@ import hashlib
 import base64
 import logging
 
-from security.info import API_PAYOUT_KEY
+from src.security.info import API_PAYOUT_KEY
 
 
 app = Flask(__name__)
