@@ -7,6 +7,8 @@ import hashlib
 import base64
 import logging
 
+from security.info import API_PAYOUT_KEY
+
 
 app = Flask(__name__)
 
@@ -40,7 +42,7 @@ def payout_callback():
     data.pop('sign', None)
     
     # Your API Payment Key
-    api_payment_key = environ['API_PAYOUT_KEY']
+    api_payment_key = API_PAYOUT_KEY
 
     # Step 2: Generate the sign using your API payment key
     generated_sign = generate_sign(data, api_payment_key)
