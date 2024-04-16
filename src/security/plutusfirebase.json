@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "plutus-store",
+  "private_key_id": "dc74d16300846bfd7251d9a635f2212a555b6745",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDQ7bmZYcQtuEPy\nX3yT4ugcXKs7Vb6+GTcNnpPKL/9X4YNrJG7JWGWslwJZWN8AK1PAPPdRyt6MOZ8U\nlWXuMVAZ0JeY40Vcf/sxz1C+/pHbrfi/csDivw7uDkIU5MdMzSDJB4iAJQ5zKy7Y\nhX5xrsYpRKBWyOC5E2NVLmgC/9KepIoAaxXgujpatF0D240+77snzXXa3lXeWdfe\nVeMPgvrnXi/LG3OerPte1yIkhJWqlzzBjiG2E0ucF8JdUk6IoLKffFUIm1DYqxrH\nKdnBJsG6qg0wNGqJaRTJr0maU47OK62mMqM+3N22xvt/mb6DIrRo+TuOA6JehFz1\nYxgosy1NAgMBAAECggEADL+kxp43mU6YHs8CzAdZgHmLHUjDJdhmCpe1ju3U1+jz\n2vLTK8gQFDL2urr4iIscRiuyL7SAVfAiK+Bd4uXxbFHVHkgn8FgC3Ow4kh74iX4Z\nIp1+9ZcQ8ye9kobPPnl52apzAtbABfkJl761k3xFrTj5y7HgPIrZUdZOFHjFwlZN\npqEkNfUN6dCfUCpWRs/cAlHI+qnZPkJIhas+zkJj81nJGk8OvkaDRy8tS0UyBgwM\n6G2yf6aBuCwaIHMadZ4qawFpXHpZJ12zICRB6kWXO5KaMub0JEUT4N6vdULreFPG\nbl0IucoCqaJLyO+R71pkBuU/rNv8vEIJhuYJCxsGIQKBgQD35puee8Ptv7kYVgDg\npYYq1eS1cGIH66D54NGZ5C0UOlLuRYl5t1azMomU3zgaLQK2vEdL9Q1VGRp0TxHg\nMtgfa4N/lm1G9iqxQZ42jIYHfpoGVLs9h4K9VoGTZEyBYUtNoed9NePMYQoQtSlt\n4WECJ5+Z0RUTsx5O6TQzpjRymQKBgQDXwSla5qQ9L5ems4KPVZxXA6F7ke4x5vk3\nnaK6IA5huzVZdSv+z8NECAputNjqKKBOKwHk97FPYu3LPFQW+JmmJAr9p7c/nMws\n+QF8wxhXUcZLg6I1DyMVUyJsiDMtObZEm+rtQ6DjhbBHeJqCgVf7R3pfFybq1j1r\nIYdNbEb01QKBgQClL79GrcXy6KxX8QcIqoNqi7ioxkgsavCLUSmZ2BfJwMt+BkwD\nFQ3qvqQ61Ts3BgMm7PK9RH8r01xzYDTTJk4pMaUgIYaToHj2QHlCdATjfZL44QEb\nkO6nZ7tUEaOBGunowxfTsVMn3wmr9Gu00len7etFvbLDu7lYb8DfIcMVEQKBgHab\nndx3BrsMOtZNwOyDJ9s+B7wi0UtlqoPEiPzBOqbHf+CZ5YHDPZlcwj9x8/1mMBpI\n0lXJRRRbUlZz59Zo/C61icVAOiEiVawzh3nK1srKDbTdvIJmu+axOS9pAJlQLL8y\n58dfckch63Ke/nHYIUHmXYOA+sgG1uTaHcOWTruxAoGBAIDzX4ZDOsE32yidPWsB\nMJj2TYy52Eb5ZJmRQ5T3fm9URbr54opy29+SjhMwsICRJykhEsxNWwJgkFu0ZWFo\n4tqP7b5UEu/FTu4of+NINkJPkySe+Jz4TbWX0IsI44Muvdatnhw6FB0ycFEoirKg\nP5piTyk1iT+EeypGgmHqM7mc\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-2l6jj@plutus-store.iam.gserviceaccount.com",
+  "client_id": "109418050104090002090",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-2l6jj%40plutus-store.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
