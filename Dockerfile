@@ -15,10 +15,10 @@ RUN pip install gunicorn
 COPY . /jumpforce
 
 # Make the main application file executable (if necessary)
-RUN chmod +x /app/src/main.py /appjumpforce/src/cryptomus_webhook.py
+RUN chmod +x /jumpforce/src/cryptomus_webhook.py
 
 # Expose a port - this is just for documentation purposes, as Heroku will ignore this
 EXPOSE 8000
 
 # Use gunicorn to serve the Flask app, with port binding dynamically assigned via the $PORT environment variable
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD [""]
