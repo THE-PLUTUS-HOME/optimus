@@ -1,5 +1,5 @@
 from os import environ
-from flask import Flask, request, abort
+from flask import Flask, request, abort, jsonify
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
@@ -23,7 +23,28 @@ firebase_app = firebase_admin.initialize_app(cred)
 # Create a Firestore client instance associated with the app
 db = firestore.client(app=firebase_app)
 
+@app.route('/api/orders', methods=['GET'])
+def get_orders():
+    try:
+        orders_ref = db.collection('ORDERS')
+        docs = orders_ref.stream()
+        orders = [{doc.id: doc.to_dict()} for doc in docs]
+        return jsonify(orders), 200
+    except Exception as e:
+        print(f"Error fetching orders: {e}")
+        return jsonify({'error': 'Failed to fetch orders'}), 500
 
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    try:
+        users_ref = db.collection('USERS')
+        docs = users_ref.stream()
+        users = [{doc.id: doc.to_dict()} for doc in docs]
+        return jsonify(users), 200
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return jsonify({'error': 'Failed to fetch users'}), 500
+    
 @app.route('/webhook', methods=['POST'])
 def webhook():
     print("Hello")
