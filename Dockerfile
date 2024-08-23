@@ -15,7 +15,7 @@ RUN pip install gunicorn
 COPY . /jumpforce
 
 # Make the main application file executable (if necessary)
-RUN chmod +x /jumpforce/src/cryptomus_webhook.py
+RUN chmod +x /jumpforce/src/webhook.py
 
 # Expose a port - this is just for documentation purposes, as Heroku will ignore this
 EXPOSE 8000

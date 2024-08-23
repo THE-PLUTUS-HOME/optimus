@@ -8,4 +8,4 @@ release:
 run:
   web:
     command:
-      - gunicorn --bind 0.0.0.0:$PORT cryptomus_webhook:app
+      - gunicorn --bind 0.0.0.0:$PORT webhook:app

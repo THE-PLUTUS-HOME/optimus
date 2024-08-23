@@ -52,7 +52,7 @@ def webhook():
     return 'Webhook received', 200
 
 
-@app.route('/callback', methods=['POST'])
+@app.route('/callback/cryptomus', methods=['POST'])
 def payout_callback():
     data = request.get_json()  # Get JSON data sent by POST
     received_sign = data.get('sign')  # Extract the sign from the received data
@@ -62,7 +62,7 @@ def payout_callback():
     # Remove the sign from the data dictionary as it's not part of the data used to generate the sign
     data.pop('sign', None)
     
-    # Your API Payment Key
+    # Your API Payout Key
     api_payment_key = API_PAYOUT_KEY
 
     # Step 2: Generate the sign using your API payment key
@@ -145,6 +145,15 @@ def verify_sign(received_sign, generated_sign):
         return received_sign == generated_sign
     except Exception as e:
         raise ValueError(f"Error verifying sign: {e}")
+
+
+
+@app.route('/callback/hubtel', methods=['POST'])
+def payout_callback():
+    data = request.get_json()  # Get JSON data sent by POST
+    
+    print(data)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5250, debug=True)
