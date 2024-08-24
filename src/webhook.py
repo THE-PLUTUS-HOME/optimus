@@ -52,8 +52,8 @@ def webhook():
     return 'Webhook received', 200
 
 
-@app.route('/callback/cryptomus', methods=['POST'])
-def payout_callback():
+@app.route('/callback/cryptomus', methods=['POST'], endpoint='cryptomus_callback')
+def cryptomus_payout_callback():
     data = request.get_json()  # Get JSON data sent by POST
     received_sign = data.get('sign')  # Extract the sign from the received data
     if not received_sign:
@@ -148,8 +148,8 @@ def verify_sign(received_sign, generated_sign):
 
 
 
-@app.route('/callback/hubtel', methods=['POST'])
-def payout_callback():
+@app.route('/callback/hubtel', methods=['POST'], endpoint='hubtel_callback')
+def hubtel_payout_callback():
     data = request.get_json()  # Get JSON data sent by POST
     
     print(data)
