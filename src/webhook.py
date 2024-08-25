@@ -1,5 +1,5 @@
 from os import environ
-from flask import Flask, request, abort, jsonify
+from flask import Flask, render_template, request, abort, jsonify
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
@@ -153,6 +153,16 @@ def hubtel_payout_callback():
     data = request.get_json()  # Get JSON data sent by POST
     
     print(data)
+
+
+@app.route('/callback/hubtel/success')
+def hubtel_success():
+    return render_template('success.html')
+
+
+@app.route('/callback/hubtel/cancelled')
+def hubtel_cancelled():
+    return render_template('cancel.html')
 
 
 if __name__ == '__main__':
