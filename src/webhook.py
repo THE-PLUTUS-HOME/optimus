@@ -148,11 +148,36 @@ def verify_sign(received_sign, generated_sign):
 
 
 
-@app.route('/callback/hubtel', methods=['POST'], endpoint='hubtel_callback')
+@app.route('/callback/hubtel', methods=['POST'])
 def hubtel_payout_callback():
-    data = request.get_json()  # Get JSON data sent by POST
-    
+    # Attempt to parse JSON data sent by POST
+    data = request.get_json()
+    if data is None:
+        return jsonify({'error': 'No JSON payload received'}), 400
+
+    # Debugging: Print out received data
     print(data)
+
+    # Extract necessary information from the JSON data
+    response_code = data.get('ResponseCode')
+    status = data.get('Status')
+    payment_details = data.get('Data', {})
+
+    # Check if the payment was successful
+    if response_code == '0000' and status == 'Success':
+        # Successful Payment Logic
+        description = payment_details.get('Description', 'No description provided')
+        return jsonify({
+            'message': 'Payment processed successfully',
+            'description': description
+        }), 200
+    else:
+        # Failed Payment Logic
+        error_description = payment_details.get('Description', 'No description provided')
+        return jsonify({
+            'error': 'Payment failed',
+            'description': error_description
+        }), 200  # You can choose to return a different status code if needed
 
 
 @app.route('/callback/hubtel/success')
