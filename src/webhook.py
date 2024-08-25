@@ -165,12 +165,20 @@ def hubtel_payout_callback():
 
     # Check if the payment was successful
     if response_code == '0000' and status == 'Success':
-        # Successful Payment Logic
-        description = payment_details.get('Description', 'No description provided')
-        return jsonify({
-            'message': 'Payment processed successfully',
-            'description': description
-        }), 200
+        order_id = payment_details.get('ClientReference')
+        
+        update_data = {
+        'payment_status' : payment_details.get("Status"),
+        "customer_phoneNumber": payment_details.get("CustomerPhoneNumber")
+        }
+        try:
+            # Update the user's database with the extracted data
+            update_user_database_order(order_id, update_data)
+            response_message = 'Callback processed and database updated successfully!'
+            return response_message, 200
+        except Exception as e:
+            print(f"Error updating user database: {e}")
+            return f"Error processing callback: {e}", 500
     else:
         # Failed Payment Logic
         error_description = payment_details.get('Description', 'No description provided')
