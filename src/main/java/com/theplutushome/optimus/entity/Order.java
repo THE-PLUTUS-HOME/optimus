@@ -1,10 +1,7 @@
 package com.theplutushome.optimus.entity;
 
 import com.theplutushome.optimus.entity.enums.Currency;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,15 +11,17 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "ORDERS")
 @Entity
+@Table(name = "ORDERS")
 public class Order extends EntityModel {
-
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
     @Enumerated(EnumType.STRING)
     private Currency currency;
-    private Double amountGHS;
-    private Double amountUSD;
-    private Double rate;
+    private double amountGHS;
+    private double amountUSD;
+    private double rate;
     private String address;
 
 }

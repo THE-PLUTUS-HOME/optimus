@@ -2,11 +2,13 @@ package com.theplutushome.optimus.entity;
 
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
+import lombok.Setter;
 
 @MappedSuperclass
+@Getter
+@Setter
 public class EntityModel {
-    @Id
-    private String id;
     private String createdAt;
     private String updatedAt;
     private String createdBy;

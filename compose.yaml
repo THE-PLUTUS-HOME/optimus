@@ -8,3 +8,4 @@ services:
       POSTGRES_USER: malick
     ports:
       - '5432:5432'
+
