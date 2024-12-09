@@ -1,18 +1,38 @@
 package com.theplutushome.optimus.entity;
 
-import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @MappedSuperclass
-@Getter
-@Setter
 public class EntityModel {
-    private String createdAt;
-    private String updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private boolean deleted;
-    private String deletedBy;
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }

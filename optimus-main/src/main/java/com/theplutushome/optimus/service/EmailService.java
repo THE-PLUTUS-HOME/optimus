@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.services;
+package com.theplutushome.optimus.service;
 
 import org.springframework.stereotype.Component;
 

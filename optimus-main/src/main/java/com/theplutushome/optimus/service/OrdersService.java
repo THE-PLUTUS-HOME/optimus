@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.services;
+package com.theplutushome.optimus.service;
 
 import com.theplutushome.optimus.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
