@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      POSTGRES_DB: optimus
+      POSTGRES_PASSWORD: root
+      POSTGRES_USER: malick
+    ports:
+      - '5432:5432'
+
