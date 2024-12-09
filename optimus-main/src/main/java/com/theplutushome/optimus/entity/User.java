@@ -3,10 +3,6 @@ package com.theplutushome.optimus.entity;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "USERS_TBL")
