@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 public class Function {
@@ -22,5 +23,20 @@ public class Function {
         }
 
         return hexString.toString();
+    }
+
+    public static String generateReferralCode() {
+        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        int CODE_LENGTH = 8;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder referralCode = new StringBuilder();
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            referralCode.append(CHARACTERS.charAt(index));
+        }
+
+        return referralCode.toString();
     }
 }

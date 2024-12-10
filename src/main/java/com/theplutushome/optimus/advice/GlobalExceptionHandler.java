@@ -1,6 +1,6 @@
 package com.theplutushome.optimus.advice;
 
-import com.theplutushome.optimus.entity.ErrorResponse;
+import com.theplutushome.optimus.entity.model.ErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -89,6 +89,12 @@ public class GlobalExceptionHandler {
         if (constraintName.contains("users_tbl_username_key")) {
             field = "username";
             message = "The username is already taken.";
+            addErrorToList(errorList, field, message);
+        }
+
+        if (constraintName.contains("users_tbl_phone_key")) {
+            field = "phone";
+            message = "The phone is already taken.";
             addErrorToList(errorList, field, message);
         }
 

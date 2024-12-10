@@ -2,9 +2,11 @@ package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.entity.User;
+import com.theplutushome.optimus.dto.login.LoginRequest;
+import com.theplutushome.optimus.dto.login.LoginResponse;
+import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
 import com.theplutushome.optimus.service.UserService;
 import jakarta.validation.Valid;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/create")
+    @PostMapping("/signUp")
     public ResponseEntity<User> createUser(@RequestBody @Valid UserRequest userRequest) {
         return new ResponseEntity<>(userService.createUser(userRequest), HttpStatus.CREATED);
     }
@@ -35,8 +37,21 @@ public class UserController {
 
     @PutMapping("/delete/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable("id") String id) {
-        System.out.println("the parameter is " + id);
         userService.deleteUser(Integer.valueOf(id));
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
+        return new ResponseEntity<>(userService.login(loginRequest), HttpStatus.OK);
+    }
+
+    @PutMapping("/resetPassword")
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequest passwordResetRequest, @RequestHeader("Authorization") String authHeader) {
+        userService.resetPassword(passwordResetRequest);
+        return ResponseEntity.ok().build();
+    }
 }
+
+
+//}, @RequestHeader("Authorization") String authHeader

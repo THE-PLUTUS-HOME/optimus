@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.entity;
+package com.theplutushome.optimus.entity.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

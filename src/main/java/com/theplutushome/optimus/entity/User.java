@@ -4,22 +4,28 @@ import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "USERS_TBL")
 @Cacheable(value = false)
+@AllArgsConstructor
+@Builder
 public class User extends EntityModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    private String name;
+    @Column(nullable = false)
     private String password;
     @Column(unique = true)
     private String email;
+    @Column(unique = true)
+    private String phone;
     @Column(unique = true)
     private String username;
     @Enumerated(EnumType.STRING)
@@ -27,19 +33,27 @@ public class User extends EntityModel {
     @Enumerated(EnumType.STRING)
     private UserAccountStatus userAccountStatus;
     private String secretPhrase;
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<User> referredUsers = new ArrayList<>();
+    private String referralCode;
+    private double balance;
+    private LocalDateTime lastLoggedIn;
 
-    public User(int id, String name, String password, String email, String username, UserType userType, UserAccountStatus userAccountStatus, String secretPhrase) {
+
+    public User() {
+    }
+
+    public User(int id, String password, String phone, String email, String username, UserType userType, UserAccountStatus userAccountStatus, String secretPhrase, String referralCode, double balance) {
         this.id = id;
-        this.name = name;
         this.password = password;
+        this.phone = phone;
         this.email = email;
         this.username = username;
         this.userType = userType;
         this.userAccountStatus = userAccountStatus;
         this.secretPhrase = secretPhrase;
-    }
-
-    public User() {
+        this.referralCode = referralCode;
+        this.balance = balance;
     }
 
     public int getId() {
@@ -48,14 +62,6 @@ public class User extends EntityModel {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getPassword() {
@@ -98,11 +104,51 @@ public class User extends EntityModel {
         this.userAccountStatus = userAccountStatus;
     }
 
-    public String getsecretPhrase() {
+    public String getSecretPhrase() {
         return secretPhrase;
     }
 
-    public void setsecretPhrase(String secretPhrase) {
+    public void setSecretPhrase(String secretPhrase) {
         this.secretPhrase = secretPhrase;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public LocalDateTime getLastLoggedIn() {
+        return lastLoggedIn;
+    }
+
+    public void setLastLoggedIn(LocalDateTime lastLoggedIn) {
+        this.lastLoggedIn = lastLoggedIn;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
+    }
+
+    public List<User> getReferredUsers() {
+        return referredUsers;
+    }
+
+    public void setReferredUsers(List<User> referredUsers) {
+        this.referredUsers = referredUsers;
     }
 }
