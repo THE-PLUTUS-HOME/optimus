@@ -18,9 +18,6 @@ public class UserRequest {
     private String email;
     @NotNull(message = "username should not be null")
     private String username;
-    @NotNull(message = "phone should not be null")
-    @Size(min = 12, max = 12, message = "Phone number invalid, expected format {233012345678}")
-    private String phone;
     private UserType userType;
     @NotNull(message = "secret phrase required")
     @Size(min = 7, max = 10)
@@ -84,13 +81,5 @@ public class UserRequest {
 
     public void setSecretPhrase(String secretPhrase) {
         this.secretPhrase = secretPhrase;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 }

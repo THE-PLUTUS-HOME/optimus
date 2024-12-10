@@ -1,12 +1,11 @@
 package com.theplutushome.optimus.advice;
 
-import com.theplutushome.optimus.entity.model.ErrorResponse;
+import com.theplutushome.optimus.entity.ErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,10 +34,7 @@ public class GlobalExceptionHandler {
                 errors
         );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON).body(errorResponse);
     }
 
 
@@ -76,13 +72,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidLoginCredentials(BadCredentialsException ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("message", "Invalid username and password combination");
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
-    }
-
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         List<Map<String, String>> errorList = new ArrayList<>();
@@ -100,12 +89,6 @@ public class GlobalExceptionHandler {
         if (constraintName.contains("users_tbl_username_key")) {
             field = "username";
             message = "The username is already taken.";
-            addErrorToList(errorList, field, message);
-        }
-
-        if (constraintName.contains("users_tbl_phone_key")) {
-            field = "phone";
-            message = "The phone is already taken.";
             addErrorToList(errorList, field, message);
         }
 
