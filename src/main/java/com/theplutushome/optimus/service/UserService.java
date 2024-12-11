@@ -8,10 +8,11 @@ import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
+import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
 import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
 import com.theplutushome.optimus.util.Function;
-import com.theplutushome.optimus.util.JwtTokenProvider;
+import com.theplutushome.optimus.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,13 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
 
 
     @Autowired
-    public UserService(UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
-        this.jwtTokenProvider = jwtTokenProvider;
+        this.jwtUtil = jwtUtil;
     }
 
     public User createUser(UserRequest userRequest) {
@@ -67,7 +68,11 @@ public class UserService {
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        var allUsers =  userRepository.findAll();
+        if(allUsers.isEmpty()){
+            throw new EmptyCollectionExceptiton();
+        }
+        return allUsers;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
@@ -80,7 +85,7 @@ public class UserService {
         }
 
         // Generate JWT token
-        String token = jwtTokenProvider.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user.getUsername());
 
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);

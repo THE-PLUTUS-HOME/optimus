@@ -1,10 +1,10 @@
 package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.dto.UserRequest;
-import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
+import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

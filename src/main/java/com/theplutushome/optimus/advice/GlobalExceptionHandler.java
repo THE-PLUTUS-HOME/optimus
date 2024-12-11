@@ -1,6 +1,7 @@
 package com.theplutushome.optimus.advice;
 
 import com.theplutushome.optimus.entity.model.ErrorResponse;
+import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,9 +51,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleGeneralException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred", null);
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST ,ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(NullPointerException.class)
@@ -74,6 +75,13 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("message", "A user with this id does not exist.");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(EmptyCollectionExceptiton.class)
+    public ResponseEntity<Map<String, String>> handleEmptyCollection(EmptyCollectionExceptiton ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("message", "This collection is empty.");
+        return new ResponseEntity<>(error, HttpStatus.NO_CONTENT);
     }
 
     @ExceptionHandler(BadCredentialsException.class)

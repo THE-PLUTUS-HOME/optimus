@@ -2,10 +2,8 @@ package com.theplutushome.optimus.dto;
 
 import com.theplutushome.optimus.entity.enums.UserType;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.*;
 
 public class UserRequest {
 

@@ -9,4 +9,5 @@ public class OptimusApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(OptimusApplication.class, args);
 	}
+
 }

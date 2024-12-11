@@ -4,9 +4,10 @@ import com.theplutushome.optimus.entity.enums.Currency;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "ORDERS")
 public class Order extends EntityModel {

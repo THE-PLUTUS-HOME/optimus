@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -34,7 +33,7 @@ public class User extends EntityModel {
     private UserAccountStatus userAccountStatus;
     private String secretPhrase;
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
-    private List<User> referredUsers = new ArrayList<>();
+    private List<User> referredUsers;
     private String referralCode;
     private double balance;
     private LocalDateTime lastLoggedIn;

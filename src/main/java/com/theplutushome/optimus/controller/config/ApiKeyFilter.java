@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.config;
+package com.theplutushome.optimus.controller.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,15 +18,24 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String apiKey = request.getHeader(API_KEY_HEADER);
-        System.out.println("API Key Received: " + apiKey); // Debugging line
+        String path = request.getRequestURI();
+
+        // Exclude Swagger UI and related resources
+        if (path.startsWith("/swagger-ui") ||
+                path.startsWith("/api-docs") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-resources") ||
+                path.startsWith("/webjars")) {
+            filterChain.doFilter(request, response);
+            System.out.println("Request proceeded successfully."); // Debugging line
+            return;
+        }
 
         if (EXPECTED_API_KEY.equals(apiKey)) {
             // Allow request to proceed
             filterChain.doFilter(request, response);
             System.out.println("Request proceeded successfully."); // Debugging line
         } else {
-            // Respond with 403 Forbidden if API key is missing or invalid
-            System.out.println("Invalid API Key or Missing API Key"); // Debugging line
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.getWriter().write("Forbidden: Invalid API Key");
         }

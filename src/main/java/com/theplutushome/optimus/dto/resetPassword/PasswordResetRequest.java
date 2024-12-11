@@ -1,7 +1,6 @@
 package com.theplutushome.optimus.dto.resetPassword;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
 
 public class PasswordResetRequest {
     @NotBlank(message = "username required")
