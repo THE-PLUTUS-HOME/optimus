@@ -2,6 +2,8 @@ package com.theplutushome.optimus.advice;
 
 import com.theplutushome.optimus.entity.model.ErrorResponse;
 import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +33,7 @@ public class GlobalExceptionHandler {
 
         // Build the error response
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.BAD_REQUEST.name(),
                 "Validation failed. Please check the input.",
                 errors
         );
@@ -46,19 +48,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleInvalidJson(HttpMessageNotReadableException ex) {
         Map<String, String> error = new HashMap<>();
+        error.put("status", "400 BAD_REQUEST");
         error.put("message", "Malformed JSON request. Please check the syntax.");
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST ,ex.getMessage(), null);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.name() ,ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
     @ExceptionHandler(NullPointerException.class)
     public ResponseEntity<Map<String, String>> handleNullPointerException(NullPointerException ex) {
         Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.BAD_REQUEST.name());
         error.put("message", "A required parameter was null.");
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -66,6 +70,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Map<String, String>> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
         Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.CONFLICT.name());
         error.put("message", "A user with this username or email already exists.");
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
@@ -73,13 +78,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("message", "A user with this id does not exist.");
+        error.put("status", HttpStatus.NOT_FOUND.name());
+        error.put("message", "User does not exist.");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(EmptyCollectionExceptiton.class)
     public ResponseEntity<Map<String, String>> handleEmptyCollection(EmptyCollectionExceptiton ex) {
         Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.NO_CONTENT.name());
         error.put("message", "This collection is empty.");
         return new ResponseEntity<>(error, HttpStatus.NO_CONTENT);
     }
@@ -87,8 +94,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidLoginCredentials(BadCredentialsException ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("message", "Invalid username and password combination");
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        error.put("status", HttpStatus.BAD_REQUEST.name());
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
@@ -119,6 +127,7 @@ public class GlobalExceptionHandler {
 
         // Final response object
         Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.CONFLICT.name());
         response.put("errorMessages", errorList);
 
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
@@ -129,6 +138,19 @@ public class GlobalExceptionHandler {
         error.put("field", field);
         error.put("message", message);
         errorList.add(error);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<String> handleExpiredJwtException(ExpiredJwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token expired at: " + ex.getClaims().getExpiration());
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<Map<String, String>> handleJwtException(JwtException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.BAD_REQUEST.name());
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
 }

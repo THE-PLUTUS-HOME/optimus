@@ -38,7 +38,7 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
-                                "/v1/api/**",
+                                "/optimus/v1/api/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",

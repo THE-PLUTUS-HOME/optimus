@@ -1,27 +1,27 @@
 package com.theplutushome.optimus.entity.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.springframework.http.HttpStatus;
+
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL) // Exclude null fields from the response
 public class ErrorResponse {
 
-    private HttpStatus status;
+    private String status;
     private String message;
     private Map<String, String> errors;
 
-    public ErrorResponse(HttpStatus status, String message, Map<String, String> errors) {
+    public ErrorResponse(String status, String message, Map<String, String> errors) {
         this.status = status;
         this.message = message;
         this.errors = errors;
     }
 
-    public HttpStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(HttpStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
