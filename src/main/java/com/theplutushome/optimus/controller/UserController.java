@@ -32,22 +32,20 @@ public class UserController {
 
     @Operation(summary = "Sign Up", description = "Create a new user account")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved user",
+            @ApiResponse(responseCode = "201", description = "Successfully created user account",
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(value = """
-                                        {
-                                            "id": 1,
-                                            "name": "John Doe",
-                                            "email": "john.doe@example.com"
-                                        }
                                     """))),
-            @ApiResponse(responseCode = "404", description = "User not found",
+            @ApiResponse(responseCode = "400", description = "Missing Fields",
                     content = @Content(mediaType = "application/json",
                             examples = @ExampleObject(value = """
-                                        {
-                                            "status": "404 NOT_FOUND",
-                                            "message": "User with the given ID does not exist"
-                                        }
+                                       {
+                                           "status": "BAD_REQUEST",
+                                           "message": "Validation failed. Please check the input.",
+                                           "errors": {
+                                               "name": "name should not be null"
+                                           }
+                                       }
                                     """))),
             @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json",

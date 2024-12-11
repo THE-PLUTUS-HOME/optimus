@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.entity.api.cryptomus;
+package com.theplutushome.optimus.entity.api.cryptomus.entity;
 
 import lombok.Getter;
 
