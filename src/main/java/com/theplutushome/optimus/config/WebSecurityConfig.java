@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.controller.config;
+package com.theplutushome.optimus.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

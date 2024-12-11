@@ -1,4 +1,4 @@
-package com.theplutushome.optimus.controller.config;
+package com.theplutushome.optimus.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
