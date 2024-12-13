@@ -1,4 +1,8 @@
 package com.theplutushome.optimus.clients.hubtel;
 
-public class HubtelHttpClient {
+import org.springframework.web.service.annotation.GetExchange;
+
+public interface HubtelHttpClient {
+
+
 }

@@ -2,15 +2,12 @@ package com.theplutushome.optimus.entity;
 
 import com.theplutushome.optimus.entity.enums.Currency;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(name = "ORDERS")
 public class Order extends EntityModel {

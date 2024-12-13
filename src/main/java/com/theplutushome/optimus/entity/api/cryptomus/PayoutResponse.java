@@ -2,6 +2,9 @@ package com.theplutushome.optimus.entity.api.cryptomus;
 
 import lombok.Data;
 
+import java.util.List;
+import java.util.Map;
+
 @Data
 public class PayoutResponse {
     private int state;
@@ -20,7 +23,12 @@ public class PayoutResponse {
         private String payer_currency;
         private String payer_amount;
         private String message;
-        private Error error;
+        private Error errors;
         private String code;
+    }
+
+    @Data
+    public static class Error {
+        private Map<String, List<String>> errors; // Adjusted to match the JSON structure
     }
 }

@@ -1,6 +1,6 @@
 package com.theplutushome.optimus.controller;
 
-import com.theplutushome.optimus.services.OrdersService;
+import com.theplutushome.optimus.service.OrdersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
