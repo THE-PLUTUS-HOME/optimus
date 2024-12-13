@@ -18,7 +18,7 @@ public class CryptomusRestClient {
 
     public CryptomusRestClient(RestClient.Builder builder) {
         this.restClient = builder
-                .baseUrl("https://api.cryptomus.com/")
+                .baseUrl("https://api.cryptomus.com")
                 .build();
     }
 
