@@ -2,6 +2,7 @@ package com.theplutushome.optimus.clients.cryptomus;
 
 import com.theplutushome.optimus.entity.api.cryptomus.*;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.PostExchange;
@@ -13,7 +14,7 @@ public interface CryptomusHttpClient {
     public List<ServiceList> getServiceList();
 
     @PostExchange("/{currency}")
-    public ExchangeRateResponse getExchangeRate(String currency);
+    public ExchangeRateResponse getExchangeRate(@PathVariable String currency);
 
     @GetExchange("/balance")
     public BalanceResponse getBalance();

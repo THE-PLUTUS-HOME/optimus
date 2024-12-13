@@ -1,19 +1,66 @@
 package com.theplutushome.optimus.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Map;
+import java.util.Objects;
 
 public class Function {
-    public static String generateCryptomusSignature(Object data, String apiPayoutKey) throws Exception {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String dataEncoded = objectMapper.writeValueAsString(data);
-        String dataBase64 = Base64.getEncoder().encodeToString(dataEncoded.getBytes(StandardCharsets.UTF_8));
-        String input = dataBase64 + apiPayoutKey;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Verify the webhook signature from Cryptomus.
+     *
+     * @param receivedData  The full data received from the webhook as a map.
+     * @param apiPaymentKey Your API payment key.
+     * @return True if the signature is valid, false otherwise.
+     */
+    public static boolean verifyWebhookSignature(Map<String, Object> receivedData, String apiPaymentKey) throws Exception {
+        // Step 1: Extract and remove the sign from the received data
+        String receivedSign = (String) receivedData.get("sign");
+        if (receivedSign == null) {
+            throw new IllegalArgumentException("Missing 'sign' in the received data.");
+        }
+        receivedData.remove("sign");
+
+        String jsonData = escapeSlashesInJson(objectMapper.writeValueAsString(receivedData));
+        String base64EncodedData = Base64.getEncoder().encodeToString(jsonData.getBytes(StandardCharsets.UTF_8));
+        String generatedHash = generateMd5Hash(base64EncodedData + apiPaymentKey);
+
+        return generatedHash.equals(receivedSign);
+    }
+
+    /**
+     * Escape slashes in the JSON string to match PHP's behavior.
+     *
+     * @param jsonData The JSON string.
+     * @return Escaped JSON string.
+     */
+    private static String escapeSlashesInJson(String jsonData) {
+        return jsonData.replace("/", "\\/");
+    }
+
+    /**
+     * Generate an MD5 hash for the input string.
+     *
+     * @param input The input string.
+     * @return MD5 hash as a hexadecimal string.
+     */
+    private static String generateMd5Hash(String input) throws Exception {
+        return getString(input);
+    }
+
+    private static String getString(String input) throws NoSuchAlgorithmException {
+        return getMD5String(input);
+    }
+
+    private static String getMD5String(String input) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
         byte[] hashBytes = md.digest(input.getBytes(StandardCharsets.UTF_8));
 
@@ -21,8 +68,18 @@ public class Function {
         for (byte b : hashBytes) {
             hexString.append(String.format("%02x", b));
         }
-
         return hexString.toString();
+    }
+
+    public static String generateSign(Object data, String apiPayoutKey) throws NoSuchAlgorithmException {
+        Gson gson = new Gson();
+        String dataEncoded;
+        dataEncoded = gson.toJson(Objects.requireNonNullElse(data, ""));
+
+        String encodedData = Base64.getEncoder().encodeToString(dataEncoded.getBytes(StandardCharsets.UTF_8));
+        String concatenatedString = encodedData + apiPayoutKey;
+
+        return getMD5String(concatenatedString);
     }
 
     public static String generateReferralCode() {
