@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Map;
-import java.util.Objects;
 
 public class Function {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -71,13 +70,17 @@ public class Function {
         return hexString.toString();
     }
 
-    public static String generateSign(Object data, String apiPayoutKey) throws NoSuchAlgorithmException {
+    public static String generateSign(Object data, String apiKey) throws NoSuchAlgorithmException {
         Gson gson = new Gson();
         String dataEncoded;
-        dataEncoded = gson.toJson(Objects.requireNonNullElse(data, ""));
+        if (data == null) {
+            dataEncoded = "";
+        } else {
+            dataEncoded = gson.toJson(data);
+        }
 
         String encodedData = Base64.getEncoder().encodeToString(dataEncoded.getBytes(StandardCharsets.UTF_8));
-        String concatenatedString = encodedData + apiPayoutKey;
+        String concatenatedString = encodedData + apiKey;
 
         return getMD5String(concatenatedString);
     }
@@ -95,5 +98,10 @@ public class Function {
         }
 
         return referralCode.toString();
+    }
+
+    public static String generateAuthorizationKey(String clientId, String clientSecret) {
+        String credentials = clientId + ":" + clientSecret;
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
 }

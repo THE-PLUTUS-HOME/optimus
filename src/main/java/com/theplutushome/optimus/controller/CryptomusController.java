@@ -3,6 +3,7 @@ package com.theplutushome.optimus.controller;
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.entity.api.cryptomus.*;
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,5 +55,26 @@ public class CryptomusController {
         return client.getPayoutHistory(request);
     }
 
+    @PostMapping(value = "/payout/services", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ServiceList getPayoutServices(@RequestParam(value = "currency", required = true) String currency, @RequestParam(value = "network", required = true) String network) throws BadRequestException {
+        if (currency.isBlank() || network.isBlank()) {
+            throw new BadRequestException("Currency and network parameters are required");
+        }
+        ServiceList list = client.getServiceList();
+        list.getResult().removeIf(l -> !l.getCurrency().equals(currency));
+        list.getResult().removeIf(l -> !l.getNetwork().equals(network));
+
+        return list;
+    }
+
+    @PostMapping(value = "/payout")
+    public PayoutResponse payout(@RequestBody @Valid PayoutRequest request) {
+        return client.getPayout(request);
+    }
+
+    @PostMapping(value = "/convert")
+    public ConvertResponse convert(@RequestBody @Valid ConvertRequest request) {
+        return client.convertAsset(request);
+    }
 
 }

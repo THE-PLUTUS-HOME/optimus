@@ -14,11 +14,24 @@ public class RestClientConfig {
                 .build();
     }
 
-    @Bean(name = "anotherRestClient")
-    public RestClient anotherRestClient() {
+    @Bean(name = "hubtelReceiveMoneyClient")
+    public RestClient hubtelRestClient() {
         return RestClient.builder()
-                .baseUrl("https://api.another-service.com/")
+                .baseUrl("https://rmp.hubtel.com/merchantaccount/merchants/")
+                .build();
+    }
+
+    @Bean(name = "hubtelVerifyTransactionClient")
+    public RestClient hubtelVerifyTransactionRestClient() {
+        return RestClient.builder()
+                .baseUrl("https://api-txnstatus.hubtel.com/transactions")
+                .build();
+    }
+
+    @Bean(name = "hubtelSMSClient")
+    public RestClient hubtelSMSClient() {
+        return RestClient.builder()
+                .baseUrl("https://sms.hubtel.com/v1/messages")
                 .build();
     }
 }
-
