@@ -90,6 +90,3 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 }
-
-
-//}, @RequestHeader("Authorization") String authHeader
