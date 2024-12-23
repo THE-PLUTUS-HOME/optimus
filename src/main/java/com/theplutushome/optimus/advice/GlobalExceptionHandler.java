@@ -2,6 +2,7 @@ package com.theplutushome.optimus.advice;
 
 import com.theplutushome.optimus.entity.model.ErrorResponse;
 import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
+import com.theplutushome.optimus.exceptions.NoBalanceToRedeem;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -73,6 +74,14 @@ public class GlobalExceptionHandler {
         error.put("status", HttpStatus.CONFLICT.name());
         error.put("message", "A user with this username or email already exists.");
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(NoBalanceToRedeem.class)
+    public ResponseEntity<Map<String, String>> handleNoBalanceToRedeem(NoBalanceToRedeem ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.NOT_ACCEPTABLE.name());
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
     }
 
     @ExceptionHandler(UserNotFoundException.class)

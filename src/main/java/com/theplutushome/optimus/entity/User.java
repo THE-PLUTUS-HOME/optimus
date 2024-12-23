@@ -31,6 +31,7 @@ public class User extends EntityModel {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     private List<User> referredUsers;
     private String referralCode;
+    private double accruedBalance;
     private double balance;
     private LocalDateTime lastLoggedIn;
 
@@ -127,5 +128,13 @@ public class User extends EntityModel {
 
     public void setReferredUsers(List<User> referredUsers) {
         this.referredUsers = referredUsers;
+    }
+
+    public double getAccruedBalance() {
+        return accruedBalance;
+    }
+
+    public void setAccruedBalance(double accruedBalance) {
+        this.accruedBalance = accruedBalance;
     }
 }

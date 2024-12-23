@@ -12,6 +12,7 @@ import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;
 import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
+import com.theplutushome.optimus.exceptions.NoBalanceToRedeem;
 import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
 import com.theplutushome.optimus.util.Function;
@@ -60,6 +61,7 @@ public class UserService {
                 Function.generateReferralCode(),
                 0.0 // Initial balance
         );
+        user.setAccruedBalance(0.0);
 
         // Save the new user
         userRepository.save(user);
@@ -124,27 +126,7 @@ public class UserService {
     }
 
     public void resetPassword(PasswordResetRequest passwordResetRequest, String authHeader) {
-        if (authHeader.isBlank() || authHeader.isEmpty()) {
-            throw new JwtException("Missing authentication header");
-        }
-
-        try {
-            if (jwtUtil.isTokenExpired(authHeader)) {
-                Map<String, Object> headerValues = new HashMap<>();
-                headerValues.put("alg", "HS256"); // Algorithm
-                headerValues.put("typ", "JWT");  // Token type
-
-                Header header = new DefaultHeader(headerValues);
-                Claims claims = jwtUtil.extractClaim(authHeader); // Ensure this method properly extracts claims
-                throw new ExpiredJwtException(header, claims, "Token has expired");
-            }
-        } catch (MalformedJwtException ex) {
-            throw new JwtException("Invalid JWT structure: " + ex.getMessage());
-        } catch (SignatureException ex) {
-            throw new JwtException("Invalid JWT signature: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            throw new JwtException("Invalid or empty JWT: " + ex.getMessage());
-        }
+        verifyToken(authHeader);
 
         User user = userRepository.findByUsernameAndDeleted(passwordResetRequest.getUsername(), false)
                 .orElseThrow(UserNotFoundException::new);
@@ -158,6 +140,32 @@ public class UserService {
         userRepository.save(user);
     }
 
+    private void verifyToken(String authHeader) {
+        if (authHeader.isBlank() || authHeader.isEmpty()) {
+            throw new JwtException("Missing authentication header");
+        }
+
+        String token = authHeader.substring(7);
+
+        try {
+            if (jwtUtil.isTokenExpired(token)) {
+                Map<String, Object> headerValues = new HashMap<>();
+                headerValues.put("alg", "HS256"); // Algorithm
+                headerValues.put("typ", "JWT");  // Token type
+
+                Header header = new DefaultHeader(headerValues);
+                Claims claims = jwtUtil.extractClaim(token); // Ensure this method properly extracts claims
+                throw new ExpiredJwtException(header, claims, "Token has expired");
+            }
+        } catch (MalformedJwtException ex) {
+            throw new JwtException("Invalid JWT structure: " + ex.getMessage());
+        } catch (SignatureException ex) {
+            throw new JwtException("Invalid JWT signature: " + ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            throw new JwtException("Invalid or empty JWT: " + ex.getMessage());
+        }
+    }
+
     public boolean referralCodeValid(String referralCode) {
         return userRepository.findByReferralCodeAndDeleted(referralCode, false).isPresent();
     }
@@ -166,17 +174,38 @@ public class UserService {
         return userRepository.findByReferralCodeAndDeleted(referralCode, false).orElse(null);
     }
 
-    public UserData getUserData(String username) {
+    public UserData getUserData(String username, String authHeader) {
+        verifyToken(authHeader);
+
         UserData userData = new UserData();
         User u = userRepository.findByUsernameAndDeleted(username, false).orElse(null);
-        if(u != null){
+        if (u != null) {
             userData.setUsername(u.getUsername());
             userData.setReferralCode(u.getReferralCode());
             userData.setBalance(u.getBalance());
+            userData.setAccruedBalance(u.getAccruedBalance());
             userData.setTotalReferrals(u.getReferredUsers().size());
         } else {
             throw new UserNotFoundException();
         }
         return userData;
+    }
+
+    public void redeemPoints(String username, String authHeader) {
+        verifyToken(authHeader);
+
+        User user = userRepository.findByUsernameAndDeleted(username, false).orElse(null);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+
+        if (user.getAccruedBalance() > 0) {
+            var newBal = user.getBalance() + user.getAccruedBalance();
+            user.setBalance(newBal);
+            user.setAccruedBalance(0);
+            userRepository.save(user);
+        } else {
+            throw new NoBalanceToRedeem();
+        }
     }
 }

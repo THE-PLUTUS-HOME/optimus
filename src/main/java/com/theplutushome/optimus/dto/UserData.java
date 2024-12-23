@@ -3,15 +3,17 @@ package com.theplutushome.optimus.dto;
 public class UserData {
     private String username;
     private double balance;
+    private double accruedBalance;
     private int totalReferrals;
     private String referralCode;
 
     public UserData() {}
-    public UserData(String username, double balance, int totalReferrals, String referralCode) {
+    public UserData(String username, double balance, int totalReferrals, String referralCode, double accruedBalance) {
         this.username = username;
         this.balance = balance;
         this.totalReferrals = totalReferrals;
         this.referralCode = referralCode;
+        this.accruedBalance = accruedBalance;
     }
 
     public String getUsername() {
@@ -44,5 +46,13 @@ public class UserData {
 
     public void setReferralCode(String referralCode) {
         this.referralCode = referralCode;
+    }
+
+    public double getAccruedBalance() {
+        return accruedBalance;
+    }
+
+    public void setAccruedBalance(double accruedBalance) {
+        this.accruedBalance = accruedBalance;
     }
 }

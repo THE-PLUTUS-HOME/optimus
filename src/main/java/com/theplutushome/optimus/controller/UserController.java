@@ -1,5 +1,6 @@
 package com.theplutushome.optimus.controller;
 
+import com.theplutushome.optimus.dto.RedeemRequest;
 import com.theplutushome.optimus.dto.UserData;
 import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.dto.login.LoginRequest;
@@ -22,7 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5500")
+@CrossOrigin(origins = {
+        "http://localhost:5500",
+        "http://172.16.20.34:5500"
+})
 @RestController
 @RequestMapping("/optimus/v1/api/users")
 public class UserController {
@@ -113,7 +117,16 @@ public class UserController {
 
     @GetMapping("/getUser/{username}")
     public ResponseEntity<UserData> getUser(@PathVariable("username") String username, @RequestHeader("Authorization") String authHeader) {
-        UserData user = userService.getUserData(username);
+        UserData user = userService.getUserData(username, authHeader);
         return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/redeem")
+    public ResponseEntity<?> redeemPoints(@RequestBody RedeemRequest request, @RequestHeader("Authorization") String authHeader) {
+        userService.redeemPoints(request.getUsername(), authHeader);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Redeemed successfully!"
+        ));
     }
 }
