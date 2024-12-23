@@ -22,13 +22,12 @@ public class User extends EntityModel {
     @Column(nullable = false)
     private String password;
     private String email;
-    private String phone;
+//    private String phone;
     private String username;
     @Enumerated(EnumType.STRING)
     private UserType userType;
     @Enumerated(EnumType.STRING)
     private UserAccountStatus userAccountStatus;
-    private String secretPhrase;
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     private List<User> referredUsers;
     private String referralCode;
@@ -39,15 +38,13 @@ public class User extends EntityModel {
     public User() {
     }
 
-    public User(int id, String password, String phone, String email, String username, UserType userType, UserAccountStatus userAccountStatus, String secretPhrase, String referralCode, double balance) {
+    public User(int id, String password, String email, String username, UserType userType, UserAccountStatus userAccountStatus, String referralCode, double balance) {
         this.id = id;
         this.password = password;
-        this.phone = phone;
         this.email = email;
         this.username = username;
         this.userType = userType;
         this.userAccountStatus = userAccountStatus;
-        this.secretPhrase = secretPhrase;
         this.referralCode = referralCode;
         this.balance = balance;
     }
@@ -98,22 +95,6 @@ public class User extends EntityModel {
 
     public void setUserAccountStatus(UserAccountStatus userAccountStatus) {
         this.userAccountStatus = userAccountStatus;
-    }
-
-    public String getSecretPhrase() {
-        return secretPhrase;
-    }
-
-    public void setSecretPhrase(String secretPhrase) {
-        this.secretPhrase = secretPhrase;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
     public LocalDateTime getLastLoggedIn() {

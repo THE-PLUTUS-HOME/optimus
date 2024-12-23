@@ -1,10 +1,12 @@
 package com.theplutushome.optimus.controller;
 
+import com.theplutushome.optimus.dto.UserData;
 import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
 import com.theplutushome.optimus.entity.User;
+import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,16 +20,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
+@CrossOrigin(origins = "http://localhost:5500")
 @RestController
 @RequestMapping("/optimus/v1/api/users")
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @Operation(summary = "Sign Up", description = "Create a new user account")
@@ -88,5 +94,26 @@ public class UserController {
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid PasswordResetRequest passwordResetRequest, @RequestHeader("Authorization") String authHeader) {
         userService.resetPassword(passwordResetRequest, authHeader);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/verify/c/{referralCode}")
+    public ResponseEntity<?> verifyCode(@PathVariable("referralCode") String referralCode) {
+        if (userService.referralCodeValid(referralCode)) {
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Referral Code Valid!"
+            ));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Invalid Referral Code!"
+            ));
+        }
+    }
+
+    @GetMapping("/getUser/{username}")
+    public ResponseEntity<UserData> getUser(@PathVariable("username") String username, @RequestHeader("Authorization") String authHeader) {
+        UserData user = userService.getUserData(username);
+        return ResponseEntity.ok(user);
     }
 }

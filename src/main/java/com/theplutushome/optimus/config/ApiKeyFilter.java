@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class ApiKeyFilter extends OncePerRequestFilter {
 
@@ -19,6 +20,9 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String apiKey = request.getHeader(API_KEY_HEADER);
         String path = request.getRequestURI();
+        System.out.println("Incoming Headers:");
+        Collections.list(request.getHeaderNames())
+                .forEach(header -> System.out.println(header + ": " + request.getHeader(header)));
 
         // Exclude Swagger UI and related resources
         if (path.startsWith("/swagger-ui") ||
@@ -37,7 +41,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             System.out.println("Request proceeded successfully."); // Debugging line
         } else {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            response.getWriter().write("Forbidden: Invalid API Key");
+            response.getWriter().write("Forbidden: Invalid API Key. Yawa");
         }
     }
 }

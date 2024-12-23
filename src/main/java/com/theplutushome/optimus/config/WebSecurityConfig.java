@@ -6,8 +6,13 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.List;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
@@ -21,7 +26,7 @@ public class WebSecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Apply to all endpoints
-                        .allowedOrigins("http://localhost:8080") // Allow Swagger UI origin
+                        .allowedOrigins("http://localhost:8081", "http://localhost:5500")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow these methods
                         .allowedHeaders("*") // Allow all headers
                         .exposedHeaders("Authorization") // Optional: Expose specific headers
@@ -50,6 +55,7 @@ public class WebSecurityConfig {
                                 "/webjars/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers("/api/verify-captcha").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new ApiKeyFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -57,6 +63,19 @@ public class WebSecurityConfig {
 
         System.out.println("Configuring Success ...");
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5500")); // Add allowed origins
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
+        configuration.setAllowedHeaders(List.of("*")); // Allow all headers
+        configuration.setAllowCredentials(true); // Allow credentials
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // Apply this CORS configuration to all endpoints
+        return source;
     }
 
 }

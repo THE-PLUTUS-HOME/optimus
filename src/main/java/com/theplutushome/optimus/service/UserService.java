@@ -2,6 +2,7 @@ package com.theplutushome.optimus.service;
 
 import com.theplutushome.optimus.advice.UserAlreadyExistsException;
 import com.theplutushome.optimus.advice.UserNotFoundException;
+import com.theplutushome.optimus.dto.UserData;
 import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
@@ -9,6 +10,7 @@ import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
 import com.theplutushome.optimus.entity.EntityModel;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
+import com.theplutushome.optimus.entity.enums.UserType;
 import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
 import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
@@ -16,6 +18,7 @@ import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.DefaultHeader;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -39,26 +42,38 @@ public class UserService {
         this.jwtUtil = jwtUtil;
     }
 
+    @Transactional
     public void createUser(UserRequest userRequest) {
-        if (userExists(userRequest.getUsername(), userRequest.getEmail(), userRequest.getPhone())) {
+        // Check if the user already exists
+        if (userExists(userRequest.getUsername(), userRequest.getEmail())) {
             throw new UserAlreadyExistsException();
         }
 
+        // Create the new user
         User user = new User(
                 0,
                 BCryptUtil.hashPassword(userRequest.getPassword()),
                 userRequest.getEmail(),
-                userRequest.getPhone(),
                 userRequest.getUsername(),
-                userRequest.getUserType(),
+                UserType.USER,
                 UserAccountStatus.ACTIVE,
-                userRequest.getSecretPhrase(),
                 Function.generateReferralCode(),
-                0.0
-
+                0.0 // Initial balance
         );
-        user.setDeleted(false);
+
+        // Save the new user
         userRepository.save(user);
+
+        // Process referral logic
+        String referralCode = userRequest.getReferralCode();
+        if (referralCode != null && referralCodeValid(referralCode)) {
+            User referralUser = userWithReferralCode(referralCode);
+            if (referralUser != null) {
+                referralUser.getReferredUsers().add(user);
+                referralUser.setBalance(referralUser.getBalance() + 1.00); // Referral reward
+                userRepository.save(referralUser); // Save changes to the referring user
+            }
+        }
     }
 
     public void deleteUser(int id) {
@@ -103,10 +118,9 @@ public class UserService {
                 token);
     }
 
-    private boolean userExists(String username, String email, String phone) {
+    private boolean userExists(String username, String email) {
         return (userRepository.findByEmailAndDeleted(email, false).isPresent()
-                || userRepository.findByUsernameAndDeleted(username, false).isPresent()
-                || userRepository.findByEmailAndDeleted(email, false).isPresent());
+                || userRepository.findByUsernameAndDeleted(username, false).isPresent());
     }
 
     public void resetPassword(PasswordResetRequest passwordResetRequest, String authHeader) {
@@ -144,4 +158,25 @@ public class UserService {
         userRepository.save(user);
     }
 
+    public boolean referralCodeValid(String referralCode) {
+        return userRepository.findByReferralCodeAndDeleted(referralCode, false).isPresent();
+    }
+
+    public User userWithReferralCode(String referralCode) {
+        return userRepository.findByReferralCodeAndDeleted(referralCode, false).orElse(null);
+    }
+
+    public UserData getUserData(String username) {
+        UserData userData = new UserData();
+        User u = userRepository.findByUsernameAndDeleted(username, false).orElse(null);
+        if(u != null){
+            userData.setUsername(u.getUsername());
+            userData.setReferralCode(u.getReferralCode());
+            userData.setBalance(u.getBalance());
+            userData.setTotalReferrals(u.getReferredUsers().size());
+        } else {
+            throw new UserNotFoundException();
+        }
+        return userData;
+    }
 }
