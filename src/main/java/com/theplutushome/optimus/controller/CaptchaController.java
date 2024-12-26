@@ -13,10 +13,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = {
-        "http://localhost:5500",
-        "http://172.16.20.34:5500"
-})
+//@CrossOrigin(origins = {
+//        "http://localhost:5500",
+//        "http://172.16.20.34:5500"
+//})
 public class CaptchaController {
 
     private static final String SECRET_KEY = "6LeG0KEqAAAAAKGtT0wQMtZh2WDHB9GFBBvM5I2X";

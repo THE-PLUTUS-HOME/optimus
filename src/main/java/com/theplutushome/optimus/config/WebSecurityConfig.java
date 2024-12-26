@@ -20,20 +20,20 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @Configuration
 public class WebSecurityConfig {
 
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Apply to all endpoints
-                        .allowedOrigins("http://localhost:8081", "http://localhost:5500", "http://172.16.20.34:5500")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow these methods
-                        .allowedHeaders("*") // Allow all headers
-                        .exposedHeaders("Authorization") // Optional: Expose specific headers
-                        .allowCredentials(true); // Allow cookies or authentication data
-            }
-        };
-    }
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**") // Apply to all endpoints
+//                        .allowedOrigins("http://localhost:8081", "http://localhost:5500", "http://172.16.20.34:5500", "https://theplutushome.com/")
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allow these methods
+//                        .allowedHeaders("*") // Allow all headers
+//                        .exposedHeaders("Authorization") // Optional: Expose specific headers
+//                        .allowCredentials(true); // Allow cookies or authentication data
+//            }
+//        };
+//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -68,7 +68,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5500", "http://172.16.20.34:5500")); // Add allowed origins
+        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5500", "http://172.16.20.34:5500", "https://theplutushome.com/")); // Add allowed origins
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowCredentials(true); // Allow credentials

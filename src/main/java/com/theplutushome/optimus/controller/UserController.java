@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = {
-        "http://localhost:5500",
-        "http://172.16.20.34:5500"
-})
+//@CrossOrigin(origins = {
+//        "http://localhost:5500",
+//        "http://172.16.20.34:5500"
+//})
 @RestController
 @RequestMapping("/optimus/v1/api/users")
 public class UserController {
