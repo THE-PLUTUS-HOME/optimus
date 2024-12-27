@@ -1,9 +1,6 @@
 package com.theplutushome.optimus.clients.hubtel;
 
-import com.theplutushome.optimus.entity.api.hubtel.PaymentRequest;
-import com.theplutushome.optimus.entity.api.hubtel.PaymentResponse;
-import com.theplutushome.optimus.entity.api.hubtel.SMSResponse;
-import com.theplutushome.optimus.entity.api.hubtel.TransactionStatusCheckResponse;
+import com.theplutushome.optimus.entity.api.hubtel.*;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,5 +16,8 @@ public interface HubtelHttpClient {
 
     @GetExchange("")
     public SMSResponse sendSMS(@RequestParam(value = "to") String to, @RequestParam(value = "content") String content);
+
+    @PostExchange("")
+    public PaymentLinkResponse getPaymentUrl(@RequestBody PaymentLinkRequest paymentLinkRequest);
 
 }

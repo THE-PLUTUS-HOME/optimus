@@ -17,17 +17,13 @@ import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
 import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.impl.DefaultHeader;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -126,7 +122,7 @@ public class UserService {
     }
 
     public void resetPassword(PasswordResetRequest passwordResetRequest, String authHeader) {
-        verifyToken(authHeader);
+        jwtUtil.verifyToken(authHeader);
 
         User user = userRepository.findByUsernameAndDeleted(passwordResetRequest.getUsername(), false)
                 .orElseThrow(UserNotFoundException::new);
@@ -140,32 +136,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    private void verifyToken(String authHeader) {
-        if (authHeader.isBlank() || authHeader.isEmpty()) {
-            throw new JwtException("Missing authentication header");
-        }
-
-        String token = authHeader.substring(7);
-
-        try {
-            if (jwtUtil.isTokenExpired(token)) {
-                Map<String, Object> headerValues = new HashMap<>();
-                headerValues.put("alg", "HS256"); // Algorithm
-                headerValues.put("typ", "JWT");  // Token type
-
-                Header header = new DefaultHeader(headerValues);
-                Claims claims = jwtUtil.extractClaim(token); // Ensure this method properly extracts claims
-                throw new ExpiredJwtException(header, claims, "Token has expired");
-            }
-        } catch (MalformedJwtException ex) {
-            throw new JwtException("Invalid JWT structure: " + ex.getMessage());
-        } catch (SignatureException ex) {
-            throw new JwtException("Invalid JWT signature: " + ex.getMessage());
-        } catch (IllegalArgumentException ex) {
-            throw new JwtException("Invalid or empty JWT: " + ex.getMessage());
-        }
-    }
-
     public boolean referralCodeValid(String referralCode) {
         return userRepository.findByReferralCodeAndDeleted(referralCode, false).isPresent();
     }
@@ -175,12 +145,13 @@ public class UserService {
     }
 
     public UserData getUserData(String username, String authHeader) {
-        verifyToken(authHeader);
+        jwtUtil.verifyToken(authHeader);
 
         UserData userData = new UserData();
         User u = userRepository.findByUsernameAndDeleted(username, false).orElse(null);
         if (u != null) {
             userData.setUsername(u.getUsername());
+            userData.setEmail(u.getEmail());
             userData.setReferralCode(u.getReferralCode());
             userData.setBalance(u.getBalance());
             userData.setAccruedBalance(u.getAccruedBalance());
@@ -192,7 +163,7 @@ public class UserService {
     }
 
     public void redeemPoints(String username, String authHeader) {
-        verifyToken(authHeader);
+        jwtUtil.verifyToken(authHeader);
 
         User user = userRepository.findByUsernameAndDeleted(username, false).orElse(null);
         if (user == null) {

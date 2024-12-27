@@ -1,125 +1,176 @@
 package com.theplutushome.optimus.entity.api.hubtel;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class HubtelCallBack {
 
-    private String Message;
-    private String ResponseCode;
-    private Data Data;
+    @JsonProperty("ResponseCode")
+    private String responseCode;
 
-    public String getMessage() {
-        return Message;
-    }
+    @JsonProperty("Status")
+    private String status;
 
-    public void setMessage(String message) {
-        Message = message;
-    }
+    @JsonProperty("Data")
+    private Data data;
 
     public String getResponseCode() {
-        return ResponseCode;
+        return responseCode;
     }
 
     public void setResponseCode(String responseCode) {
-        ResponseCode = responseCode;
+        this.responseCode = responseCode;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Data getData() {
-        return Data;
+        return data;
     }
 
     public void setData(Data data) {
-        this.Data = data;
+        this.data = data;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Data {
-        private String TransactionId;
-        private String ExternalTransactionId;
-        private String Description;
-        private String ClientReference;
-        private double Amount;
-        private double Charges;
-        private double AmountAfterCharges;
-        private double AmountCharged;
-        private String OrderId;
-        private String PaymentDate;
 
-        public String getTransactionId() {
-            return TransactionId;
+        @JsonProperty("CheckoutId")
+        private String checkoutId;
+
+        @JsonProperty("SalesInvoiceId")
+        private String salesInvoiceId;
+
+        @JsonProperty("ClientReference")
+        private String clientReference;
+
+        @JsonProperty("Status")
+        private String status;
+
+        @JsonProperty("Amount")
+        private double amount;
+
+        @JsonProperty("CustomerPhoneNumber")
+        private String customerPhoneNumber;
+
+        @JsonProperty("PaymentDetails")
+        private PaymentDetails paymentDetails;
+
+        @JsonProperty("Description")
+        private String description;
+
+        // Getters and Setters for Data class fields
+
+        public String getCheckoutId() {
+            return checkoutId;
         }
 
-        public void setTransactionId(String transactionId) {
-            TransactionId = transactionId;
+        public void setCheckoutId(String checkoutId) {
+            this.checkoutId = checkoutId;
         }
 
-        public String getExternalTransactionId() {
-            return ExternalTransactionId;
+        public String getSalesInvoiceId() {
+            return salesInvoiceId;
         }
 
-        public void setExternalTransactionId(String externalTransactionId) {
-            ExternalTransactionId = externalTransactionId;
-        }
-
-        public String getDescription() {
-            return Description;
-        }
-
-        public void setDescription(String description) {
-            Description = description;
+        public void setSalesInvoiceId(String salesInvoiceId) {
+            this.salesInvoiceId = salesInvoiceId;
         }
 
         public String getClientReference() {
-            return ClientReference;
+            return clientReference;
         }
 
         public void setClientReference(String clientReference) {
-            ClientReference = clientReference;
+            this.clientReference = clientReference;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
         }
 
         public double getAmount() {
-            return Amount;
+            return amount;
         }
 
         public void setAmount(double amount) {
-            Amount = amount;
+            this.amount = amount;
         }
 
-        public double getCharges() {
-            return Charges;
+        public String getCustomerPhoneNumber() {
+            return customerPhoneNumber;
         }
 
-        public void setCharges(double charges) {
-            Charges = charges;
+        public void setCustomerPhoneNumber(String customerPhoneNumber) {
+            this.customerPhoneNumber = customerPhoneNumber;
         }
 
-        public double getAmountAfterCharges() {
-            return AmountAfterCharges;
+        public PaymentDetails getPaymentDetails() {
+            return paymentDetails;
         }
 
-        public void setAmountAfterCharges(double amountAfterCharges) {
-            AmountAfterCharges = amountAfterCharges;
+        public void setPaymentDetails(PaymentDetails paymentDetails) {
+            this.paymentDetails = paymentDetails;
         }
 
-        public double getAmountCharged() {
-            return AmountCharged;
+        public String getDescription() {
+            return description;
         }
 
-        public void setAmountCharged(double amountCharged) {
-            AmountCharged = amountCharged;
+        public void setDescription(String description) {
+            this.description = description;
         }
 
-        public String getOrderId() {
-            return OrderId;
-        }
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        public static class PaymentDetails {
 
-        public void setOrderId(String orderId) {
-            OrderId = orderId;
-        }
+            @JsonProperty("MobileMoneyNumber")
+            private String mobileMoneyNumber;
 
-        public String getPaymentDate() {
-            return PaymentDate;
-        }
+            @JsonProperty("PaymentType")
+            private String paymentType;
 
-        public void setPaymentDate(String paymentDate) {
-            PaymentDate = paymentDate;
+            @JsonProperty("Channel")
+            private String channel;
+
+            // Getters and Setters for PaymentDetails class fields
+
+            public String getMobileMoneyNumber() {
+                return mobileMoneyNumber;
+            }
+
+            public void setMobileMoneyNumber(String mobileMoneyNumber) {
+                this.mobileMoneyNumber = mobileMoneyNumber;
+            }
+
+            public String getPaymentType() {
+                return paymentType;
+            }
+
+            public void setPaymentType(String paymentType) {
+                this.paymentType = paymentType;
+            }
+
+            public String getChannel() {
+                return channel;
+            }
+
+            public void setChannel(String channel) {
+                this.channel = channel;
+            }
         }
     }
+
+   
 }

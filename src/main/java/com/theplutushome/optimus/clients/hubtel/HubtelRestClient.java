@@ -1,11 +1,10 @@
 package com.theplutushome.optimus.clients.hubtel;
 
-import com.theplutushome.optimus.entity.api.hubtel.PaymentRequest;
-import com.theplutushome.optimus.entity.api.hubtel.PaymentResponse;
-import com.theplutushome.optimus.entity.api.hubtel.SMSResponse;
-import com.theplutushome.optimus.entity.api.hubtel.TransactionStatusCheckResponse;
+import com.theplutushome.optimus.entity.api.hubtel.*;
 import com.theplutushome.optimus.util.Function;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.PropertySource;
@@ -20,13 +19,17 @@ import org.springframework.web.client.RestClientException;
 @Component
 public class HubtelRestClient implements HubtelHttpClient {
 
+    private static final Logger log =  LoggerFactory.getLogger(HubtelRestClient.class);
+    
     private final RestClient hubtelReceiveMoneyClient;
     private final RestClient hubtelVerifyTransactionClient;
     private final RestClient hubtelSMSClient;
+    private final RestClient hubtelPaymentUrlGenerationClient;
     private final String POS_Sales_ID;
     private final String clientId;
     private final String smsClientId;
     private final String smsClientSecret;
+    private final String hubtelSecretKey;
 
     private final String clientSecret;
 
@@ -35,15 +38,18 @@ public class HubtelRestClient implements HubtelHttpClient {
     public HubtelRestClient(@Qualifier("hubtelReceiveMoneyClient") RestClient hubtelReceiveMoneyClient,
                             @Qualifier("hubtelVerifyTransactionClient") RestClient hubtelVerifyTransactionClient,
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
+                            @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {
         this.hubtelReceiveMoneyClient = hubtelReceiveMoneyClient;
         this.hubtelVerifyTransactionClient = hubtelVerifyTransactionClient;
         this.hubtelSMSClient = hubtelSMSClient;
+        this.hubtelPaymentUrlGenerationClient = hubtelPaymentUrlClient;
         this.POS_Sales_ID = env.getProperty("pos_sales_id");
         this.clientId = env.getProperty("client_id");
         this.clientSecret = env.getProperty("client_secret");
         this.smsClientId = env.getProperty("sms_client_id");
         this.smsClientSecret = env.getProperty("sms_client_secret");
+        this.hubtelSecretKey = env.getProperty("hubtel_secrety_key");
     }
 
     public PaymentResponse initiatePayment(@RequestBody @Valid PaymentRequest paymentRequest) {
@@ -96,4 +102,21 @@ public class HubtelRestClient implements HubtelHttpClient {
         }
     }
 
+    public PaymentLinkResponse getPaymentUrl(@RequestBody PaymentLinkRequest paymentLinkRequest) {
+        try {
+            log.info("Initiating payment link generation with request: {}", paymentLinkRequest.toString());
+            PaymentLinkResponse response = hubtelPaymentUrlGenerationClient.post()
+                    .uri("/items/initiate")
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", hubtelSecretKey)
+                    .body(paymentLinkRequest)
+                    .retrieve()
+                    .body(PaymentLinkResponse.class);
+            log.info("Payment link generated successfully: {}", response);
+            return response;
+        } catch (RestClientException e) {
+            log.error("Failed to generate link: {}", e.getMessage());
+            throw new RestClientException("Failed to generate link: " + e.getMessage());
+        }
+    }
 }

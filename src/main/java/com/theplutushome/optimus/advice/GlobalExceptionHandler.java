@@ -92,6 +92,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleOrderNotFoundException(OrderNotFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.NOT_FOUND.name());
+        error.put("message", "Order does not exist.");
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(EmptyCollectionExceptiton.class)
     public ResponseEntity<Map<String, String>> handleEmptyCollection(EmptyCollectionExceptiton ex) {
         Map<String, String> error = new HashMap<>();

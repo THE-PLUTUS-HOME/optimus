@@ -1,8 +1,7 @@
 package com.theplutushome.optimus.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.impl.DefaultHeader;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 @PropertySource("classpath:application.properties")
@@ -66,6 +67,32 @@ public class JwtUtil {
 
     public boolean tokenExpired(String token) {
         return getClaimFromToken(token, Claims::getExpiration).before(new Date());
+    }
+
+    public void verifyToken(String authHeader) {
+        if (authHeader.isBlank()) {
+            throw new JwtException("Missing authentication header");
+        }
+
+        String token = authHeader.substring(7);
+
+        try {
+            if (this.isTokenExpired(token)) {
+                Map<String, Object> headerValues = new HashMap<>();
+                headerValues.put("alg", "HS256"); // Algorithm
+                headerValues.put("typ", "JWT");  // Token type
+
+                Header header = new DefaultHeader(headerValues);
+                Claims claims = this.extractClaim(token); // Ensure this method properly extracts claims
+                throw new ExpiredJwtException(header, claims, "Token has expired");
+            }
+        } catch (MalformedJwtException ex) {
+            throw new JwtException("Invalid JWT structure: " + ex.getMessage());
+        } catch (SignatureException ex) {
+            throw new JwtException("Invalid JWT signature: " + ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            throw new JwtException("Invalid or empty JWT: " + ex.getMessage());
+        }
     }
 
 }

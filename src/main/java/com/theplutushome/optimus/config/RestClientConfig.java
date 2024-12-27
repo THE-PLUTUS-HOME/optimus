@@ -28,6 +28,13 @@ public class RestClientConfig {
                 .build();
     }
 
+    @Bean("hubtelPaymentUrlGenerationClient")
+    public RestClient hubtelPaymentUrlGenerationRestClient() {
+        return RestClient.builder()
+                .baseUrl("https://payproxyapi.hubtel.com")
+                .build();
+    }
+
     @Bean(name = "hubtelSMSClient")
     public RestClient hubtelSMSClient() {
         return RestClient.builder()

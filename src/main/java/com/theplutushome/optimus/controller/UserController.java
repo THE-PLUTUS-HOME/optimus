@@ -7,7 +7,6 @@ import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
 import com.theplutushome.optimus.entity.User;
-import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -23,21 +22,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = {
-        "http://localhost:5500",
-        "http://172.16.20.34:5500"
-})
 @RestController
 @RequestMapping("/optimus/v1/api/users")
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @Autowired
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userRepository = userRepository;
     }
 
     @Operation(summary = "Sign Up", description = "Create a new user account")

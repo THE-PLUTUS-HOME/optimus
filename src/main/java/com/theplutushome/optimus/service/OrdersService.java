@@ -1,7 +1,11 @@
 package com.theplutushome.optimus.service;
 
-import com.theplutushome.optimus.entity.Order;
+import com.theplutushome.optimus.advice.OrderNotFoundException;
+import com.theplutushome.optimus.dto.PaymentOrderDto;
+import com.theplutushome.optimus.entity.PaymentOrder;
+import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.repository.OrderRepository;
+import com.theplutushome.optimus.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,21 +15,42 @@ import java.util.List;
 public class OrdersService {
 
     private OrderRepository orderRepository;
+    private JwtUtil jwtUtil;
 
     @Autowired
-    public OrdersService(OrderRepository orderRepository) {
+    public OrdersService(OrderRepository orderRepository, JwtUtil jwtUtil) {
         this.orderRepository = orderRepository;
+        this.jwtUtil = jwtUtil;
     }
 
-    public List<Order> getAllOrders(int userId, String authHeader) {
+    public List<PaymentOrderDto> getAllOrders(String email, String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        List<PaymentOrderDto> allOrders = orderRepository.findAllByEmail(email);
+        if (!allOrders.isEmpty()) {
+            return allOrders;
+        }
         return null;
     }
 
-    public Order findOrder(int orderId, String authHeader) {
+    public PaymentOrder findOrder(int orderId, String authHeader) {
         return null;
     }
 
-    public void createOrder(Order order, String authHeader) {
-        return;
+    public void createOrder(PaymentOrder order, String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        order.setStatus(PaymentOrderStatus.PENDING);
+        orderRepository.save(order);
+    }
+
+    public void updateOrder(PaymentOrder order) {
+        orderRepository.save(order);
+    }
+
+    public PaymentOrder findOrderByClientReference(String reference) {
+        PaymentOrder order = orderRepository.findPaymentOrderByClientReference(reference);
+        if (order == null) {
+            throw new OrderNotFoundException();
+        }
+        return order;
     }
 }

@@ -2,18 +2,21 @@ package com.theplutushome.optimus.dto;
 
 public class UserData {
     private String username;
+    private String email;
     private double balance;
     private double accruedBalance;
     private int totalReferrals;
     private String referralCode;
 
-    public UserData() {}
-    public UserData(String username, double balance, int totalReferrals, String referralCode, double accruedBalance) {
-        this.username = username;
-        this.balance = balance;
-        this.totalReferrals = totalReferrals;
-        this.referralCode = referralCode;
-        this.accruedBalance = accruedBalance;
+    public UserData() {
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getUsername() {
