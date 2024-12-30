@@ -1,10 +1,14 @@
 package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
+import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.*;
+import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
+import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 public class CryptomusController {
 
     private final CryptomusRestClient client;
+    private final OrdersService ordersService;
 
-    public CryptomusController(CryptomusRestClient client) {
+    public CryptomusController(CryptomusRestClient client, OrdersService ordersService) {
         this.client = client;
+        this.ordersService = ordersService;
     }
 
     @GetMapping(value = "/exchange-rate/{currency}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -77,4 +83,15 @@ public class CryptomusController {
         return client.convertAsset(request);
     }
 
+    @PostMapping("/callback")
+    public ResponseEntity<?> getCallback(Webhook callback){
+        if(callback.isIs_final()){
+            PaymentOrder order = ordersService.findOrderByClientReference(callback.getOrder_id());
+            order.setStatus(PaymentOrderStatus.COMPLETED);
+            order.setTransactionId(callback.getTxid());
+            ordersService.updateOrder(order);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.noContent().build();
+    }
 }

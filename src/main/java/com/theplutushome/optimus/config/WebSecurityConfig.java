@@ -27,6 +27,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/optimus/v1/api/**",
+                                "/api/verify-captcha",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -38,7 +39,6 @@ public class WebSecurityConfig {
                                 "/webjars/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/verify-captcha").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new ApiKeyFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -51,7 +51,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5500", "http://172.16.20.34:5500", "https://theplutushome.com"));
+        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://localhost:5500", "http://172.16.20.34:5500", "https://theplutushome.com", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowCredentials(true); // Allow credentials
