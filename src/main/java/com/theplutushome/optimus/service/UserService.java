@@ -13,8 +13,6 @@ import com.theplutushome.optimus.entity.EntityModel;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;
-import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
-import com.theplutushome.optimus.exceptions.NoBalanceToRedeem;
 import com.theplutushome.optimus.repository.OtpRepository;
 import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
@@ -173,7 +171,7 @@ public class UserService {
     public List<User> getAllUsers() {
         var allUsers = userRepository.findAll();
         if (allUsers.isEmpty()) {
-            throw new EmptyCollectionExceptiton();
+            throw new RuntimeException("No users found");
         }
         allUsers.removeIf(EntityModel::isDeleted);
         return allUsers;
@@ -267,7 +265,7 @@ public class UserService {
             user.setAccruedBalance(0);
             userRepository.save(user);
         } else {
-            throw new NoBalanceToRedeem();
+            throw new RuntimeException("No balance to redeem");
         }
     }
 
