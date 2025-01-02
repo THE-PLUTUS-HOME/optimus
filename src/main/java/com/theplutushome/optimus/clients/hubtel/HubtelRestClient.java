@@ -9,11 +9,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @PropertySource("classpath:application.properties")
 @Component
@@ -22,7 +27,7 @@ public class HubtelRestClient implements HubtelHttpClient {
     private static final Logger log =  LoggerFactory.getLogger(HubtelRestClient.class);
     
     private final RestClient hubtelReceiveMoneyClient;
-    private final RestClient hubtelVerifyTransactionClient;
+    private final RestTemplate hubtelVerifyTransactionClient;
     private final RestClient hubtelSMSClient;
     private final RestClient hubtelPaymentUrlGenerationClient;
     private final String POS_Sales_ID;
@@ -36,7 +41,7 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     @Autowired
     public HubtelRestClient(@Qualifier("hubtelReceiveMoneyClient") RestClient hubtelReceiveMoneyClient,
-                            @Qualifier("hubtelVerifyTransactionClient") RestClient hubtelVerifyTransactionClient,
+                            @Qualifier("hubtelVerifyTransactionClient") RestTemplate hubtelVerifyTransactionClient,
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
                             @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {
@@ -68,20 +73,37 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     public TransactionStatusCheckResponse checkTransaction(@RequestParam(value = "clientReference", required = true) String clientReference) {
         try {
+            // Generate the authorization key
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
-            return hubtelVerifyTransactionClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/{POS_Sales_ID}/status")
-                            .queryParam("clientReference", clientReference)
-                            .build(POS_Sales_ID))
-                    .header("Authorization", bearer)
-                    .retrieve()
-                    .body(TransactionStatusCheckResponse.class);
+
+            // Prepare headers
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", bearer);
+
+            // Prepare the URI
+            String url = "https://api-txnstatus.hubtel.com/transactions/{POS_Sales_ID}/status?clientReference={clientReference}";
+
+            // Build the request entity
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            // Make the request
+            ResponseEntity<TransactionStatusCheckResponse> response = hubtelVerifyTransactionClient.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    TransactionStatusCheckResponse.class,
+                    POS_Sales_ID,
+                    clientReference
+            );
+
+            // Return the response body
+            return response.getBody();
         } catch (RestClientException e) {
-            // Handle error
+            // Handle the exception
             throw new RestClientException("Failed to verify transaction: " + e.getMessage());
         }
     }
+
 
     public SMSResponse sendSMS(@RequestParam(value = "to") String to, @RequestParam(value = "content") String content) {
 

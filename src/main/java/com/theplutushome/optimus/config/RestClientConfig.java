@@ -2,12 +2,28 @@ package com.theplutushome.optimus.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+
+@PropertySource("classpath:application.properties")
 @Configuration
 public class RestClientConfig {
 
+    private final String proxyHost;
+
+
+    public RestClientConfig(Environment env) {
+        this.proxyHost = env.getProperty("proxy_url");
+    }
     @Bean(name = "cryptomusClient")
+
     public RestClient cryptomusRestClient() {
         return RestClient.builder()
                 .baseUrl("https://api.cryptomus.com/")
@@ -21,12 +37,26 @@ public class RestClientConfig {
                 .build();
     }
 
+//    @Bean(name = "hubtelVerifyTransactionClient")
+//    public RestClient hubtelVerifyTransactionRestClient() {
+//        return RestClient.builder()
+//                .baseUrl("https://api-txnstatus.hubtel.com/transactions")
+//                .proxy("http://huqss2t0ojfpzl:cw2028k0gx5osc63ahkt6pozfepk87@us-east-static-01.quotaguard.com:9293")
+//                .build();
+//    }
+
     @Bean(name = "hubtelVerifyTransactionClient")
-    public RestClient hubtelVerifyTransactionRestClient() {
-        return RestClient.builder()
-                .baseUrl("https://api-txnstatus.hubtel.com/transactions")
-                .build();
+    public RestTemplate hubtelVerifyTransactionRestClient() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, 9293));
+        factory.setProxy(proxy);
+
+        RestTemplate restTemplate = new RestTemplate(factory);
+        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("https://api-txnstatus.hubtel.com/transactions"));
+        return restTemplate;
     }
+
 
     @Bean("hubtelPaymentUrlGenerationClient")
     public RestClient hubtelPaymentUrlGenerationRestClient() {

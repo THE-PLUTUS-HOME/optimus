@@ -9,13 +9,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class EmailService {
 
-    private static final String API_URL = "https://api.smtp2go.com/v3/email/send";
-    private static final String API_KEY = "api-000052B725F74C899C8E1E9593529ABA";
+    private final String API_KEY;
     private static final String SENDER_EMAIL = "info@theplutushome.com";
 
     private final WebClient webClient;
 
     public EmailService(WebClient.Builder webClientBuilder, Environment env) {
+        String API_URL = env.getProperty("smtp2go_api_url");
+        this.API_KEY = env.getProperty("smtp2go_api_key");
+        assert API_URL != null;
         this.webClient = webClientBuilder.baseUrl(API_URL).build();
     }
 

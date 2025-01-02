@@ -78,7 +78,7 @@ public class PaymentController {
         return ResponseEntity.badRequest().build();
     }
 
-    @GetMapping("/verify{reference}")
+    @GetMapping("/verify/{reference}")
     public TransactionStatusCheckResponse verifyPayment(@PathVariable("reference") String reference, @RequestHeader("Authorization") String authHeader) {
        return client.checkTransaction(reference);
     }
