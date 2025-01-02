@@ -156,7 +156,7 @@ public class UserService {
             User referralUser = userWithReferralCode(referralCode);
             if (referralUser != null) {
                 referralUser.getReferredUsers().add(user);
-                referralUser.setBalance(referralUser.getAccruedBalance() + 1.00); // Referral reward
+                referralUser.setAccruedBalance(referralUser.getAccruedBalance() + 1.00); // Referral reward
                 userRepository.save(referralUser); // Save changes to the referring user
             }
         }
