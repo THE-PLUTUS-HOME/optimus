@@ -52,6 +52,10 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
+        //Delete User if exits and inactive
+        Optional<User> inActiveUser = userRepository.findByEmailAndUserAccountStatus(userRequest.getEmail(), UserAccountStatus.INACTIVE);
+        inActiveUser.ifPresent(userRepository::delete);
+
         // Create the new user
         User user = new User(
                 0,
