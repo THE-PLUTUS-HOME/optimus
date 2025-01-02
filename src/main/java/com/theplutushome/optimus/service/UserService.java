@@ -152,9 +152,10 @@ public class UserService {
                 referralUser.setBalance(referralUser.getAccruedBalance() + 1.00); // Referral reward
                 userRepository.save(referralUser); // Save changes to the referring user
             }
-            userRepository.save(user);
-            emailService.sendEmail(user.getEmail(), "New Account Created", emailContent);
         }
+
+        userRepository.save(user);
+        emailService.sendEmail(user.getEmail(), "New Account Created", emailContent);
     }
 
     public void deleteUser(int id) {
