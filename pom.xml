@@ -113,11 +113,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.theplutushome</groupId>
-            <artifactId>optimus</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.11.0</version>
