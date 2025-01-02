@@ -67,6 +67,9 @@ public class UserService {
 
         String otpCode = Function.randomOTPCode();
         OTPRequest otpRequest = new OTPRequest(user.getEmail(), otpCode);
+        if(otpRepository.findByEmail(user.getEmail()).isPresent()){
+            otpRepository.delete(otpRepository.findByEmail(user.getEmail()).get());
+        }
         otpRepository.save(otpRequest);
 
         String emailContent = String.format("""

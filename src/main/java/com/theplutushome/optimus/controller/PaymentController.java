@@ -5,15 +5,11 @@ import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
-import com.theplutushome.optimus.entity.api.hubtel.HubtelCallBack;
-import com.theplutushome.optimus.entity.api.hubtel.PaymentLinkRequest;
-import com.theplutushome.optimus.entity.api.hubtel.PaymentLinkResponse;
-import com.theplutushome.optimus.entity.api.hubtel.SMSResponse;
+import com.theplutushome.optimus.entity.api.hubtel.*;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +76,11 @@ public class PaymentController {
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    @GetMapping("/verify{reference}")
+    public TransactionStatusCheckResponse verifyPayment(@PathVariable("reference") String reference, @RequestHeader("Authorization") String authHeader) {
+       return client.checkTransaction(reference);
     }
 
     private static @org.jetbrains.annotations.NotNull PayoutRequest getPayoutRequest(PaymentOrder order) {
