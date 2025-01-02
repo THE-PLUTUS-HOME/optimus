@@ -1,0 +1,11 @@
+build:
+  docker:
+    web: jumpforce/Dockerfile  # Path to your Dockerfile
+
+release:
+  image: web
+
+run:
+  web:
+    command:
+      - gunicorn --bind 0.0.0.0:$PORT webhook:app
