@@ -8,6 +8,8 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.routing.DefaultProxyRoutePlanner;
 import org.apache.hc.core5.http.HttpHost;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateCustomizer;
 import org.springframework.context.annotation.PropertySource;
@@ -21,6 +23,8 @@ import java.util.Objects;
 @PropertySource("classpath:application.properties")
 @Component
 public class ProxyAuthCustomizer implements RestTemplateCustomizer {
+    private static final Logger log = LoggerFactory.getLogger(ProxyAuthCustomizer.class);
+
     private final String PROXY_SERVER_HOST;
     private final int PROXY_SERVER_PORT;
     private final String PROXY_USERNAME;
@@ -36,6 +40,8 @@ public class ProxyAuthCustomizer implements RestTemplateCustomizer {
 
     @Override
     public void customize(RestTemplate restTemplate) {
+        log.info("Configuring RestTemplate to use proxy: {}:{} with user: {}", PROXY_SERVER_HOST, PROXY_SERVER_PORT, PROXY_USERNAME);
+
         // Define proxy
         HttpHost proxy = new HttpHost(PROXY_SERVER_HOST, PROXY_SERVER_PORT);
         AuthScope authScope = new AuthScope(PROXY_SERVER_HOST, PROXY_SERVER_PORT);

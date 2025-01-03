@@ -98,9 +98,9 @@ public class HubtelRestClient implements HubtelHttpClient {
 
             // Return the response body
             return response.getBody();
-        } catch (RestClientException e) {
+        } catch (RuntimeException e) {
             // Handle the exception
-            throw new RestClientException("Failed to verify transaction: " + e.getMessage());
+            throw new RuntimeException("Failed to verify transaction: " + e.getMessage());
         }
     }
 
