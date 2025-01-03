@@ -88,7 +88,7 @@ public class PaymentController {
         jwtUtil.verifyToken(authHeader);
         TransactionStatusCheckResponse response = client.checkTransaction(reference);
         if (Objects.equals(response.getResponseCode(), "0000") && response.getData().getStatus().equalsIgnoreCase("Paid")) {
-            PaymentOrder order = ordersService.findOrderByClientReference(reference);
+            PaymentOrder order = ordersService.findOrderByClientReference(response.getData().getTransactionId());
             order.setStatus(PaymentOrderStatus.PROCESSING);
             ordersService.updateOrder(order);
 
