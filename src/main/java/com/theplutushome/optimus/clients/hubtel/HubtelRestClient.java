@@ -81,7 +81,7 @@ public class HubtelRestClient implements HubtelHttpClient {
             headers.set("Authorization", bearer);
 
             // Prepare the URI
-            String url = "https://api-txnstatus.hubtel.com/transactions/{POS_Sales_ID}/status?clientReference={clientReference}";
+            String url = "https://api-txnstatus.hubtel.com/transactions/{POS_Sales_ID}/status?hubtelTransactionId={clientReference}";
 
             // Build the request entity
             HttpEntity<Void> entity = new HttpEntity<>(headers);
