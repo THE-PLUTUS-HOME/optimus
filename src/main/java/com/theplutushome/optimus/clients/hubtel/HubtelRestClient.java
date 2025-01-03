@@ -41,7 +41,7 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     @Autowired
     public HubtelRestClient(@Qualifier("hubtelReceiveMoneyClient") RestClient hubtelReceiveMoneyClient,
-                            @Qualifier("hubtelVerifyTransactionClient") RestTemplate restTemplate,
+                            RestTemplate restTemplate,
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
                             @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {

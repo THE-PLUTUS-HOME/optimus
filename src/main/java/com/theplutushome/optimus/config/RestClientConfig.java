@@ -36,7 +36,7 @@ public class RestClientConfig {
         return new RestTemplateBuilder();
     }
 
-    @Bean("hubtelVerifyTransactionClient")
+    @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
