@@ -40,6 +40,7 @@ public class ProxyAuthCustomizer implements RestTemplateCustomizer {
 
     @Override
     public void customize(RestTemplate restTemplate) {
+        System.out.println("Configuring RestTemplate to use proxy: " + PROXY_SERVER_HOST + ":" + PROXY_SERVER_PORT + " with user: " + PROXY_USERNAME);
         log.info("Configuring RestTemplate to use proxy: {}:{} with user: {}", PROXY_SERVER_HOST, PROXY_SERVER_PORT, PROXY_USERNAME);
 
         // Define proxy
