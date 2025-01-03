@@ -16,6 +16,7 @@ public class OTPRequest implements Serializable {
     private String email;
     private String otpCode;
     private boolean used;
+    @Column(columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private LocalDateTime createdAt;
 
     public OTPRequest() {

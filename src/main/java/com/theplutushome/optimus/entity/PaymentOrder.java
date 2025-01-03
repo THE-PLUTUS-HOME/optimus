@@ -36,7 +36,9 @@ public class PaymentOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private LocalDateTime createdAt;
+    @Column(columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private LocalDateTime updatedAt;
 
     // No-argument constructor
