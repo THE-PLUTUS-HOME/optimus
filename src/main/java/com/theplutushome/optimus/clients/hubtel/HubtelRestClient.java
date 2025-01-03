@@ -27,7 +27,7 @@ public class HubtelRestClient implements HubtelHttpClient {
     private static final Logger log =  LoggerFactory.getLogger(HubtelRestClient.class);
     
     private final RestClient hubtelReceiveMoneyClient;
-    private final RestTemplate hubtelVerifyTransactionClient;
+    private final RestTemplate restTemplate;
     private final RestClient hubtelSMSClient;
     private final RestClient hubtelPaymentUrlGenerationClient;
     private final String POS_Sales_ID;
@@ -41,12 +41,12 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     @Autowired
     public HubtelRestClient(@Qualifier("hubtelReceiveMoneyClient") RestClient hubtelReceiveMoneyClient,
-                            @Qualifier("hubtelVerifyTransactionClient") RestTemplate hubtelVerifyTransactionClient,
+                            @Qualifier("hubtelVerifyTransactionClient") RestTemplate restTemplate,
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
                             @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {
         this.hubtelReceiveMoneyClient = hubtelReceiveMoneyClient;
-        this.hubtelVerifyTransactionClient = hubtelVerifyTransactionClient;
+        this.restTemplate = restTemplate;
         this.hubtelSMSClient = hubtelSMSClient;
         this.hubtelPaymentUrlGenerationClient = hubtelPaymentUrlClient;
         this.POS_Sales_ID = env.getProperty("pos_sales_id");
@@ -87,7 +87,7 @@ public class HubtelRestClient implements HubtelHttpClient {
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
             // Make the request
-            ResponseEntity<TransactionStatusCheckResponse> response = hubtelVerifyTransactionClient.exchange(
+            ResponseEntity<TransactionStatusCheckResponse> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     entity,

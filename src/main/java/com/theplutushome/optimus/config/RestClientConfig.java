@@ -1,5 +1,6 @@
 package com.theplutushome.optimus.config;
 
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -45,16 +46,9 @@ public class RestClientConfig {
 //                .build();
 //    }
 
-    @Bean(name = "hubtelVerifyTransactionClient")
-    public RestTemplate hubtelVerifyTransactionRestClient() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, 9293));
-        factory.setProxy(proxy);
-
-        RestTemplate restTemplate = new RestTemplate(factory);
-        restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory("https://api-txnstatus.hubtel.com/transactions"));
-        return restTemplate;
+    @Bean("hubtelVerifyTransactionClient")
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
     }
 
 
