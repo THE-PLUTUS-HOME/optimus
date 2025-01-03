@@ -105,11 +105,11 @@ public class PaymentController {
         request.setAmount(String.valueOf(order.getCryptoAmount()));
         request.setNetwork(order.getCrypto().equalsIgnoreCase("USDT") ? "TRON" : order.getCrypto().toUpperCase());
         request.setCurrency(order.getCrypto().toUpperCase());
-        request.setPriority("1");
+        request.setPriority("recommended");
         request.setFrom_currency("USDT");
         request.setIs_subtract("1");
         request.setOrder_id(order.getClientReference());
-        request.setUrl_callback("");
+        request.setUrl_callback("https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/cryptomus/callback");
         return request;
     }
 }
