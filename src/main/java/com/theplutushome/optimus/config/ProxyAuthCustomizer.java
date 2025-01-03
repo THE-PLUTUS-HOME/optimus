@@ -27,10 +27,10 @@ public class ProxyAuthCustomizer implements RestTemplateCustomizer {
     private final String PROXY_PASSWORD;
 
     @Autowired
-    public ProxyAuthCustomizer(Environment env){
-        this.PROXY_SERVER_HOST = env.getProperty("proxy_server_host");
-        this.PROXY_USERNAME = env.getProperty("proxy_server_username");
-        this.PROXY_PASSWORD = env.getProperty("proxy_server_password");
+    public ProxyAuthCustomizer(Environment env) {
+        this.PROXY_SERVER_HOST = Objects.requireNonNull(env.getProperty("proxy_server_host"), "Proxy server host is required");
+        this.PROXY_USERNAME = Objects.requireNonNull(env.getProperty("proxy_server_username"), "Proxy username is required");
+        this.PROXY_PASSWORD = Objects.requireNonNull(env.getProperty("proxy_server_password"), "Proxy password is required");
         this.PROXY_SERVER_PORT = Integer.parseInt(Objects.requireNonNull(env.getProperty("proxy_server_port")));
     }
 
