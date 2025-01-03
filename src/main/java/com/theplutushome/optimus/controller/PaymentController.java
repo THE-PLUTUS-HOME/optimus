@@ -8,6 +8,7 @@ import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.service.OrdersService;
+import com.theplutushome.optimus.util.JwtUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/optimus/v1/api/payment")
@@ -28,9 +31,11 @@ public class PaymentController {
 
     private final CryptomusRestClient cryptomusRestClient;
 
-    @Autowired
-    public PaymentController(HubtelRestClient client, OrdersService ordersService, CryptomusRestClient cryptomusRestClient) {
+    private JwtUtil jwtUtil;
 
+    @Autowired
+    public PaymentController(HubtelRestClient client, OrdersService ordersService, JwtUtil jwtUtil, CryptomusRestClient cryptomusRestClient) {
+        this.jwtUtil = jwtUtil;
         this.client = client;
         this.ordersService = ordersService;
         this.cryptomusRestClient = cryptomusRestClient;
@@ -79,8 +84,19 @@ public class PaymentController {
     }
 
     @GetMapping("/verify/{reference}")
-    public TransactionStatusCheckResponse verifyPayment(@PathVariable("reference") String reference, @RequestHeader("Authorization") String authHeader) {
-       return client.checkTransaction(reference);
+    public ResponseEntity<?> verifyPayment(@PathVariable("reference") String reference, @RequestHeader("Authorization") String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        TransactionStatusCheckResponse response = client.checkTransaction(reference);
+        if (Objects.equals(response.getResponseCode(), "0000") && response.getData().getStatus().equalsIgnoreCase("Paid")) {
+            PaymentOrder order = ordersService.findOrderByClientReference(reference);
+            order.setStatus(PaymentOrderStatus.PROCESSING);
+            ordersService.updateOrder(order);
+
+            PayoutRequest request = getPayoutRequest(order);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+            return ResponseEntity.ok(payoutResponse);
+        }
+        return ResponseEntity.badRequest().build();
     }
 
     private static @org.jetbrains.annotations.NotNull PayoutRequest getPayoutRequest(PaymentOrder order) {
