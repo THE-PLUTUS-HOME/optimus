@@ -13,18 +13,11 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 
-@PropertySource("classpath:application.properties")
 @Configuration
 public class RestClientConfig {
 
-    private final String proxyHost;
 
-
-    public RestClientConfig(Environment env) {
-        this.proxyHost = env.getProperty("proxy_url");
-    }
     @Bean(name = "cryptomusClient")
-
     public RestClient cryptomusRestClient() {
         return RestClient.builder()
                 .baseUrl("https://api.cryptomus.com/")
@@ -38,19 +31,12 @@ public class RestClientConfig {
                 .build();
     }
 
-//    @Bean(name = "hubtelVerifyTransactionClient")
-//    public RestClient hubtelVerifyTransactionRestClient() {
-//        return RestClient.builder()
-//                .baseUrl("https://api-txnstatus.hubtel.com/transactions")
-//                .proxy("http://huqss2t0ojfpzl:cw2028k0gx5osc63ahkt6pozfepk87@us-east-static-01.quotaguard.com:9293")
-//                .build();
-//    }
+
 
     @Bean("hubtelVerifyTransactionClient")
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
     }
-
 
     @Bean("hubtelPaymentUrlGenerationClient")
     public RestClient hubtelPaymentUrlGenerationRestClient() {
