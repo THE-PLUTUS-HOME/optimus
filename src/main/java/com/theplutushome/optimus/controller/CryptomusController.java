@@ -7,6 +7,8 @@ import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/optimus/v1/api/cryptomus")
 public class CryptomusController {
 
+    private static final Logger log =  LoggerFactory.getLogger(CryptomusController.class);
     private final CryptomusRestClient client;
     private final OrdersService ordersService;
 
@@ -85,7 +88,7 @@ public class CryptomusController {
 
     @PostMapping("/callback")
     public ResponseEntity<?> getCallback(Webhook callback){
-        System.out.println(">>>>>>>>>>>>>>>> " + callback.toString());
+        log.info(">>>>>>>>>>>>>>>> " + callback.toString());
         if(callback.isIs_final()){
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getOrder_id());
             order.setStatus(PaymentOrderStatus.COMPLETED);
