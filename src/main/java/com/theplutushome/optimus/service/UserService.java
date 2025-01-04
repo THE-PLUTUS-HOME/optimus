@@ -69,12 +69,25 @@ public class UserService {
         );
         user.setAccruedBalance(0.0);
 
+        userRepository.save(user);
+
         String otpCode = Function.randomOTPCode();
         OTPRequest otpRequest = new OTPRequest(user.getEmail(), otpCode);
         if(otpRepository.findByEmail(user.getEmail()).isPresent()){
             otpRepository.delete(otpRepository.findByEmail(user.getEmail()).get());
         }
         otpRepository.save(otpRequest);
+
+        // Process referral logic
+        String referralCode = userRequest.getReferralCode();
+        if (referralCode != null && referralCodeValid(referralCode)) {
+            User referralUser = userWithReferralCode(referralCode);
+            if (referralUser != null) {
+                referralUser.getReferredUsers().add(user);
+                referralUser.setAccruedBalance(referralUser.getAccruedBalance() + 1.00); // Referral reward
+                userRepository.save(referralUser); // Save changes to the referring user
+            }
+        }
 
         String emailContent = String.format("""
                 <html>
@@ -149,19 +162,6 @@ public class UserService {
                 </html>
                 """, user.getUsername(), otpCode);
 
-
-        // Process referral logic
-        String referralCode = userRequest.getReferralCode();
-        if (referralCode != null && referralCodeValid(referralCode)) {
-            User referralUser = userWithReferralCode(referralCode);
-            if (referralUser != null) {
-                referralUser.getReferredUsers().add(user);
-                referralUser.setAccruedBalance(referralUser.getAccruedBalance() + 1.00); // Referral reward
-                userRepository.save(referralUser); // Save changes to the referring user
-            }
-        }
-
-        userRepository.save(user);
         emailService.sendEmail(user.getEmail(), "New Account Created", emailContent);
     }
 
