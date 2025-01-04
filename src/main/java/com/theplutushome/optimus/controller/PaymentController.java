@@ -92,7 +92,7 @@ public class PaymentController {
 
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
-            if(payoutResponse.getState() == 1){
+            if(payoutResponse.getState() == 0){
                 order.setStatus(PaymentOrderStatus.PROCESSING);
             } else {
                 order.setStatus(PaymentOrderStatus.FAILED);
