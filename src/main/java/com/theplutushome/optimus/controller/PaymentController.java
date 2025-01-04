@@ -70,7 +70,7 @@ public class PaymentController {
 
     @PostMapping("/callback")
     public ResponseEntity<PayoutResponse> paymentCallback(@RequestBody HubtelCallBack callBack) {
-        log.info("Payment callback received: {}", callBack);
+        log.info("Payment callback received: {}", callBack.toString());
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
             PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
 
