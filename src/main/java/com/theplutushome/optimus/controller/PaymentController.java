@@ -89,11 +89,15 @@ public class PaymentController {
         TransactionStatusCheckResponse response = client.checkTransaction(reference);
         if (Objects.equals(response.getResponseCode(), "0000") && response.getData().getStatus().equalsIgnoreCase("Paid")) {
             PaymentOrder order = ordersService.findOrderByClientReference(response.getData().getClientReference());
-            order.setStatus(PaymentOrderStatus.PROCESSING);
-            ordersService.updateOrder(order);
 
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+            if(payoutResponse.getState() == 1){
+                order.setStatus(PaymentOrderStatus.PROCESSING);
+            } else {
+                order.setStatus(PaymentOrderStatus.FAILED);
+            }
+            ordersService.updateOrder(order);
             return ResponseEntity.ok(payoutResponse);
         }
         return ResponseEntity.badRequest().build();
