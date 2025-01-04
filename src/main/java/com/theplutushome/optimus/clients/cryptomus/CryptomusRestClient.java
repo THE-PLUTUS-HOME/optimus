@@ -109,23 +109,11 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         }
     }
 
-    public PayoutResponse getPayout(@RequestBody @Valid PayoutRequest payoutRequest) {
-        try {
-            String sign = generateSign(payoutRequest, payoutKey);
-            return cryptomusClient.post()
-                    .uri("/v1/payout")
-                    .header("merchant", merchant_id)
-                    .header("sign", sign)
-                    .header("Content-Type", "application/json")
-                    .body(payoutRequest)
-                    .retrieve()
-                    .body(PayoutResponse.class);
-        } catch (RestClientException e) {
-            throw new RestClientException("Failed to make payout: " + e.getMessage());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+    @Override
+    public PayoutResponse getPayout(PayoutRequest payoutRequest) {
+        return null;
     }
+
 
     public PayoutResponse payOutInfoRequest(@RequestBody @Valid PayoutInfoRequest payoutInfoRequest) {
         try {
@@ -139,7 +127,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
                     .retrieve()
                     .body(PayoutResponse.class);
         } catch (RestClientException e) {
-            throw new RestClientException("Failed to get payout info: " + e.getMessage());
+            return new PayoutResponse(0, null);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error generating signature: " + e.getMessage());
         }
