@@ -73,12 +73,15 @@ public class PaymentController {
         log.info("Payment callback received: {}", callBack);
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
             PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
-            order.setStatus(PaymentOrderStatus.PROCESSING);
-            ordersService.updateOrder(order);
 
             PayoutRequest request = getPayoutRequest(order);
-            PayoutResponse response = cryptomusRestClient.getPayout(request);
-            return ResponseEntity.ok(response);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+            if(payoutResponse.getState() == 0){
+                order.setStatus(PaymentOrderStatus.PROCESSING);
+            } else {
+                order.setStatus(PaymentOrderStatus.FAILED);
+            }
+            ordersService.updateOrder(order);
         }
         return ResponseEntity.badRequest().build();
     }

@@ -35,6 +35,18 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (path.matches("/optimus/v1/api/cryptomus/callback")){
+            filterChain.doFilter(request, response);
+            System.out.println("Cryptomus Callback proceeded successfully."); // Debugging line
+            return;
+        }
+
+        if (path.matches("/optimus/v1/api/payment/callback")){
+            filterChain.doFilter(request, response);
+            System.out.println("Hubtel Callback proceeded successfully."); // Debugging line
+            return;
+        }
+
         if (EXPECTED_API_KEY.equals(apiKey)) {
             // Allow request to proceed
             filterChain.doFilter(request, response);
