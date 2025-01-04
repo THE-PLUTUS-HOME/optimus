@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/optimus/v1/api/cryptomus")
 public class CryptomusController {
 
-    private static final Logger log =  LoggerFactory.getLogger(CryptomusController.class);
+    private static final Logger log = LoggerFactory.getLogger(CryptomusController.class);
     private final CryptomusRestClient client;
     private final OrdersService ordersService;
 
@@ -87,15 +87,26 @@ public class CryptomusController {
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<?> getCallback(Webhook callback){
-        log.info(">>>>>>>>>>>>>>>> " + callback.toString());
-        if(callback.isIs_final()){
+    public ResponseEntity<?> getCallback(@RequestBody Webhook callback) {
+        log.info("Incoming Webhook: {}", callback.toString());
+
+        if (callback.isIs_final()) {
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getOrder_id());
+            if (order == null) {
+                return ResponseEntity.badRequest().body("Order not found");
+            }
+
             order.setStatus(PaymentOrderStatus.COMPLETED);
             order.setTransactionId(callback.getTxid());
             ordersService.updateOrder(order);
+
+            log.info("Order {} marked as completed", callback.getOrder_id());
             return ResponseEntity.ok().build();
         }
-        return ResponseEntity.noContent().build();
+
+        // Log for non-final statuses
+        log.info("Webhook received for non-final status: {}", callback);
+        return ResponseEntity.ok("Non-final status received");
     }
+
 }
