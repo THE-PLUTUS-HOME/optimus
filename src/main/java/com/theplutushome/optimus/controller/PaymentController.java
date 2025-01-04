@@ -69,22 +69,40 @@ public class PaymentController {
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<PayoutResponse> paymentCallback(@RequestBody HubtelCallBack callBack) {
+    public ResponseEntity<?> paymentCallback(@RequestBody HubtelCallBack callBack) {
         log.info("Payment callback received: {}", callBack.toString());
+
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
+            // Find the order by client reference
             PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
 
+            if (order == null) {
+                log.error("Order not found for client reference: {}", callBack.getData().getClientReference());
+                return ResponseEntity.badRequest().body("Order not found");
+            }
+
+            // Process the payout request
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
-            if(payoutResponse.getState() == 0){
+
+            // Update order status based on payout response
+            if (payoutResponse.getState() == 0) {
                 order.setStatus(PaymentOrderStatus.PROCESSING);
             } else {
                 order.setStatus(PaymentOrderStatus.FAILED);
             }
             ordersService.updateOrder(order);
+
+            // Return a success response
+            log.info("Payment processed successfully for order: {}", order.getClientReference());
+            return ResponseEntity.ok("Payment processed successfully");
         }
-        return ResponseEntity.badRequest().build();
+
+        // Return bad request for invalid callback status
+        log.error("Invalid callback status: {}", callBack.getStatus());
+        return ResponseEntity.badRequest().body("Invalid callback status");
     }
+
 
     @GetMapping("/verify/{reference}")
     public ResponseEntity<?> verifyPayment(@PathVariable("reference") String reference, @RequestHeader("Authorization") String authHeader) {
@@ -95,7 +113,7 @@ public class PaymentController {
 
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
-            if(payoutResponse.getState() == 0){
+            if (payoutResponse.getState() == 0) {
                 order.setStatus(PaymentOrderStatus.PROCESSING);
             } else {
                 order.setStatus(PaymentOrderStatus.FAILED);
