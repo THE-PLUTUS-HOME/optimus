@@ -85,6 +85,7 @@ public class CryptomusController {
 
     @PostMapping("/callback")
     public ResponseEntity<?> getCallback(Webhook callback){
+        System.out.println(">>>>>>>>>>>>>>>> " + callback.toString());
         if(callback.isIs_final()){
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getOrder_id());
             order.setStatus(PaymentOrderStatus.COMPLETED);
