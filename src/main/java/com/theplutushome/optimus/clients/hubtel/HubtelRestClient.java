@@ -107,12 +107,12 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     public SMSResponse sendSMS(@RequestParam(value = "to") String to, @RequestParam(value = "content") String content) {
         try {
-            return hubtelSMSClient.post() // Use POST instead of GET for sending SMS
+            return hubtelSMSClient.get() // Use POST instead of GET for sending SMS
                     .uri(uriBuilder -> uriBuilder
                             .path("/v1/messages/send") // Correct path
                             .queryParam("clientid", smsClientId)
                             .queryParam("clientsecret", smsClientSecret)
-                            .queryParam("from", "Plutus Home")
+                            .queryParam("from", "Plutus")
                             .queryParam("to", to)
                             .queryParam("content", content)
                             .build())
