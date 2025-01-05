@@ -18,6 +18,12 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @Configuration
 public class WebSecurityConfig {
 
+    private final ApiKeyFilter apiKeyFilter;
+
+    public WebSecurityConfig(ApiKeyFilter apiKeyFilter) {
+        this.apiKeyFilter = apiKeyFilter;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("Configuring Security Filter Chain...");
@@ -41,7 +47,7 @@ public class WebSecurityConfig {
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new ApiKeyFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS));
 
         System.out.println("Configuring Success ...");
