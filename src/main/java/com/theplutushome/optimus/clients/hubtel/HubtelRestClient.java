@@ -116,6 +116,7 @@ public class HubtelRestClient implements HubtelHttpClient {
                             .queryParam("to", to)
                             .queryParam("content", content)
                             .build())
+                    .header("Content-Type", "application/json") // Set content type as JSON
                     .retrieve()
                     .body(SMSResponse.class);
         } catch (RestClientException e) {
