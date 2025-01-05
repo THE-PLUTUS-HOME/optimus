@@ -89,7 +89,7 @@ public class RestClientConfig {
     @Bean(name = "hubtelSMSClient")
     public RestClient hubtelSMSClient() {
         return RestClient.builder()
-                .baseUrl("https://sms.hubtel.com/v1/messages")
+                .baseUrl("https://smsc.hubtel.com")
                 .build();
     }
 }
