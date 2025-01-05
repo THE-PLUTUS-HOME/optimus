@@ -32,6 +32,7 @@ public class PaymentOrder {
     private double rate;
     @NotNull
     private String address;
+    private String phoneNumber;
     private String transactionId;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -189,6 +190,14 @@ public class PaymentOrder {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     // toString method

@@ -2,6 +2,7 @@ package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
+import com.theplutushome.optimus.dto.SMSRequest;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
@@ -41,9 +42,9 @@ public class PaymentController {
         this.cryptomusRestClient = cryptomusRestClient;
     }
 
-    @GetMapping("/sendOtp")
-    public SMSResponse sendMessage(@RequestParam(value = "phone") String phoneNumber) {
-        return null;
+    @PostMapping("/sendMessage")
+    public SMSResponse sendMessage(@RequestBody SMSRequest request) {
+        return client.sendSMS(request.getPhone(), request.getMessage());
     }
 
     @GetMapping("/verifyOtp")
@@ -88,9 +89,24 @@ public class PaymentController {
             // Update order status based on payout response
             if (payoutResponse.getState() == 0) {
                 order.setStatus(PaymentOrderStatus.PROCESSING);
+
+                if (callBack.getData().getCustomerPhoneNumber() != null) {
+                    order.setPhoneNumber(callBack.getData().getCustomerPhoneNumber());
+
+                    String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
+                    String message = "Hi there " + customerName + ", your payment was successful and your order is processing.";
+
+                    SMSResponse smsResponse = client.sendSMS(callBack.getData().getCustomerPhoneNumber(), message);
+                    if (smsResponse.getStatus() == 0) {
+                        log.info("SMS received: {}", smsResponse);
+                    } else {
+                        log.error("SMS received: {}", smsResponse);
+                    }
+                }
             } else {
                 order.setStatus(PaymentOrderStatus.FAILED);
             }
+
             ordersService.updateOrder(order);
 
             // Return a success response
