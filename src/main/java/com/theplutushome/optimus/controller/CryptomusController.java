@@ -1,8 +1,10 @@
 package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
+import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.*;
+import com.theplutushome.optimus.entity.api.hubtel.SMSResponse;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
@@ -20,10 +22,12 @@ public class CryptomusController {
     private static final Logger log = LoggerFactory.getLogger(CryptomusController.class);
     private final CryptomusRestClient client;
     private final OrdersService ordersService;
+    private final HubtelRestClient hubtelRestClient;
 
-    public CryptomusController(CryptomusRestClient client, OrdersService ordersService) {
+    public CryptomusController(CryptomusRestClient client, OrdersService ordersService, HubtelRestClient hubtelRestClient) {
         this.client = client;
         this.ordersService = ordersService;
+        this.hubtelRestClient = hubtelRestClient;
     }
 
     @GetMapping(value = "/exchange-rate/{currency}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,6 +103,16 @@ public class CryptomusController {
             order.setStatus(PaymentOrderStatus.COMPLETED);
             order.setTransactionId(callback.getTxid());
             ordersService.updateOrder(order);
+
+            if (order.getPhoneNumber() != null) {
+                String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
+                String message = "Hello again " + customerName + ", your order has been finalized and it is successful. Login to the platform to see your Hash. [www.theplutushome.com]";
+
+                SMSResponse smsResponse = hubtelRestClient.sendSMS(order.getPhoneNumber(), message);
+                if (smsResponse.getStatus() == 0) {
+                    log.info("SMS received: {}", smsResponse);
+                }
+            }
 
             log.info("Order {} marked as completed", callback.getOrder_id());
             return ResponseEntity.ok().build();
