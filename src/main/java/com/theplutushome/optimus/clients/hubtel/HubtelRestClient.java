@@ -24,8 +24,8 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class HubtelRestClient implements HubtelHttpClient {
 
-    private static final Logger log =  LoggerFactory.getLogger(HubtelRestClient.class);
-    
+    private static final Logger log = LoggerFactory.getLogger(HubtelRestClient.class);
+
     private final RestClient hubtelReceiveMoneyClient;
     private final RestTemplate restTemplate;
     private final RestClient hubtelSMSClient;
@@ -106,23 +106,23 @@ public class HubtelRestClient implements HubtelHttpClient {
 
 
     public SMSResponse sendSMS(@RequestParam(value = "to") String to, @RequestParam(value = "content") String content) {
-
         try {
-            return hubtelSMSClient.get()
+            return hubtelSMSClient.post() // Use POST instead of GET for sending SMS
                     .uri(uriBuilder -> uriBuilder
-                            .path("/{POS_Sales_ID}/status")
+                            .path("/v1/messages/send") // Correct path
                             .queryParam("clientid", smsClientId)
                             .queryParam("clientsecret", smsClientSecret)
                             .queryParam("from", "Plutus Home")
                             .queryParam("to", to)
                             .queryParam("content", content)
-                            .build(POS_Sales_ID))
+                            .build())
                     .retrieve()
                     .body(SMSResponse.class);
         } catch (RestClientException e) {
             throw new RestClientException("Failed to send SMS: " + e.getMessage());
         }
     }
+
 
     public PaymentLinkResponse getPaymentUrl(@RequestBody PaymentLinkRequest paymentLinkRequest) {
         try {
