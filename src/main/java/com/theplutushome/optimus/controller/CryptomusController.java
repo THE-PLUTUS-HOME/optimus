@@ -106,7 +106,7 @@ public class CryptomusController {
 
             if (order.getPhoneNumber() != null) {
                 String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
-                String message = "Hello again " + customerName + ", your order has been finalized and it is successful. Login to the platform to see your Hash. [www.theplutushome.com]";
+                String message = "Hello " + customerName + ", your order has been finalized successfully. Please log in to the platform to view your hash. [www.theplutushome.com]";
 
                 SMSResponse smsResponse = hubtelRestClient.sendSMS(order.getPhoneNumber(), message);
                 if (smsResponse.getStatus() == 0) {

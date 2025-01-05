@@ -32,7 +32,7 @@ public class PaymentController {
 
     private final CryptomusRestClient cryptomusRestClient;
 
-    private JwtUtil jwtUtil;
+    private final  JwtUtil jwtUtil;
 
     @Autowired
     public PaymentController(HubtelRestClient client, OrdersService ordersService, JwtUtil jwtUtil, CryptomusRestClient cryptomusRestClient) {
@@ -94,7 +94,7 @@ public class PaymentController {
                     order.setPhoneNumber(callBack.getData().getCustomerPhoneNumber());
 
                     String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
-                    String message = "Hi there " + customerName + ", your payment was successful and your order is processing.";
+                    String message = "Hi " + customerName + ", your payment was successful and your order is now being processed. Thank you for your purchase!.";
 
                     SMSResponse smsResponse = client.sendSMS(callBack.getData().getCustomerPhoneNumber(), message);
                     if (smsResponse.getStatus() == 0) {
