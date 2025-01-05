@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class EmailService {
 
     private final String API_KEY;
-    private static final String SENDER_EMAIL = "info@theplutushome.com";
+    private static final String SENDER_EMAIL = "verify@theplutushome.com";
 
     private final WebClient webClient;
 
