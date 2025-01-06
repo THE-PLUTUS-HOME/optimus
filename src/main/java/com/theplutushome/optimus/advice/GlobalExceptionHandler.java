@@ -52,6 +52,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AmountNotFeasibleException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidJson(AmountNotFeasibleException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("status", "400 BAD_REQUEST");
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.name() ,ex.getMessage(), null);

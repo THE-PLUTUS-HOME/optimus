@@ -1,9 +1,12 @@
 package com.theplutushome.optimus.controller;
 
+import com.theplutushome.optimus.advice.AmountNotFeasibleException;
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.dto.SMSRequest;
 import com.theplutushome.optimus.entity.PaymentOrder;
+import com.theplutushome.optimus.entity.api.cryptomus.BalanceResponse;
+import com.theplutushome.optimus.entity.api.cryptomus.ExchangeRateResponse;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
@@ -56,7 +59,33 @@ public class PaymentController {
     @PostMapping("/generate")
     public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
         System.out.println("The payment request: " + request.toString());
+
+        BalanceResponse cryptoBalance = cryptomusRestClient.getBalance();
+        cryptoBalance.getResult().forEach(result -> {
+            BalanceResponse.Balance balance = result.getBalance();
+
+            // Filter merchant balances
+            balance.getMerchant().removeIf(m -> !"USDT".equalsIgnoreCase(m.getCurrency_code()));
+
+            // Filter user balances
+            balance.getUser().removeIf(u -> !"USDT".equalsIgnoreCase(u.getCurrency_code()));
+        });
+
+        double merchantBalance = Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
+        double purchaseAmount = convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
+
+
+        if(purchaseAmount > merchantBalance) {
+            throw new AmountNotFeasibleException();
+        }
+
         ordersService.createOrder(request, authHeader);
+        PaymentLinkRequest paymentLinkRequest = getPaymentLinkRequest(request);
+
+        return client.getPaymentUrl(paymentLinkRequest);
+    }
+
+    private static PaymentLinkRequest getPaymentLinkRequest(PaymentOrder request) {
         PaymentLinkRequest paymentLinkRequest = new PaymentLinkRequest();
         paymentLinkRequest.setCallbackUrl(request.getCallbackUrl());
         paymentLinkRequest.setClientReference(request.getClientReference());
@@ -65,8 +94,13 @@ public class PaymentController {
         paymentLinkRequest.setReturnUrl(request.getReturnUrl());
         paymentLinkRequest.setTotalAmount(request.getAmountGHS());
         paymentLinkRequest.setMerchantAccountNumber(request.getMerchantAccountNumber());
+        return paymentLinkRequest;
+    }
 
-        return client.getPaymentUrl(paymentLinkRequest);
+    private double convertCryptoAmountToUsd(String crypto, double cryptoAmount) {
+        ExchangeRateResponse response = cryptomusRestClient.getExchangeRate(crypto);
+        response.getResult().removeIf(r -> !r.getTo().equals("USD"));
+        return Double.parseDouble(response.getResult().get(0).getCourse()) * cryptoAmount;
     }
 
     @PostMapping("/callback")
