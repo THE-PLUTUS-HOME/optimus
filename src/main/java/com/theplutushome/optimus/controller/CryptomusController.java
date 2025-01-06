@@ -34,10 +34,21 @@ public class CryptomusController {
     public ExchangeRateResponse getAllUsers(@PathVariable("currency") String currency, @RequestParam(value = "to", required = false) String to) {
         ExchangeRateResponse response = client.getExchangeRate(currency);
         response.getResult().removeIf(r -> !r.getTo().equals(to));
+
+        ServiceList list = client.getServiceList();
+        list.getResult().removeIf(l -> !l.getCurrency().equals(currency));
+        list.getResult().removeIf(l -> !l.getNetwork().equals(currency.equalsIgnoreCase("USDT") ? "TRON" : currency));
+
+        if(!list.getResult().isEmpty()) {
+            double fee = Double.parseDouble(list.getResult().get(0).getCommission().getFee_amount());
+            double feeUSD = client.convertCryptoAmountToUsd(currency, fee);
+            response.getResult().get(0).setWithdrawalFee(feeUSD);
+
+        }
         return response;
     }
 
-    @PostMapping("/balance")
+//    @PostMapping("/balance")
     public BalanceResponse getBalance(@RequestParam(value = "currency_code", required = false) String currency) {
         BalanceResponse response = client.getBalance();
 
@@ -58,12 +69,12 @@ public class CryptomusController {
     }
 
 
-    @PostMapping(value = "/payout/info", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PostMapping(value = "/payout/info", produces = MediaType.APPLICATION_JSON_VALUE)
     public PayoutResponse getPayoutInfo(@RequestBody @Valid PayoutInfoRequest request) {
         return client.payOutInfoRequest(request);
     }
 
-    @PostMapping(value = "/payout/history", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PostMapping(value = "/payout/history", produces = MediaType.APPLICATION_JSON_VALUE)
     public PayoutHistoryResponse getPayoutHistory(@RequestBody PayoutHistoryRequest request) {
         return client.getPayoutHistory(request);
     }
@@ -85,7 +96,7 @@ public class CryptomusController {
         return client.getPayout(request);
     }
 
-    @PostMapping(value = "/convert")
+//    @PostMapping(value = "/convert")
     public ConvertResponse convert(@RequestBody @Valid ConvertRequest request) {
         return client.convertAsset(request);
     }

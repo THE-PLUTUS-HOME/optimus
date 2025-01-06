@@ -15,11 +15,20 @@ public class ExchangeRateResponse {
         private String from;
         private String to;
         private String course;
+        private double withdrawalFee;
 
         public ExchangeRate(String from, String to, String course) {
             this.from = from;
             this.to = to;
             this.course = course;
+        }
+
+        public double getWithdrawalFee() {
+            return withdrawalFee;
+        }
+
+        public void setWithdrawalFee(double withdrawalFee) {
+            this.withdrawalFee = withdrawalFee;
         }
 
         public String getFrom() {

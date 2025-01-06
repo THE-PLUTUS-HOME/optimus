@@ -163,5 +163,10 @@ public class CryptomusRestClient implements CryptomusHttpClient {
             throw new RuntimeException("Error generating signature: " + e.getMessage());
         }
     }
+    public double convertCryptoAmountToUsd(String crypto, double cryptoAmount) {
+        ExchangeRateResponse response = this.getExchangeRate(crypto);
+        response.getResult().removeIf(r -> !r.getTo().equals("USD"));
+        return Double.parseDouble(response.getResult().get(0).getCourse()) * cryptoAmount;
+    }
 
 }

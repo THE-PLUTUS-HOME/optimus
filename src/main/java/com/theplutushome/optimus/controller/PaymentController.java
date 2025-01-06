@@ -50,7 +50,7 @@ public class PaymentController {
         return client.sendSMS(request.getPhone(), request.getMessage());
     }
 
-    @GetMapping("/verifyOtp")
+//    @GetMapping("/verifyOtp")
     public ResponseEntity<Void> verifyOtp(@RequestParam(value = "code") String code, @RequestParam(value = "phone") String phoneNumber) {
         return null;
     }
@@ -72,7 +72,7 @@ public class PaymentController {
         });
 
         double merchantBalance = Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
-        double purchaseAmount = convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
+        double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
 
         if(purchaseAmount > merchantBalance) {
             throw new AmountNotFeasibleException();
@@ -96,11 +96,7 @@ public class PaymentController {
         return paymentLinkRequest;
     }
 
-    private double convertCryptoAmountToUsd(String crypto, double cryptoAmount) {
-        ExchangeRateResponse response = cryptomusRestClient.getExchangeRate(crypto);
-        response.getResult().removeIf(r -> !r.getTo().equals("USD"));
-        return Double.parseDouble(response.getResult().get(0).getCourse()) * cryptoAmount;
-    }
+
 
     @PostMapping("/callback")
     public ResponseEntity<?> paymentCallback(@RequestBody HubtelCallBack callBack) {
