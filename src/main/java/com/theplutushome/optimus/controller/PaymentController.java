@@ -77,8 +77,11 @@ public class PaymentController {
 
         if (purchaseAmount + withdrawalFee > merchantBalance) {
             // Send text message to admin
-            client.sendSMS("0599542518", "A client is trying to purchase an amount of " + purchaseAmount + " USD" + "but your balance is " + merchantBalance + " USD. Kindly top up to keep your service running. Thank you!");
-            client.sendSMS("0555075023", "A client is trying to purchase an amount of " + purchaseAmount + " USD" + "but your balance is " + merchantBalance + " USD. Kindly top up to keep your service running. Thank you!");
+            String message = "A client is trying to purchase an amount of " + purchaseAmount + " USD" + "but your balance is " + merchantBalance + " USD. Kindly top up to keep your service running. Thank you!";
+            SMSResponse smsResponse = client.sendSMS("233555075023", message);
+            SMSResponse smsResponse1 = client.sendSMS("233599542518", message);
+            log.info(smsResponse.toString());
+            log.info(smsResponse1.toString());
             throw new AmountNotFeasibleException();
         }
 
