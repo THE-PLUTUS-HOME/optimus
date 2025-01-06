@@ -23,12 +23,14 @@ public class OrdersController {
 
     @GetMapping("/list/{email}")
     public List<PaymentOrderDto> getOrders(@PathVariable(value = "email") String email, @RequestHeader("Authorization") String authHeader) {
-        return ordersService.getAllOrders(email, authHeader)
-                .stream()
-                .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt())) // Sort by createdAt in descending order
-                .collect(Collectors.toList());
+        List<PaymentOrderDto> orders = ordersService.getAllOrders(email, authHeader);
+        if (orders != null) {
+            return orders.stream()
+                    .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt())) // Sort by createdAt in descending order
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
-
 
 
     @GetMapping("/{orderId}")
