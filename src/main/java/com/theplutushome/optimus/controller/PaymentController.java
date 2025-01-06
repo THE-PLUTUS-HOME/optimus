@@ -77,7 +77,7 @@ public class PaymentController {
 
         if (purchaseAmount + withdrawalFee > merchantBalance) {
             // Send text message to admin
-            String message = "A client is trying to purchase an amount of " + purchaseAmount + " USD" + "but your balance is " + merchantBalance + " USD. Kindly top up to keep your service running. Thank you!";
+            String message = "Almighty King Plutus, A client is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD" + " but your balance is " + String.format("%.2f", merchantBalance) + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
             SMSResponse smsResponse = client.sendSMS("233555075023", message);
             SMSResponse smsResponse1 = client.sendSMS("233599542518", message);
             log.info(smsResponse.toString());
