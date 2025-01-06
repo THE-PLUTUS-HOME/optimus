@@ -35,7 +35,7 @@ public class PaymentController {
 
     private final CryptomusRestClient cryptomusRestClient;
 
-    private final  JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     @Autowired
     public PaymentController(HubtelRestClient client, OrdersService ordersService, JwtUtil jwtUtil, CryptomusRestClient cryptomusRestClient) {
@@ -50,7 +50,7 @@ public class PaymentController {
         return client.sendSMS(request.getPhone(), request.getMessage());
     }
 
-//    @GetMapping("/verifyOtp")
+    //    @GetMapping("/verifyOtp")
     public ResponseEntity<Void> verifyOtp(@RequestParam(value = "code") String code, @RequestParam(value = "phone") String phoneNumber) {
         return null;
     }
@@ -73,8 +73,12 @@ public class PaymentController {
 
         double merchantBalance = Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
+        double withdrawalFee = cryptomusRestClient.getWithdrawalFee(request.getCrypto());
 
-        if(purchaseAmount > merchantBalance) {
+        if (purchaseAmount + withdrawalFee > merchantBalance) {
+            // Send text message to admin
+            client.sendSMS("0599542518", "A client is trying to purchase an amount of " + purchaseAmount + " USD" + "but your balance is " + merchantBalance + " USD. Kindly top up to keep your service running. Thank you!");
+            client.sendSMS("0555075023", "A client is trying to purchase an amount of " + purchaseAmount + " USD" + "but your balance is " + merchantBalance + " USD. Kindly top up to keep your service running. Thank you!");
             throw new AmountNotFeasibleException();
         }
 
@@ -95,7 +99,6 @@ public class PaymentController {
         paymentLinkRequest.setMerchantAccountNumber(request.getMerchantAccountNumber());
         return paymentLinkRequest;
     }
-
 
 
     @PostMapping("/callback")

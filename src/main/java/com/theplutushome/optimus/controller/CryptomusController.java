@@ -34,17 +34,8 @@ public class CryptomusController {
     public ExchangeRateResponse getAllUsers(@PathVariable("currency") String currency, @RequestParam(value = "to", required = false) String to) {
         ExchangeRateResponse response = client.getExchangeRate(currency);
         response.getResult().removeIf(r -> !r.getTo().equals(to));
+        response.getResult().get(0).setWithdrawalFee(client.getWithdrawalFee(currency));
 
-        ServiceList list = client.getServiceList();
-        list.getResult().removeIf(l -> !l.getCurrency().equals(currency));
-        list.getResult().removeIf(l -> !l.getNetwork().equals(currency.equalsIgnoreCase("USDT") ? "TRON" : currency));
-
-        if(!list.getResult().isEmpty()) {
-            double fee = Double.parseDouble(list.getResult().get(0).getCommission().getFee_amount());
-            double feeUSD = client.convertCryptoAmountToUsd(currency, fee);
-            response.getResult().get(0).setWithdrawalFee(feeUSD);
-
-        }
         return response;
     }
 
