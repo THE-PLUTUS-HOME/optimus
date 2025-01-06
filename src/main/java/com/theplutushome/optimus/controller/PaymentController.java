@@ -74,7 +74,6 @@ public class PaymentController {
         double merchantBalance = Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
         double purchaseAmount = convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
 
-
         if(purchaseAmount > merchantBalance) {
             throw new AmountNotFeasibleException();
         }
