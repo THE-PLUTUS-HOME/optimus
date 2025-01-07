@@ -60,12 +60,19 @@ public class HubtelRestClient implements HubtelHttpClient {
     public PaymentResponse initiatePayment(@RequestBody @Valid PaymentRequest paymentRequest) {
         try {
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
-            return hubtelReceiveMoneyClient.post()
-                    .uri("/{POS_Sales_ID}/receive/mobilemoney", POS_Sales_ID)
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", bearer)
-                    .retrieve()
-                    .body(PaymentResponse.class);
+            String url = "https://rmp.hubtel.com/merchantaccount/merchants/{POS_Sales_ID}/receive/mobilemoney";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", bearer);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<PaymentResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    PaymentResponse.class,
+                    POS_Sales_ID);
+            return response.getBody();
         } catch (RestClientException e) {
             throw new RestClientException("Failed to initiate payment: " + e.getMessage());
         }
