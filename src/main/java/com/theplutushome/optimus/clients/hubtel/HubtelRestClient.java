@@ -73,8 +73,8 @@ public class HubtelRestClient implements HubtelHttpClient {
                     PaymentResponse.class,
                     POS_Sales_ID);
             return response.getBody();
-        } catch (RestClientException e) {
-            throw new RestClientException("Failed to initiate payment: " + e.getMessage());
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to verify transaction: " + e.getMessage());
         }
     }
 
