@@ -64,7 +64,7 @@ public class HubtelRestClient implements HubtelHttpClient {
 
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", bearer);
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
+            HttpEntity<PaymentRequest> entity = new HttpEntity<>(paymentRequest, headers);
 
             ResponseEntity<PaymentResponse> response = restTemplate.exchange(
                     url,
@@ -80,20 +80,13 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     public TransactionStatusCheckResponse checkTransaction(@RequestParam(value = "clientReference", required = true) String clientReference) {
         try {
-            // Generate the authorization key
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
-
-            // Prepare headers
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", bearer);
-
-            // Prepare the URI
             String url = "https://api-txnstatus.hubtel.com/transactions/{POS_Sales_ID}/status?hubtelTransactionId={clientReference}";
 
-            // Build the request entity
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", bearer);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-            // Make the request
             ResponseEntity<TransactionStatusCheckResponse> response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
@@ -102,11 +95,8 @@ public class HubtelRestClient implements HubtelHttpClient {
                     POS_Sales_ID,
                     clientReference
             );
-
-            // Return the response body
             return response.getBody();
         } catch (RuntimeException e) {
-            // Handle the exception
             throw new RuntimeException("Failed to verify transaction: " + e.getMessage());
         }
     }
