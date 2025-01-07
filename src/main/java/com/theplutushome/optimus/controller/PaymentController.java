@@ -77,7 +77,8 @@ public class PaymentController {
 
         if (purchaseAmount + withdrawalFee > merchantBalance) {
             // Send text message to admin
-            String message = "Almighty King Plutus, " + request.getEmail().substring(0, '@') +" is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD" + " but your balance is " + String.format("%.2f", merchantBalance) + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
+            String username = request.getEmail().substring(0, request.getEmail().indexOf('@')); // "kingmartin"
+            String message = "Almighty King Plutus, " + username + " is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD" + " but your balance is " + String.format("%.2f", merchantBalance) + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
             SMSResponse smsResponse = client.sendSMS("233555075023", message);
             SMSResponse smsResponse1 = client.sendSMS("233599542518", message);
             log.info(smsResponse.toString());
