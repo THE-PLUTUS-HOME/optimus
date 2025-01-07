@@ -12,7 +12,7 @@ public class PaymentRequest {
     @Size(min = 12, max = 12, message = "Format expected [233201112223]")
     private String CustomerMsisdn;
     @NotNull
-    private PaymentChannel Channel;
+    private String Channel;
     @NotNull
     private double Amount;
     @NotNull
@@ -46,11 +46,11 @@ public class PaymentRequest {
         CustomerMsisdn = customerMsisdn;
     }
 
-    public PaymentChannel getChannel() {
+    public String getChannel() {
         return Channel;
     }
 
-    public void setChannel(PaymentChannel channel) {
+    public void setChannel(String channel) {
         Channel = channel;
     }
 
