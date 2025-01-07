@@ -189,4 +189,12 @@ public class PaymentController {
         request.setUrl_callback("https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/cryptomus/callback");
         return request;
     }
+
+    @PostMapping("/direct-debit")
+    public ResponseEntity<?> directDebit(@RequestBody PaymentRequest request, @RequestHeader("Authorization") String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        PaymentResponse response = client.initiatePayment(request);
+        return ResponseEntity.ok(response);
+
+    }
 }
