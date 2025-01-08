@@ -26,8 +26,8 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         String apiKey = request.getHeader(API_KEY_HEADER);
         String path = request.getRequestURI();
         System.out.println("Incoming Headers:");
@@ -35,25 +35,31 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                 .forEach(header -> System.out.println(header + ": " + request.getHeader(header)));
 
         // Exclude Swagger UI and related resources
-        if (path.startsWith("/swagger-ui") ||
-                path.startsWith("/api-docs") ||
-                path.startsWith("/v3/api-docs") ||
-                path.startsWith("/swagger-resources") ||
-                path.startsWith("/webjars")) {
+        if (path.startsWith("/swagger-ui")
+                || path.startsWith("/api-docs")
+                || path.startsWith("/v3/api-docs")
+                || path.startsWith("/swagger-resources")
+                || path.startsWith("/webjars")) {
             filterChain.doFilter(request, response);
             System.out.println("Request proceeded successfully."); // Debugging line
             return;
         }
 
-        if (path.matches("/optimus/v1/api/cryptomus/callback")){
+        if (path.matches("/optimus/v1/api/cryptomus/callback")) {
             filterChain.doFilter(request, response);
             System.out.println("Cryptomus Callback proceeded successfully."); // Debugging line
             return;
         }
 
-        if (path.matches("/optimus/v1/api/payment/callback")){
+        if (path.matches("/optimus/v1/api/payment/callback")) {
             filterChain.doFilter(request, response);
             System.out.println("Hubtel Callback proceeded successfully."); // Debugging line
+            return;
+        }
+
+        if (path.matches("/optimus/v1/api/payment/sms/callback")) {
+            filterChain.doFilter(request, response);
+            System.out.println("USSD Callback proceeded successfully."); // Debugging line
             return;
         }
 
