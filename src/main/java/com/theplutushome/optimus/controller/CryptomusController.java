@@ -59,7 +59,6 @@ public class CryptomusController {
         return response;
     }
 
-
 //    @PostMapping(value = "/payout/info", produces = MediaType.APPLICATION_JSON_VALUE)
     public PayoutResponse getPayoutInfo(@RequestBody @Valid PayoutInfoRequest request) {
         return client.payOutInfoRequest(request);
@@ -103,7 +102,11 @@ public class CryptomusController {
             }
 
             order.setStatus(PaymentOrderStatus.COMPLETED);
-            order.setTransactionId(callback.getTxid());
+            if (callback.getTxid() != null) {
+                order.setTransactionId(callback.getTxid());
+            } else {
+                order.setTransactionId("Internal Transfer");
+            }
             ordersService.updateOrder(order);
 
             if (order.getPhoneNumber() != null) {
