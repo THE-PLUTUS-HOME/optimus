@@ -2,15 +2,17 @@ package com.theplutushome.optimus.dto.login;
 
 public class LoginResponse {
     private String status;
+    private String email;
     private String message;
     private String lastLoggedIn;
     private String token;
 
-    public LoginResponse(String status, String message, String lastLoggedIn, String token) {
+    public LoginResponse(String status, String message, String lastLoggedIn, String token, String email) {
         this.status = status;
         this.message = message;
         this.lastLoggedIn = lastLoggedIn;
         this.token = token;
+        this.email = email;
     }
 
     // Getters and Setters
@@ -44,5 +46,13 @@ public class LoginResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

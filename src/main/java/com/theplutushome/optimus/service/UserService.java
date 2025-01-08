@@ -18,6 +18,8 @@ import com.theplutushome.optimus.util.BCryptUtil;
 import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    private static final Logger log =  LoggerFactory.getLogger(UserService.class);
 
     @Autowired
     public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
@@ -113,7 +116,8 @@ public class UserService {
                 "success",
                 "Login successful",
                 user.getLastLoggedIn().toString(),
-                token);
+                token,
+                user.getEmail());
     }
 
     private boolean userExists(String username, String email) {

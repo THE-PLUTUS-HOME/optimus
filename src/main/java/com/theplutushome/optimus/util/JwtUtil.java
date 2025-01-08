@@ -24,14 +24,14 @@ public class JwtUtil {
     private final SecretKey SIGNING_KEY;
 
     @Autowired
-    public JwtUtil (Environment env){
+    public JwtUtil(Environment env) {
         SECRET = env.getProperty("jwt.secret.key");
         assert SECRET != null;
         SIGNING_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
     public String generateToken(String username) {
-        long EXPIRATION_TIME = 60_000 * 2;
+        long EXPIRATION_TIME = 60_000 * 10;
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -70,26 +70,27 @@ public class JwtUtil {
     }
 
     public void verifyToken(String authHeader) {
-        if (authHeader.isBlank()) {
+        if (authHeader.isBlank() || !authHeader.contains("Bearer")) {
             throw new JwtException("Missing authentication header");
         }
 
-        String token = authHeader.substring(7);
+        String[] values = authHeader.split(" ");
+        if (values.length < 2) {
+            throw new JwtException("Missing token in authentication header");
+        }
 
         try {
-            if (this.isTokenExpired(token)) {
+            if (this.isTokenExpired(values[1])) {
                 Map<String, Object> headerValues = new HashMap<>();
                 headerValues.put("alg", "HS256"); // Algorithm
                 headerValues.put("typ", "JWT");  // Token type
 
                 Header header = new DefaultHeader(headerValues);
-                Claims claims = this.extractClaim(token); // Ensure this method properly extracts claims
+                Claims claims = this.extractClaim(values[1]); // Ensure this method properly extracts claims
                 throw new ExpiredJwtException(header, claims, "Token has expired");
             }
         } catch (MalformedJwtException ex) {
             throw new JwtException("Invalid JWT structure: " + ex.getMessage());
-        } catch (SignatureException ex) {
-            throw new JwtException("Invalid JWT signature: " + ex.getMessage());
         } catch (IllegalArgumentException ex) {
             throw new JwtException("Invalid or empty JWT: " + ex.getMessage());
         }

@@ -25,7 +25,10 @@ public class OrdersService {
 
     public List<PaymentOrderDto> getAllOrders(String email, String authHeader) {
         jwtUtil.verifyToken(authHeader);
+        System.out.println("The email is " + email);
         List<PaymentOrderDto> allOrders = orderRepository.findAllByEmail(email);
+        System.out.println("The one is two days ago for me ");
+
         if (!allOrders.isEmpty()) {
             return allOrders;
         }

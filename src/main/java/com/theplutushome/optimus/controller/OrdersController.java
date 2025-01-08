@@ -22,6 +22,7 @@ public class OrdersController {
 
     @GetMapping("/list/{email}")
     public List<PaymentOrderDto> getOrders(@PathVariable(value = "email") String email, @RequestHeader("Authorization") String authHeader) {
+
         return ordersService.getAllOrders(email, authHeader);
     }
 
