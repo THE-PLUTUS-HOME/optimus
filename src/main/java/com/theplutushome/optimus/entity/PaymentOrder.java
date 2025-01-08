@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "ORDERS")
 public class PaymentOrder {
-    @NotNull
     private String description;
     private String callbackUrl;
     private String returnUrl;

@@ -33,6 +33,7 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/optimus/v1/api/**",
+                                "/optimus/payment/callback",
                                 "/api/verify-captcha",
                                 "/v2/api-docs",
                                 "/v3/api-docs",

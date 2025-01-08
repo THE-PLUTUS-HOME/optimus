@@ -5,7 +5,6 @@ import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.dto.SMSRequest;
 import com.theplutushome.optimus.entity.PaymentOrder;
-import com.theplutushome.optimus.entity.api.cryptomus.BalanceResponse;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
@@ -21,7 +20,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
+@PropertySource("classpath:application.properties")
 @RestController
 @RequestMapping("/optimus/v1/api/payment")
 public class PaymentController {
@@ -35,13 +37,16 @@ public class PaymentController {
     private final CryptomusRestClient cryptomusRestClient;
 
     private final JwtUtil jwtUtil;
+    
+    private final String merchantAccountNumber;
 
     @Autowired
-    public PaymentController(HubtelRestClient client, OrdersService ordersService, JwtUtil jwtUtil, CryptomusRestClient cryptomusRestClient) {
+    public PaymentController(HubtelRestClient client, OrdersService ordersService, JwtUtil jwtUtil, CryptomusRestClient cryptomusRestClient, Environment env) {
         this.jwtUtil = jwtUtil;
         this.client = client;
         this.ordersService = ordersService;
         this.cryptomusRestClient = cryptomusRestClient;
+        this.merchantAccountNumber = env.getProperty("pos_sales_id");
     }
 
     @PostMapping("/sendMessage")
@@ -58,19 +63,7 @@ public class PaymentController {
     @PostMapping("/generate")
     public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
         System.out.println("The payment request: " + request.toString());
-
-        BalanceResponse cryptoBalance = cryptomusRestClient.getBalance();
-        cryptoBalance.getResult().forEach(result -> {
-            BalanceResponse.Balance balance = result.getBalance();
-
-            // Filter merchant balances
-            balance.getMerchant().removeIf(m -> !"USDT".equalsIgnoreCase(m.getCurrency_code()));
-
-            // Filter user balances
-            balance.getUser().removeIf(u -> !"USDT".equalsIgnoreCase(u.getCurrency_code()));
-        });
-
-        double merchantBalance = Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
+        double merchantBalance = cryptomusRestClient.getMerchantBalance();
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
         double withdrawalFee = cryptomusRestClient.getWithdrawalFee(request.getCrypto());
 
@@ -85,6 +78,11 @@ public class PaymentController {
             throw new AmountNotFeasibleException();
         }
 
+        request.setDescription("Item Purchase");
+        request.setCallbackUrl("https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/payment/callback");
+        request.setReturnUrl("https://theplutushome.com/payment/success");
+        request.setMerchantAccountNumber(merchantAccountNumber);
+        request.setCancellationUrl("https://theplutushome.com/payment/failed");
         ordersService.createOrder(request, authHeader);
         PaymentLinkRequest paymentLinkRequest = getPaymentLinkRequest(request);
 

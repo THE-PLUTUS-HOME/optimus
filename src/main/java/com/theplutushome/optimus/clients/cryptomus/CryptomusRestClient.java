@@ -17,7 +17,6 @@ import java.util.Map;
 
 import static com.theplutushome.optimus.util.Function.generateSign;
 
-
 @PropertySource("classpath:application.properties")
 @Component
 public class CryptomusRestClient implements CryptomusHttpClient {
@@ -39,6 +38,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         this.userApiKey = env.getProperty("userApiKey");
     }
 
+    @Override
     public ServiceList getServiceList() {
         try {
             String sign = generateSign(null, payoutKey);
@@ -52,11 +52,12 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         } catch (RestClientException e) {
             // Handle error
             throw new RestClientException("Failed to get balances: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error generating signature: " + e.getMessage());
         }
     }
 
+    @Override
     public ExchangeRateResponse getExchangeRate(String currency) {
         try {
             return cryptomusClient.get()
@@ -69,6 +70,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         }
     }
 
+    @Override
     public BalanceResponse getBalance() {
         try {
             String sign = generateSign(Map.of(), paymentKey);
@@ -84,12 +86,12 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         } catch (RestClientException e) {
             // Handle error
             throw new RestClientException("Failed to get balances: " + e.getMessage());
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Error generating signature: " + e.getMessage());
         }
     }
 
-
+    @Override
     public PayoutHistoryResponse getPayoutHistory(@RequestBody @Valid PayoutHistoryRequest payoutHistoryRequest) {
         try {
             String sign = generateSign(payoutHistoryRequest, payoutKey);
@@ -109,6 +111,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         }
     }
 
+    @Override
     public PayoutResponse getPayout(@RequestBody @Valid PayoutRequest payoutRequest) {
         try {
             String sign = generateSign(payoutRequest, payoutKey);
@@ -127,6 +130,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         }
     }
 
+    @Override
     public PayoutResponse payOutInfoRequest(@RequestBody @Valid PayoutInfoRequest payoutInfoRequest) {
         try {
             String sign = generateSign(payoutInfoRequest, payoutKey);
@@ -180,5 +184,21 @@ public class CryptomusRestClient implements CryptomusHttpClient {
             return this.convertCryptoAmountToUsd(crypto, fee);
         }
         return 0;
+    }
+
+    public double getMerchantBalance() {
+        BalanceResponse cryptoBalance = this.getBalance();
+
+        cryptoBalance.getResult().forEach(result -> {
+            BalanceResponse.Balance balance = result.getBalance();
+
+            // Filter merchant balances
+            balance.getMerchant().removeIf(m -> !"USDT".equalsIgnoreCase(m.getCurrency_code()));
+
+            // Filter user balances
+            balance.getUser().removeIf(u -> !"USDT".equalsIgnoreCase(u.getCurrency_code()));
+        });
+        
+        return Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
     }
 }
