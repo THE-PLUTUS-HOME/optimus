@@ -197,4 +197,10 @@ public class PaymentController {
         return ResponseEntity.ok(response);
 
     }
+    
+    @PostMapping("/sms/callback")
+    public ResponseEntity<?> ussdPaymentResponse (@RequestBody USSDCallback callback) {
+        log.info(callback.toString());
+        return ResponseEntity.ok("DONE");
+    }
 }
