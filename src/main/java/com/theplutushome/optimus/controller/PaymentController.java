@@ -105,6 +105,13 @@ public class PaymentController {
     public ResponseEntity<?> paymentCallback(@RequestBody HubtelCallBack callBack) {
         log.info("Payment callback received: {}", callBack.toString());
         PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
+        if (callBack.toString().equalsIgnoreCase("Failed")) {
+            order.setStatus(PaymentOrderStatus.FAILED);
+            ordersService.updateOrder(order);
+            log.info("Invalid callback status: {}", callBack.toString());
+            return ResponseEntity.ok().body("Order Failed");
+        }
+
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
             // Find the order by client reference
 
@@ -145,10 +152,7 @@ public class PaymentController {
             return ResponseEntity.ok("Payment processed successfully");
         }
 
-        order.setStatus(PaymentOrderStatus.FAILED);
-        ordersService.updateOrder(order);
-        log.info("Invalid callback status: {}", callBack.toString());
-        return ResponseEntity.ok().body("Order Failed");
+        return ResponseEntity.ok().body("Order Processed");
     }
 
     @GetMapping("/verify/{reference}")
