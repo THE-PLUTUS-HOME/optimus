@@ -24,7 +24,7 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class HubtelRestClient implements HubtelHttpClient {
 
-    private static final Logger log =  LoggerFactory.getLogger(HubtelRestClient.class);
+    private static final Logger log = LoggerFactory.getLogger(HubtelRestClient.class);
 
     private final RestClient hubtelReceiveMoneyClient;
     private final RestTemplate restTemplate;
@@ -66,15 +66,22 @@ public class HubtelRestClient implements HubtelHttpClient {
             headers.set("Authorization", bearer);
             HttpEntity<PaymentRequest> entity = new HttpEntity<>(paymentRequest, headers);
 
+            log.info("Initiating payment with URL: {}", url);
+            log.info("Request Headers: {}", headers);
+            log.info("Request Body: {}", paymentRequest);
+
             ResponseEntity<PaymentResponse> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
                     PaymentResponse.class,
                     POS_Sales_ID);
+
+            log.info("Response: {}", response);
             return response.getBody();
         } catch (RuntimeException e) {
-            throw new RuntimeException("Failed to verify transaction: " + e.getMessage());
+            log.error("Failed to initiate transaction: {}", e.getMessage());
+            throw new RuntimeException("Failed to initiate transaction: " + e.getMessage());
         }
     }
 
