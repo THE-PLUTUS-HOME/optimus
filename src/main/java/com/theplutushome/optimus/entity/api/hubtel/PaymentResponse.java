@@ -101,5 +101,18 @@ public class PaymentResponse {
         public void setDeliveryFee(double deliveryFee) {
             DeliveryFee = deliveryFee;
         }
+
+        @Override
+        public String toString() {
+            return "Data{" + "TransactionId=" + TransactionId + ", Description=" + Description + ", ClientReference=" + ClientReference + ", Amount=" + Amount + ", Charges=" + Charges + ", AmountAfterCharges=" + AmountAfterCharges + ", AmountCharged=" + AmountCharged + ", DeliveryFee=" + DeliveryFee + '}';
+        }
+         
     }
+
+    @Override
+    public String toString() {
+        return "PaymentResponse{" + "Message=" + Message + ", ResponseCode=" + ResponseCode + ", Data=" + Data.toString() + '}';
+    }
+    
+    
 }

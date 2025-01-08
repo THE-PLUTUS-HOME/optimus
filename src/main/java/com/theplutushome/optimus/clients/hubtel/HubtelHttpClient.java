@@ -19,5 +19,4 @@ public interface HubtelHttpClient {
 
     @PostExchange("")
     public PaymentLinkResponse getPaymentUrl(@RequestBody PaymentLinkRequest paymentLinkRequest);
-
 }

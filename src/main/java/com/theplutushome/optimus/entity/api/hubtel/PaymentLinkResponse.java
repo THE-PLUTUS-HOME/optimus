@@ -1,15 +1,5 @@
 package com.theplutushome.optimus.entity.api.hubtel;
-//{
-//        "responseCode": "0000",
-//        "status": "Success",
-//        "data": {
-//        "checkoutUrl": "https://pay.hubtel.com/79e2aa6e9bb148e1aa33cfb53ee852c0",
-//        "checkoutId": "79e2aa6e9bb148e1aa33cfb53ee852c0",
-//        "clientReference": "inv001",
-//        "message": "",
-//        "checkoutDirectUrl": "https://pay.hubtel.com/79e2aa6e9bb148e1aa33cfb53ee852c0/direct"
-//        }
-//        }
+
 public class PaymentLinkResponse {
     private String responseCode;
     private String status;

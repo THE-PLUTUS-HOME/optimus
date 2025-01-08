@@ -1,6 +1,5 @@
 package com.theplutushome.optimus.entity.api.hubtel;
 
-import com.theplutushome.optimus.entity.api.hubtel.enums.PaymentChannel;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -85,4 +84,11 @@ public class PaymentRequest {
     public void setClientReference(String clientReference) {
         ClientReference = clientReference;
     }
+
+    @Override
+    public String toString() {
+        return "PaymentRequest{" + "CustomerName=" + CustomerName + ", CustomerEmail=" + CustomerEmail + ", CustomerMsisdn=" + CustomerMsisdn + ", Channel=" + Channel + ", Amount=" + Amount + ", PrimaryCallbackUrl=" + PrimaryCallbackUrl + ", Description=" + Description + ", ClientReference=" + ClientReference + '}';
+    }
+    
+    
 }

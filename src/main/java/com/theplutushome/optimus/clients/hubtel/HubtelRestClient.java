@@ -26,7 +26,6 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     private static final Logger log = LoggerFactory.getLogger(HubtelRestClient.class);
 
-    private final RestClient hubtelReceiveMoneyClient;
     private final RestTemplate restTemplate;
     private final RestClient hubtelSMSClient;
     private final RestClient hubtelPaymentUrlGenerationClient;
@@ -45,7 +44,6 @@ public class HubtelRestClient implements HubtelHttpClient {
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
                             @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {
-        this.hubtelReceiveMoneyClient = hubtelReceiveMoneyClient;
         this.restTemplate = restTemplate;
         this.hubtelSMSClient = hubtelSMSClient;
         this.hubtelPaymentUrlGenerationClient = hubtelPaymentUrlClient;
@@ -57,6 +55,7 @@ public class HubtelRestClient implements HubtelHttpClient {
         this.hubtelSecretKey = env.getProperty("hubtel_secrety_key");
     }
 
+    @Override
     public PaymentResponse initiatePayment(@RequestBody @Valid PaymentRequest paymentRequest) {
         try {
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
@@ -68,7 +67,7 @@ public class HubtelRestClient implements HubtelHttpClient {
 
             log.info("Initiating payment with URL: {}", url);
             log.info("Request Headers: {}", headers);
-            log.info("Request Body: {}", paymentRequest);
+            log.info("Request Body: {}", paymentRequest.toString());
 
             ResponseEntity<PaymentResponse> response = restTemplate.exchange(
                     url,
@@ -77,7 +76,7 @@ public class HubtelRestClient implements HubtelHttpClient {
                     PaymentResponse.class,
                     POS_Sales_ID);
 
-            log.info("Response: {}", response);
+            log.info("Response: {}", response.toString());
             return response.getBody();
         } catch (RuntimeException e) {
             log.error("Failed to initiate transaction: {}", e.getMessage());
@@ -85,6 +84,7 @@ public class HubtelRestClient implements HubtelHttpClient {
         }
     }
 
+    @Override
     public TransactionStatusCheckResponse checkTransaction(@RequestParam(value = "clientReference", required = true) String clientReference) {
         try {
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
@@ -109,6 +109,7 @@ public class HubtelRestClient implements HubtelHttpClient {
     }
 
 
+    @Override
     public SMSResponse sendSMS(@RequestParam(value = "to") String to, @RequestParam(value = "content") String content) {
 
         try {
@@ -128,6 +129,7 @@ public class HubtelRestClient implements HubtelHttpClient {
         }
     }
 
+    @Override
     public PaymentLinkResponse getPaymentUrl(@RequestBody PaymentLinkRequest paymentLinkRequest) {
         try {
             log.info("Initiating payment link generation with request: {}", paymentLinkRequest.toString());

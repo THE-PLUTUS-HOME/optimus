@@ -6,7 +6,6 @@ import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.dto.SMSRequest;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.BalanceResponse;
-import com.theplutushome.optimus.entity.api.cryptomus.ExchangeRateResponse;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
