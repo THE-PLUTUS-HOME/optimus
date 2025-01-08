@@ -1,12 +1,16 @@
 package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
+import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.*;
+import com.theplutushome.optimus.entity.api.hubtel.SMSResponse;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,22 +19,27 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/optimus/v1/api/cryptomus")
 public class CryptomusController {
 
+    private static final Logger log = LoggerFactory.getLogger(CryptomusController.class);
     private final CryptomusRestClient client;
     private final OrdersService ordersService;
+    private final HubtelRestClient hubtelRestClient;
 
-    public CryptomusController(CryptomusRestClient client, OrdersService ordersService) {
+    public CryptomusController(CryptomusRestClient client, OrdersService ordersService, HubtelRestClient hubtelRestClient) {
         this.client = client;
         this.ordersService = ordersService;
+        this.hubtelRestClient = hubtelRestClient;
     }
 
     @GetMapping(value = "/exchange-rate/{currency}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExchangeRateResponse getAllUsers(@PathVariable("currency") String currency, @RequestParam(value = "to", required = false) String to) {
         ExchangeRateResponse response = client.getExchangeRate(currency);
         response.getResult().removeIf(r -> !r.getTo().equals(to));
+        response.getResult().get(0).setWithdrawalFee(client.getWithdrawalFee(currency));
+
         return response;
     }
 
-    @PostMapping("/balance")
+//    @PostMapping("/balance")
     public BalanceResponse getBalance(@RequestParam(value = "currency_code", required = false) String currency) {
         BalanceResponse response = client.getBalance();
 
@@ -51,12 +60,12 @@ public class CryptomusController {
     }
 
 
-    @PostMapping(value = "/payout/info", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PostMapping(value = "/payout/info", produces = MediaType.APPLICATION_JSON_VALUE)
     public PayoutResponse getPayoutInfo(@RequestBody @Valid PayoutInfoRequest request) {
         return client.payOutInfoRequest(request);
     }
 
-    @PostMapping(value = "/payout/history", produces = MediaType.APPLICATION_JSON_VALUE)
+//    @PostMapping(value = "/payout/history", produces = MediaType.APPLICATION_JSON_VALUE)
     public PayoutHistoryResponse getPayoutHistory(@RequestBody PayoutHistoryRequest request) {
         return client.getPayoutHistory(request);
     }
@@ -78,20 +87,42 @@ public class CryptomusController {
         return client.getPayout(request);
     }
 
-    @PostMapping(value = "/convert")
+//    @PostMapping(value = "/convert")
     public ConvertResponse convert(@RequestBody @Valid ConvertRequest request) {
         return client.convertAsset(request);
     }
 
     @PostMapping("/callback")
-    public ResponseEntity<?> getCallback(Webhook callback){
-        if(callback.isIs_final()){
+    public ResponseEntity<?> getCallback(@RequestBody Webhook callback) {
+        log.info("Incoming Webhook: {}", callback.toString());
+
+        if (callback.isIs_final()) {
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getOrder_id());
+            if (order == null) {
+                return ResponseEntity.badRequest().body("Order not found");
+            }
+
             order.setStatus(PaymentOrderStatus.COMPLETED);
             order.setTransactionId(callback.getTxid());
             ordersService.updateOrder(order);
+
+            if (order.getPhoneNumber() != null) {
+                String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
+                String message = "Hello " + customerName + ", your order has been finalized successfully. Please log in to the platform to view your hash. [www.theplutushome.com]";
+
+                SMSResponse smsResponse = hubtelRestClient.sendSMS(order.getPhoneNumber(), message);
+                if (smsResponse.getStatus() == 0) {
+                    log.info("SMS received: {}", smsResponse);
+                }
+            }
+
+            log.info("Order {} marked as completed", callback.getOrder_id());
             return ResponseEntity.ok().build();
         }
-        return ResponseEntity.noContent().build();
+
+        // Log for non-final statuses
+        log.info("Webhook received for non-final status: {}", callback);
+        return ResponseEntity.ok("Non-final status received");
     }
+
 }

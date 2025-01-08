@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/optimus/v1/api/orders")
@@ -22,9 +23,15 @@ public class OrdersController {
 
     @GetMapping("/list/{email}")
     public List<PaymentOrderDto> getOrders(@PathVariable(value = "email") String email, @RequestHeader("Authorization") String authHeader) {
-
-        return ordersService.getAllOrders(email, authHeader);
+        List<PaymentOrderDto> orders = ordersService.getAllOrders(email, authHeader);
+        if (orders != null) {
+            return orders.stream()
+                    .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt())) // Sort by createdAt in descending order
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
+
 
     @GetMapping("/{orderId}")
     public ResponseEntity<PaymentOrder> getOrder(@RequestHeader("Authorization") String authHeader, @PathVariable int orderId) {

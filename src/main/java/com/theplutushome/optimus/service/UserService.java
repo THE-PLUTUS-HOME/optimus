@@ -2,6 +2,8 @@ package com.theplutushome.optimus.service;
 
 import com.theplutushome.optimus.advice.UserAlreadyExistsException;
 import com.theplutushome.optimus.advice.UserNotFoundException;
+import com.theplutushome.optimus.dto.OtpRequestDto;
+import com.theplutushome.optimus.entity.OTPRequest;
 import com.theplutushome.optimus.dto.UserData;
 import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.dto.login.LoginRequest;
@@ -11,18 +13,16 @@ import com.theplutushome.optimus.entity.EntityModel;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;
-import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
-import com.theplutushome.optimus.exceptions.NoBalanceToRedeem;
+import com.theplutushome.optimus.repository.OtpRepository;
 import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
 import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
-import jakarta.transaction.Transactional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,14 +32,17 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final OtpRepository otpRepository;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
-    private static final Logger log =  LoggerFactory.getLogger(UserService.class);
 
     @Autowired
-    public UserService(UserRepository userRepository, JwtUtil jwtUtil) {
+    public UserService(UserRepository userRepository, JwtUtil jwtUtil, EmailService emailService, OtpRepository otpRepository) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.emailService = emailService;
+        this.otpRepository = otpRepository;
     }
 
     @Transactional
@@ -49,6 +52,10 @@ public class UserService {
             throw new UserAlreadyExistsException();
         }
 
+        //Delete User if exits and inactive
+        Optional<User> inActiveUser = userRepository.findByEmailAndUserAccountStatus(userRequest.getEmail(), UserAccountStatus.INACTIVE);
+        inActiveUser.ifPresent(userRepository::delete);
+
         // Create the new user
         User user = new User(
                 0,
@@ -56,14 +63,20 @@ public class UserService {
                 userRequest.getEmail(),
                 userRequest.getUsername(),
                 UserType.USER,
-                UserAccountStatus.ACTIVE,
+                UserAccountStatus.INACTIVE,
                 Function.generateReferralCode(),
                 0.0 // Initial balance
         );
         user.setAccruedBalance(0.0);
 
-        // Save the new user
         userRepository.save(user);
+
+        String otpCode = Function.randomOTPCode();
+        OTPRequest otpRequest = new OTPRequest(user.getEmail(), otpCode);
+        if(otpRepository.findByEmail(user.getEmail()).isPresent()){
+            otpRepository.delete(otpRepository.findByEmail(user.getEmail()).get());
+        }
+        otpRepository.save(otpRequest);
 
         // Process referral logic
         String referralCode = userRequest.getReferralCode();
@@ -71,10 +84,85 @@ public class UserService {
             User referralUser = userWithReferralCode(referralCode);
             if (referralUser != null) {
                 referralUser.getReferredUsers().add(user);
-                referralUser.setBalance(referralUser.getBalance() + 1.00); // Referral reward
+                referralUser.setAccruedBalance(referralUser.getAccruedBalance() + 1.00); // Referral reward
                 userRepository.save(referralUser); // Save changes to the referring user
             }
         }
+
+        String emailContent = String.format("""
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            background-color: #f4f4f4;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .email-container {
+                            max-width: 600px;
+                            margin: 20px auto;
+                            background-color: #ffffff;
+                            border: 1px solid #dddddd;
+                            border-radius: 8px;
+                            overflow: hidden;
+                        }
+                        .header {
+                            background-color: #007BFF;
+                            color: #ffffff;
+                            text-align: center;
+                            padding: 20px;
+                            font-size: 24px;
+                        }
+                        .content {
+                            padding: 20px;
+                            line-height: 1.6;
+                            color: #333333;
+                        }
+                        .otp-code {
+                            display: block;
+                            margin: 20px auto;
+                            text-align: center;
+                            font-size: 32px;
+                            font-weight: bold;
+                            color: #007BFF;
+                            background-color: #f9f9f9;
+                            padding: 10px;
+                            border: 1px dashed #007BFF;
+                            width: fit-content;
+                            border-radius: 8px;
+                        }
+                        .footer {
+                            background-color: #f4f4f4;
+                            text-align: center;
+                            padding: 10px;
+                            font-size: 12px;
+                            color: #888888;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="email-container">
+                        <div class="header">
+                            Welcome to The Plutus Home!
+                        </div>
+                        <div class="content">
+                            <p>Hi %s,</p>
+                            <p>We are excited to have you on board! To complete your registration, please use the OTP code below:</p>
+                            <div class="otp-code">%s</div>
+                            <p>If you did not request this, please ignore this email or contact our support team for assistance.</p>
+                            <p>Thank you for choosing our service!</p>
+                        </div>
+                        <div class="footer">
+                            &copy; 2024 The Plutus Home. All rights reserved.<br>
+                            This is an automated email; please do not reply.
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """, user.getUsername(), otpCode);
+
+        emailService.sendEmail(user.getEmail(), "New Account Created", emailContent);
     }
 
     public void deleteUser(int id) {
@@ -91,16 +179,17 @@ public class UserService {
     public List<User> getAllUsers() {
         var allUsers = userRepository.findAll();
         if (allUsers.isEmpty()) {
-            throw new EmptyCollectionExceptiton();
+            throw new RuntimeException("No users found");
         }
         allUsers.removeIf(EntityModel::isDeleted);
         return allUsers;
     }
 
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsernameAndDeleted(loginRequest.getUsername(), false)
-                .orElseThrow(UserNotFoundException::new);
 
+        User user = userRepository.findByUsernameAndDeleted(loginRequest.getUsername(), false)
+                .orElseGet(() -> userRepository.findByEmailAndDeleted(loginRequest.getUsername(), false)
+                        .orElseThrow(UserNotFoundException::new));
         // Verify password
         if (!BCryptUtil.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
@@ -117,10 +206,13 @@ public class UserService {
                 "Login successful",
                 user.getLastLoggedIn().toString(),
                 token,
-                user.getEmail());
+                user.getEmail(),
+                user.getUsername()
+        );
     }
 
     private boolean userExists(String username, String email) {
+        //There could be two instance of users because one is incative
         return (userRepository.findByEmailAndDeleted(email, false).isPresent()
                 || userRepository.findByUsernameAndDeleted(username, false).isPresent());
     }
@@ -148,6 +240,7 @@ public class UserService {
         return userRepository.findByReferralCodeAndDeleted(referralCode, false).orElse(null);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public UserData getUserData(String username, String authHeader) {
         jwtUtil.verifyToken(authHeader);
 
@@ -180,7 +273,25 @@ public class UserService {
             user.setAccruedBalance(0);
             userRepository.save(user);
         } else {
-            throw new NoBalanceToRedeem();
+            throw new RuntimeException("No balance to redeem");
         }
+    }
+
+    @Transactional
+    public void verifyAccountCreationOTP(OtpRequestDto otpRequest) {
+        Optional<OTPRequest> otpInfo = otpRepository.findByEmail(otpRequest.email());
+        if (otpInfo.isPresent()) {
+            User user = userRepository.findByEmailAndDeleted(otpRequest.email(), false).orElse(null);
+            if (user != null) {
+                user.setUserAccountStatus(UserAccountStatus.ACTIVE);
+                userRepository.save(user);
+
+                otpInfo.get().setUsed(true);
+                otpRepository.save(otpInfo.get());
+            }
+        } else {
+            throw new RuntimeException("OTP Code Invalid");
+        }
+
     }
 }

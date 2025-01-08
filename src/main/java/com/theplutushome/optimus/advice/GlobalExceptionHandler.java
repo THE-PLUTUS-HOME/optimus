@@ -1,8 +1,6 @@
 package com.theplutushome.optimus.advice;
 
 import com.theplutushome.optimus.entity.model.ErrorResponse;
-import com.theplutushome.optimus.exceptions.EmptyCollectionExceptiton;
-import com.theplutushome.optimus.exceptions.NoBalanceToRedeem;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -54,6 +52,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(AmountNotFeasibleException.class)
+    public ResponseEntity<Map<String, String>> handleAmountNotFeasible(AmountNotFeasibleException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.BAD_REQUEST.name());
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.name() ,ex.getMessage(), null);
@@ -76,20 +82,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(NoBalanceToRedeem.class)
-    public ResponseEntity<Map<String, String>> handleNoBalanceToRedeem(NoBalanceToRedeem ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("status", HttpStatus.NOT_ACCEPTABLE.name());
-        error.put("message", ex.getMessage());
-        return new ResponseEntity<>(error, HttpStatus.NOT_ACCEPTABLE);
-    }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("status", HttpStatus.NOT_FOUND.name());
+        error.put("status", HttpStatus.BAD_REQUEST.name());
         error.put("message", "User does not exist.");
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
@@ -100,13 +99,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(EmptyCollectionExceptiton.class)
-    public ResponseEntity<Map<String, String>> handleEmptyCollection(EmptyCollectionExceptiton ex) {
-        Map<String, String> error = new HashMap<>();
-        error.put("status", HttpStatus.NO_CONTENT.name());
-        error.put("message", "This collection is empty.");
-        return new ResponseEntity<>(error, HttpStatus.NO_CONTENT);
-    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidLoginCredentials(BadCredentialsException ex) {

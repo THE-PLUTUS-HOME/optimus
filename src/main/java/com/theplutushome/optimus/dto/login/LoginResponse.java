@@ -2,20 +2,32 @@ package com.theplutushome.optimus.dto.login;
 
 public class LoginResponse {
     private String status;
-    private String email;
     private String message;
     private String lastLoggedIn;
     private String token;
+    private String email;
+    private String username;
 
-    public LoginResponse(String status, String message, String lastLoggedIn, String token, String email) {
+    public LoginResponse(String status, String message, String lastLoggedIn, String token, String email, String username) {
         this.status = status;
         this.message = message;
         this.lastLoggedIn = lastLoggedIn;
         this.token = token;
         this.email = email;
+        this.username = username;
     }
 
     // Getters and Setters
+
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public String getStatus() {
         return status;
     }

@@ -9,20 +9,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 @PropertySource("classpath:application.properties")
 @Component
 public class HubtelRestClient implements HubtelHttpClient {
 
     private static final Logger log =  LoggerFactory.getLogger(HubtelRestClient.class);
-    
+
     private final RestClient hubtelReceiveMoneyClient;
-    private final RestClient hubtelVerifyTransactionClient;
+    private final RestTemplate restTemplate;
     private final RestClient hubtelSMSClient;
     private final RestClient hubtelPaymentUrlGenerationClient;
     private final String POS_Sales_ID;
@@ -36,12 +41,12 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     @Autowired
     public HubtelRestClient(@Qualifier("hubtelReceiveMoneyClient") RestClient hubtelReceiveMoneyClient,
-                            @Qualifier("hubtelVerifyTransactionClient") RestClient hubtelVerifyTransactionClient,
+                            RestTemplate restTemplate,
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
                             @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {
         this.hubtelReceiveMoneyClient = hubtelReceiveMoneyClient;
-        this.hubtelVerifyTransactionClient = hubtelVerifyTransactionClient;
+        this.restTemplate = restTemplate;
         this.hubtelSMSClient = hubtelSMSClient;
         this.hubtelPaymentUrlGenerationClient = hubtelPaymentUrlClient;
         this.POS_Sales_ID = env.getProperty("pos_sales_id");
@@ -55,43 +60,57 @@ public class HubtelRestClient implements HubtelHttpClient {
     public PaymentResponse initiatePayment(@RequestBody @Valid PaymentRequest paymentRequest) {
         try {
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
-            return hubtelReceiveMoneyClient.post()
-                    .uri("/{POS_Sales_ID}/receive/mobilemoney", POS_Sales_ID)
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", bearer)
-                    .retrieve()
-                    .body(PaymentResponse.class);
-        } catch (RestClientException e) {
-            throw new RestClientException("Failed to initiate payment: " + e.getMessage());
+            String url = "https://rmp.hubtel.com/merchantaccount/merchants/{POS_Sales_ID}/receive/mobilemoney";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", bearer);
+            HttpEntity<PaymentRequest> entity = new HttpEntity<>(paymentRequest, headers);
+
+            ResponseEntity<PaymentResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    PaymentResponse.class,
+                    POS_Sales_ID);
+            return response.getBody();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to verify transaction: " + e.getMessage());
         }
     }
 
     public TransactionStatusCheckResponse checkTransaction(@RequestParam(value = "clientReference", required = true) String clientReference) {
         try {
             String bearer = Function.generateAuthorizationKey(clientId, clientSecret);
-            return hubtelVerifyTransactionClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/{POS_Sales_ID}/status")
-                            .queryParam("clientReference", clientReference)
-                            .build(POS_Sales_ID))
-                    .header("Authorization", bearer)
-                    .retrieve()
-                    .body(TransactionStatusCheckResponse.class);
-        } catch (RestClientException e) {
-            // Handle error
-            throw new RestClientException("Failed to verify transaction: " + e.getMessage());
+            String url = "https://api-txnstatus.hubtel.com/transactions/{POS_Sales_ID}/status?hubtelTransactionId={clientReference}";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", bearer);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<TransactionStatusCheckResponse> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    TransactionStatusCheckResponse.class,
+                    POS_Sales_ID,
+                    clientReference
+            );
+            return response.getBody();
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Failed to verify transaction: " + e.getMessage());
         }
     }
+
 
     public SMSResponse sendSMS(@RequestParam(value = "to") String to, @RequestParam(value = "content") String content) {
 
         try {
             return hubtelSMSClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path("/{POS_Sales_ID}/status")
-                            .queryParam("clientid", smsClientId)
+                            .path("/send")
                             .queryParam("clientsecret", smsClientSecret)
-                            .queryParam("from", "Plutus Home")
+                            .queryParam("clientid", smsClientId)
+                            .queryParam("from", "Plutus")
                             .queryParam("to", to)
                             .queryParam("content", content)
                             .build(POS_Sales_ID))

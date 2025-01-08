@@ -121,7 +121,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
                     .retrieve()
                     .body(PayoutResponse.class);
         } catch (RestClientException e) {
-            throw new RestClientException("Failed to make payout: " + e.getMessage());
+            return new PayoutResponse(1, null);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -164,4 +164,21 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         }
     }
 
+    public double convertCryptoAmountToUsd(String crypto, double cryptoAmount) {
+        ExchangeRateResponse response = this.getExchangeRate(crypto);
+        response.getResult().removeIf(r -> !r.getTo().equals("USD"));
+        return Double.parseDouble(response.getResult().get(0).getCourse()) * cryptoAmount;
+    }
+
+    public double getWithdrawalFee(String crypto) {
+        ServiceList list = this.getServiceList();
+        list.getResult().removeIf(l -> !l.getCurrency().equalsIgnoreCase(crypto));
+        list.getResult().removeIf(l -> !l.getNetwork().equalsIgnoreCase(crypto.equalsIgnoreCase("USDT") ? "TRON" : crypto));
+
+        if (!list.getResult().isEmpty()) {
+            double fee = Double.parseDouble(list.getResult().get(0).getCommission().getFee_amount());
+            return this.convertCryptoAmountToUsd(crypto, fee);
+        }
+        return 0;
+    }
 }

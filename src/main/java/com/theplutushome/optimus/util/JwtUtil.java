@@ -31,7 +31,7 @@ public class JwtUtil {
     }
 
     public String generateToken(String username) {
-        long EXPIRATION_TIME = 60_000 * 10;
+        long EXPIRATION_TIME = 60_000 * 20;
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -70,23 +70,26 @@ public class JwtUtil {
     }
 
     public void verifyToken(String authHeader) {
-        if (authHeader.isBlank() || !authHeader.contains("Bearer")) {
+        if (authHeader.isBlank()) {
             throw new JwtException("Missing authentication header");
         }
 
-        String[] values = authHeader.split(" ");
-        if (values.length < 2) {
-            throw new JwtException("Missing token in authentication header");
+        String[] parts = authHeader.split(" ");
+
+        if (parts.length < 2) {
+            throw new JwtException("Missing token in header");
         }
 
+        String token = parts[1];
+
         try {
-            if (this.isTokenExpired(values[1])) {
+            if (this.isTokenExpired(token)) {
                 Map<String, Object> headerValues = new HashMap<>();
                 headerValues.put("alg", "HS256"); // Algorithm
                 headerValues.put("typ", "JWT");  // Token type
 
                 Header header = new DefaultHeader(headerValues);
-                Claims claims = this.extractClaim(values[1]); // Ensure this method properly extracts claims
+                Claims claims = this.extractClaim(token); // Ensure this method properly extracts claims
                 throw new ExpiredJwtException(header, claims, "Token has expired");
             }
         } catch (MalformedJwtException ex) {

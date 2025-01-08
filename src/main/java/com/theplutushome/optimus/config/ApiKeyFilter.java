@@ -4,15 +4,25 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
 
+@Component
+@PropertySource("classpath:application.properties")
 public class ApiKeyFilter extends OncePerRequestFilter {
 
     private static final String API_KEY_HEADER = "X-API-KEY";
-    private static final String EXPECTED_API_KEY = "your-api-key"; // Replace with your API key
+    private final String EXPECTED_API_KEY; // Replace with your API key
+
+    // Inject the Environment and retrieve the API key
+    public ApiKeyFilter(Environment environment) {
+        this.EXPECTED_API_KEY = environment.getProperty("application.api.key");
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,6 +42,18 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                 path.startsWith("/webjars")) {
             filterChain.doFilter(request, response);
             System.out.println("Request proceeded successfully."); // Debugging line
+            return;
+        }
+
+        if (path.matches("/optimus/v1/api/cryptomus/callback")){
+            filterChain.doFilter(request, response);
+            System.out.println("Cryptomus Callback proceeded successfully."); // Debugging line
+            return;
+        }
+
+        if (path.matches("/optimus/v1/api/payment/callback")){
+            filterChain.doFilter(request, response);
+            System.out.println("Hubtel Callback proceeded successfully."); // Debugging line
             return;
         }
 

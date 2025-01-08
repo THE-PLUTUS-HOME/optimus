@@ -4,7 +4,7 @@ public class PaymentResponse {
 
     private String Message;
     private String ResponseCode;
-    private Data data;
+    private Data Data;
 
     public String getMessage() {
         return Message;
@@ -22,12 +22,10 @@ public class PaymentResponse {
         ResponseCode = responseCode;
     }
 
-    public Data getData() {
-        return data;
-    }
+    public Data getData() { return Data; }
 
     public void setData(Data data) {
-        this.data = data;
+        this.Data = data;
     }
 
     public static class Data {

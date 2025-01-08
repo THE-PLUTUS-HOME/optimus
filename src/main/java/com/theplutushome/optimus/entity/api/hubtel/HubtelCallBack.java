@@ -170,7 +170,28 @@ public class HubtelCallBack {
                 this.channel = channel;
             }
         }
+
+        @Override
+        public String toString() {
+            return "Data{" +
+                    "checkoutId='" + checkoutId + '\'' +
+                    ", salesInvoiceId='" + salesInvoiceId + '\'' +
+                    ", clientReference='" + clientReference + '\'' +
+                    ", status='" + status + '\'' +
+                    ", amount=" + amount +
+                    ", customerPhoneNumber='" + customerPhoneNumber + '\'' +
+                    ", paymentDetails=" + paymentDetails +
+                    ", description='" + description + '\'' +
+                    '}';
+        }
     }
 
-   
+    @Override
+    public String toString() {
+        return "HubtelCallBack{" +
+                "responseCode='" + responseCode + '\'' +
+                ", status='" + status + '\'' +
+                ", data=" + data.toString() +
+                '}';
+    }
 }

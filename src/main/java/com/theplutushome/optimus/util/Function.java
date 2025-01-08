@@ -104,4 +104,18 @@ public class Function {
         String credentials = clientId + ":" + clientSecret;
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
+
+    public static String randomOTPCode(){
+        var CHARACTERS = "0123456789";
+        var CODE_LENGTH = 6;
+
+        var random = new SecureRandom();
+        StringBuilder otpCode = new StringBuilder();
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            otpCode.append(CHARACTERS.charAt(index));
+        }
+        return otpCode.toString();
+    }
 }

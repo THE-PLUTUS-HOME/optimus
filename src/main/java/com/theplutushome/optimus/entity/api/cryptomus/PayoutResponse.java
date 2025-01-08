@@ -7,9 +7,24 @@ public class PayoutResponse {
     private int state;
     private Result result;
 
-
     public PayoutResponse(int state, Result result) {
         this.state = state;
+        this.result = result;
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    public Result getResult() {
+        return result;
+    }
+
+    public void setResult(Result result) {
         this.result = result;
     }
 
@@ -29,7 +44,7 @@ public class PayoutResponse {
         private Error errors;
         private String code;
 
-        public Result(String uuid, String amount, String currency, String network, String address, String txid, String status, boolean isFinal, int balance, String payerCurrency, String payerAmount, String message, String code, Error errors) {
+        public Result(String uuid, String amount, String currency, String network, String address, String txid, String status, boolean isFinal, double balance, String payerCurrency, String payerAmount, String message, String code, Error errors) {
             this.uuid = uuid;
             this.amount = amount;
             this.currency = currency;
@@ -102,20 +117,20 @@ public class PayoutResponse {
             this.status = status;
         }
 
+        public boolean isFinal() {
+            return isFinal;
+        }
+
+        public void setFinal(boolean aFinal) {
+            isFinal = aFinal;
+        }
+
         public double getBalance() {
             return balance;
         }
 
         public void setBalance(double balance) {
             this.balance = balance;
-        }
-
-        public boolean isFinal() {
-            return isFinal;
-        }
-
-        public void setIsFinal(boolean isFinal) {
-            this.isFinal = isFinal;
         }
 
         public String getPayerCurrency() {
@@ -160,7 +175,7 @@ public class PayoutResponse {
     }
 
     public static class Error {
-        private Map<String, List<String>> errors; // Adjusted to match the JSON structure
+        private Map<String, List<String>> errors;
 
         public Error(Map<String, List<String>> errors) {
             this.errors = errors;
@@ -175,19 +190,5 @@ public class PayoutResponse {
         }
     }
 
-    public int getState() {
-        return state;
-    }
-
-    public void setState(int state) {
-        this.state = state;
-    }
-
-    public Result getResult() {
-        return result;
-    }
-
-    public void setResult(Result result) {
-        this.result = result;
-    }
+    // Getters and setters...
 }

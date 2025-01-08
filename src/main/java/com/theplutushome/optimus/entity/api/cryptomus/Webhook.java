@@ -127,4 +127,24 @@ public class Webhook {
     public void setPayer_amount(String payer_amount) {
         this.payer_amount = payer_amount;
     }
+
+    @Override
+    public String toString() {
+        return "Webhook{" +
+                "type='" + type + '\'' +
+                ", uuid='" + uuid + '\'' +
+                ", order_id='" + order_id + '\'' +
+                ", amount='" + amount + '\'' +
+                ", merchant_amount='" + merchant_amount + '\'' +
+                ", commission='" + commission + '\'' +
+                ", is_final=" + is_final +
+                ", status='" + status + '\'' +
+                ", txid='" + txid + '\'' +
+                ", currency='" + currency + '\'' +
+                ", network='" + network + '\'' +
+                ", payer_currency='" + payer_currency + '\'' +
+                ", payer_amount='" + payer_amount + '\'' +
+                ", sign='" + sign + '\'' +
+                '}';
+    }
 }

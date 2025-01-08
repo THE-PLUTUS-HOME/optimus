@@ -1,11 +1,13 @@
 package com.theplutushome.optimus.controller;
 
+import com.theplutushome.optimus.dto.OtpRequestDto;
 import com.theplutushome.optimus.dto.RedeemRequest;
 import com.theplutushome.optimus.dto.UserData;
 import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
+import com.theplutushome.optimus.entity.OTPRequest;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -120,6 +122,15 @@ public class UserController {
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Redeemed successfully!"
+        ));
+    }
+
+    @PostMapping("/verifyOtp")
+    public ResponseEntity<?> verifyOtp(@Valid @RequestBody OtpRequestDto otpRequest) {
+        userService.verifyAccountCreationOTP(otpRequest);
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Verified successfully!"
         ));
     }
 }
