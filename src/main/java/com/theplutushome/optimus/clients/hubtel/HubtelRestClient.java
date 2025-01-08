@@ -27,6 +27,7 @@ public class HubtelRestClient implements HubtelHttpClient {
     private static final Logger log = LoggerFactory.getLogger(HubtelRestClient.class);
 
     private final RestTemplate restTemplate;
+    private final RestTemplate restTemplateInitiate;
     private final RestClient hubtelSMSClient;
     private final RestClient hubtelPaymentUrlGenerationClient;
     private final String POS_Sales_ID;
@@ -40,12 +41,13 @@ public class HubtelRestClient implements HubtelHttpClient {
 
     @Autowired
     public HubtelRestClient(@Qualifier("hubtelReceiveMoneyClient") RestClient hubtelReceiveMoneyClient,
-                            RestTemplate restTemplate,
+                            RestTemplate restTemplate, RestTemplate restTemplateInitiate,
                             @Qualifier("hubtelSMSClient") RestClient hubtelSMSClient,
                             @Qualifier("hubtelPaymentUrlGenerationClient") RestClient hubtelPaymentUrlClient,
                             Environment env) {
         this.restTemplate = restTemplate;
         this.hubtelSMSClient = hubtelSMSClient;
+        this.restTemplateInitiate = restTemplateInitiate;
         this.hubtelPaymentUrlGenerationClient = hubtelPaymentUrlClient;
         this.POS_Sales_ID = env.getProperty("pos_sales_id");
         this.clientId = env.getProperty("client_id");
@@ -69,7 +71,7 @@ public class HubtelRestClient implements HubtelHttpClient {
             log.info("Request Headers: {}", headers);
             log.info("Request Body: {}", paymentRequest.toString());
 
-            ResponseEntity<PaymentResponse> response = restTemplate.exchange(
+            ResponseEntity<PaymentResponse> response = restTemplateInitiate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
