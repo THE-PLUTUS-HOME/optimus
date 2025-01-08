@@ -198,6 +198,20 @@ public class PaymentController {
 
     }
     
+//     USSDCallback{
+//        responseCode=0000,
+//        message=success,
+//        data=Data{amount=5.0, 
+//            charges=0.1, 
+//            amountAfterCharges=5.0, 
+//            description=,
+//            clientReference=NHafa98374a50548369b773ca79b1f2281_233203212972_12221,
+//            transactionId=194478791E66569, externalTransactionId=0000008531731704,
+//            amountCharged=5.1, 
+//            orderId=0565b79b942e420bab0dd35954f39724, 
+//            paymentDate=2025-01-08T20:07:34.6254007+00:00
+//     }}
+    
     @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse (@RequestBody USSDCallback callback) {
         log.info(callback.toString());
