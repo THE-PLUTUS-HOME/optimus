@@ -37,7 +37,7 @@ public class PaymentController {
     private final CryptomusRestClient cryptomusRestClient;
 
     private final JwtUtil jwtUtil;
-    
+
     private final String merchantAccountNumber;
 
     @Autowired
@@ -101,14 +101,12 @@ public class PaymentController {
         return paymentLinkRequest;
     }
 
-
     @PostMapping("/callback")
     public ResponseEntity<?> paymentCallback(@RequestBody HubtelCallBack callBack) {
         log.info("Payment callback received: {}", callBack.toString());
-
+        PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
             // Find the order by client reference
-            PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
 
             if (order == null) {
                 log.error("Order not found for client reference: {}", callBack.getData().getClientReference());
@@ -147,11 +145,11 @@ public class PaymentController {
             return ResponseEntity.ok("Payment processed successfully");
         }
 
-        // Return bad request for invalid callback status
-        log.error("Invalid callback status: {}", callBack.getStatus());
-        return ResponseEntity.badRequest().body("Invalid callback status");
+        order.setStatus(PaymentOrderStatus.FAILED);
+        ordersService.updateOrder(order);
+        log.info("Invalid callback status: {}", callBack.toString());
+        return ResponseEntity.ok().body("Order Failed");
     }
-
 
     @GetMapping("/verify/{reference}")
     public ResponseEntity<?> verifyPayment(@PathVariable("reference") String reference, @RequestHeader("Authorization") String authHeader) {
@@ -173,7 +171,8 @@ public class PaymentController {
         return ResponseEntity.badRequest().build();
     }
 
-    private static @org.jetbrains.annotations.NotNull PayoutRequest getPayoutRequest(PaymentOrder order) {
+    private static @org.jetbrains.annotations.NotNull
+    PayoutRequest getPayoutRequest(PaymentOrder order) {
         PayoutRequest request = new PayoutRequest();
         request.setAddress(order.getAddress());
         request.setAmount(String.valueOf(order.getCryptoAmount()));
