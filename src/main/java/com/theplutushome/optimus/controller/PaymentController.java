@@ -15,7 +15,6 @@ import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.repository.OrderOtpRepository;
-import com.theplutushome.optimus.repository.OrderRepository;
 import com.theplutushome.optimus.service.OrdersService;
 import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
@@ -241,7 +240,7 @@ public class PaymentController {
     }
 
     @PostMapping("/initiate")
-    public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request, @RequestHeader String authHeader) {
+    public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         System.out.println("The payment request: " + request.toString());
         double merchantBalance = cryptomusRestClient.getMerchantBalance();
@@ -267,7 +266,7 @@ public class PaymentController {
     }
 
     @PostMapping("/sendCode")
-    public ResponseEntity<?> sendOtpCode(@RequestBody @Valid PaymentOtpRequest otpRequest, @RequestHeader String authHeader) {
+    public ResponseEntity<?> sendOtpCode(@RequestBody @Valid PaymentOtpRequest otpRequest, @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(otpRequest.getClientReference());
         order.setPhoneNumber(otpRequest.getPhoneNumber());
@@ -290,7 +289,7 @@ public class PaymentController {
     }
 
     @PostMapping("/verifyCode")
-    public ResponseEntity<?> verifyOtpCode(@RequestBody @Valid PaymentOtpVerify otpVerify, @RequestHeader String authHeader) {
+    public ResponseEntity<?> verifyOtpCode(@RequestBody @Valid PaymentOtpVerify otpVerify, @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReference(otpVerify.getClientReference()).orElse(null);
         if (orderOtp == null) {
@@ -306,7 +305,7 @@ public class PaymentController {
     }
 
     @PostMapping("/checkPayment/{reference}")
-    public ResponseEntity<?> checkPayment(@RequestHeader String authHeader, @PathVariable(name = "reference") String clientReference) {
+    public ResponseEntity<?> checkPayment(@RequestHeader("Authorization") String authHeader, @PathVariable(name = "reference") String clientReference) {
         PaymentOrder order = ordersService.findOrderByClientReference(clientReference);
         PaymentCheck payment = new PaymentCheck();
         if (order.getAmountPaid() < order.getAmountGHS()) {
