@@ -244,16 +244,16 @@ public class PaymentController {
     public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         System.out.println("The payment request: " + request.toString());
-        
+
         List<PaymentOrder> pendingOrders = ordersService.findPendingOrdersByEmail(request.getEmail());
-        if(!pendingOrders.isEmpty()){
-            for(PaymentOrder order : pendingOrders){
+        if (!pendingOrders.isEmpty()) {
+            for (PaymentOrder order : pendingOrders) {
                 order.setStatus(PaymentOrderStatus.ABANDONED);
                 order.setAmountPaid(0.0);
                 ordersService.updateOrder(order);
             }
         }
-        
+
         double merchantBalance = cryptomusRestClient.getMerchantBalance();
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
         double withdrawalFee = cryptomusRestClient.getWithdrawalFee(request.getCrypto());
@@ -285,12 +285,16 @@ public class PaymentController {
         String otpCode = Function.generateFourDigitCode();
         String otpPrefix = Function.generateOtpPrefix();
 
-        OrderOtp orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
+        OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReference(order.getClientReference()).orElse(null);
+        if (orderOtp == null) {
+            orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
+            orderOtpRepository.save(orderOtp);
+        }
 
         String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code to proceed with your transaction. This code will expire in 10 minutes. Thank you!", otpPrefix, otpCode);
         SMSResponse smsResponse = client.sendSMS(otpRequest.getPhoneNumber(), otpMessage);
         if (smsResponse.getStatus() == 0) {
-            orderOtpRepository.save(orderOtp);
+
         } else {
             log.info(smsResponse.toString());
             return ResponseEntity.badRequest().build();
@@ -331,9 +335,9 @@ public class PaymentController {
 
         return ResponseEntity.ok(payment);
     }
-    
+
     @PostMapping("/cancel/{reference}")
-    public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader, @PathVariable("reference") String reference){
+    public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader, @PathVariable("reference") String reference) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(reference);
         order.setStatus(PaymentOrderStatus.FAILED);

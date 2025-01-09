@@ -5,6 +5,7 @@
 package com.theplutushome.optimus.entity;
 
 import jakarta.persistence.Cacheable;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
@@ -19,6 +20,7 @@ public class OrderOtp extends EntityModel {
     
     private String suffix;
     private String code;
+    @Column(unique = true)
     private String clientReference;
     private boolean expired;
 
