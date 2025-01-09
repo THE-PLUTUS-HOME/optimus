@@ -249,6 +249,7 @@ public class PaymentController {
         if(!pendingOrders.isEmpty()){
             for(PaymentOrder order : pendingOrders){
                 order.setStatus(PaymentOrderStatus.ABANDONED);
+                order.setAmountPaid(0.0);
                 ordersService.updateOrder(order);
             }
         }
