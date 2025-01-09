@@ -237,7 +237,7 @@ public class PaymentController {
             if (order.getPaymentReference() == null) {
                 log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid, order.getAmountGHS()));
                 order.setPaymentReference(paymentReference);
-                order.setAmountPaid(order.getAmountGHS() + amountPaid);
+                order.setAmountPaid(amountPaid);
             }
 
             if (!order.getPaymentReference().equals(paymentReference)) {
