@@ -233,7 +233,7 @@ public class PaymentController {
             String customerPhone = parts[1];
 
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
-            order.setAmountPaid(order.getAmountPaid() + amountPaid);
+            order.setAmountPaid(order.getAmountGHS() + amountPaid);
             ordersService.updateOrder(order);
 
         }
