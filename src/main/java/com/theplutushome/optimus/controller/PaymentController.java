@@ -228,14 +228,23 @@ public class PaymentController {
         log.info(callback.toString());
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
             double amountPaid = callback.getData().getAmountAfterCharges();
-
+            String paymentReference = callback.getData().getOrderId();
             String[] parts = callback.getData().getClientReference().split("_");
             String customerPhone = parts[1];
 
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
-            order.setAmountPaid(order.getAmountGHS() + amountPaid);
-            ordersService.updateOrder(order);
 
+            if (order.getPaymentReference() == null) {
+                order.setPaymentReference(paymentReference);
+                order.setAmountPaid(order.getAmountGHS() + amountPaid);
+            }
+
+            if (!order.getPaymentReference().equals(paymentReference)) {
+                order.setAmountPaid(order.getAmountPaid() + amountPaid);
+                order.setPaymentReference(paymentReference);
+            }
+
+            ordersService.updateOrder(order);
         }
         return ResponseEntity.ok("DONE");
     }
@@ -283,7 +292,7 @@ public class PaymentController {
         order.setPhoneNumber(otpRequest.getPhoneNumber());
 
         OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReferenceAndExpired(order.getClientReference(), false).orElse(null);
-        if (orderOtp == null || orderOtp.isExpired()) {
+        if (orderOtp == null) {
             String otpCode = Function.generateFourDigitCode();
             String otpPrefix = Function.generateOtpPrefix();
             orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
@@ -330,7 +339,7 @@ public class PaymentController {
             payment.setMessage("Incomplete");
 
         } else {
-            payment.setAmountRemaining(0);
+            payment.setAmountRemaining(0.00);
             payment.setMessage("Complete");
         }
 

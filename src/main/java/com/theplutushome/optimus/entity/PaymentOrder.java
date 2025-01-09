@@ -34,11 +34,19 @@ public class PaymentOrder extends EntityModel{
     private String phoneNumber;
     private String transactionId;
     private Double amountPaid = 0.0;
+    
+    private String paymentReference;
 
     // No-argument constructor
     public PaymentOrder() { }
 
- 
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
+    }
 
     public double getCryptoAmount() {
         return cryptoAmount;

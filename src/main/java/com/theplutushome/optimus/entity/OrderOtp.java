@@ -20,7 +20,6 @@ public class OrderOtp extends EntityModel {
     
     private String suffix;
     private String code;
-    @Column(unique = true)
     private String clientReference;
     private boolean expired;
 
