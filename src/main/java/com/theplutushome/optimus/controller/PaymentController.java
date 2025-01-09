@@ -235,11 +235,13 @@ public class PaymentController {
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
 
             if (order.getPaymentReference() == null) {
+                log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid, order.getAmountGHS()));
                 order.setPaymentReference(paymentReference);
                 order.setAmountPaid(order.getAmountGHS() + amountPaid);
             }
 
             if (!order.getPaymentReference().equals(paymentReference)) {
+                log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid, order.getAmountGHS()));
                 order.setAmountPaid(order.getAmountPaid() + amountPaid);
                 order.setPaymentReference(paymentReference);
             }
