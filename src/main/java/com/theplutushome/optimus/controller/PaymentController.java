@@ -299,7 +299,7 @@ public class PaymentController {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok(otpPrefix);
+        return ResponseEntity.ok(orderOtp.getSuffix());
     }
 
     @PostMapping("/verifyCode")
