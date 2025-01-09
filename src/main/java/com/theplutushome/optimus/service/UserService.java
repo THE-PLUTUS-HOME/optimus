@@ -58,7 +58,6 @@ public class UserService {
 
         // Create the new user
         User user = new User(
-                0,
                 BCryptUtil.hashPassword(userRequest.getPassword()),
                 userRequest.getEmail(),
                 userRequest.getUsername(),

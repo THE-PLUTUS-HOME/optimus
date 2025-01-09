@@ -11,12 +11,13 @@ import java.util.Base64;
 import java.util.Map;
 
 public class Function {
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * Verify the webhook signature from Cryptomus.
      *
-     * @param receivedData  The full data received from the webhook as a map.
+     * @param receivedData The full data received from the webhook as a map.
      * @param apiPaymentKey Your API payment key.
      * @return True if the signature is valid, false otherwise.
      */
@@ -105,7 +106,7 @@ public class Function {
         return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
     }
 
-    public static String randomOTPCode(){
+    public static String randomOTPCode() {
         var CHARACTERS = "0123456789";
         var CODE_LENGTH = 6;
 
@@ -117,5 +118,35 @@ public class Function {
             otpCode.append(CHARACTERS.charAt(index));
         }
         return otpCode.toString();
+    }
+
+    public static String generateFourDigitCode() {
+        String CHARACTERS = "0123456789";
+        int CODE_LENGTH = 4;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder otpCode = new StringBuilder();
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            otpCode.append(CHARACTERS.charAt(index));
+        }
+
+        return otpCode.toString();
+    }
+
+    public static String generateOtpSuffix() {
+        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        int CODE_LENGTH = 4;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder suffix = new StringBuilder();
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int index = random.nextInt(CHARACTERS.length());
+            suffix.append(CHARACTERS.charAt(index));
+        }
+
+        return suffix.toString();
     }
 }

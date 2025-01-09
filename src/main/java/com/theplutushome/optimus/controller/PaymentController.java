@@ -1,15 +1,23 @@
 package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.advice.AmountNotFeasibleException;
+import com.theplutushome.optimus.advice.OtpCodeInvalidException;
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
+import com.theplutushome.optimus.dto.PaymentCheck;
+import com.theplutushome.optimus.dto.PaymentOtpRequest;
+import com.theplutushome.optimus.dto.PaymentOtpVerify;
 import com.theplutushome.optimus.dto.SMSRequest;
+import com.theplutushome.optimus.entity.OrderOtp;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
+import com.theplutushome.optimus.repository.OrderOtpRepository;
+import com.theplutushome.optimus.repository.OrderRepository;
 import com.theplutushome.optimus.service.OrdersService;
+import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -41,6 +49,9 @@ public class PaymentController {
     private final String merchantAccountNumber;
 
     @Autowired
+    private OrderOtpRepository orderOtpRepository;
+
+    @Autowired
     public PaymentController(HubtelRestClient client, OrdersService ordersService, JwtUtil jwtUtil, CryptomusRestClient cryptomusRestClient, Environment env) {
         this.jwtUtil = jwtUtil;
         this.client = client;
@@ -62,6 +73,7 @@ public class PaymentController {
     @Transactional
     @PostMapping("/generate")
     public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
+        jwtUtil.verifyToken(authHeader);
         System.out.println("The payment request: " + request.toString());
         double merchantBalance = cryptomusRestClient.getMerchantBalance();
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
@@ -83,7 +95,7 @@ public class PaymentController {
         request.setReturnUrl("https://theplutushome.com/payment/success");
         request.setMerchantAccountNumber(merchantAccountNumber);
         request.setCancellationUrl("https://theplutushome.com/payment/failed");
-        ordersService.createOrder(request, authHeader);
+        ordersService.createOrder(request);
         PaymentLinkRequest paymentLinkRequest = getPaymentLinkRequest(request);
 
         return client.getPaymentUrl(paymentLinkRequest);
@@ -197,7 +209,7 @@ public class PaymentController {
         return ResponseEntity.ok(response);
 
     }
-    
+
 //     USSDCallback{
 //        responseCode=0000,
 //        message=success,
@@ -211,10 +223,103 @@ public class PaymentController {
 //            orderId=0565b79b942e420bab0dd35954f39724, 
 //            paymentDate=2025-01-08T20:07:34.6254007+00:00
 //     }}
-    
     @PostMapping("/sms/callback")
-    public ResponseEntity<?> ussdPaymentResponse (@RequestBody USSDCallback callback) {
+    public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
+        if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
+            double amountPaid = callback.getData().getAmountAfterCharges();
+
+            String[] parts = callback.getData().getClientReference().split("_");
+            String customerPhone = parts[0];
+
+            PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
+            order.setAmountPaid(order.getAmountPaid() + amountPaid);
+            ordersService.updateOrder(order);
+
+        }
         return ResponseEntity.ok("DONE");
     }
+
+    @PostMapping("/initiate")
+    public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request, @RequestHeader String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        System.out.println("The payment request: " + request.toString());
+        double merchantBalance = cryptomusRestClient.getMerchantBalance();
+        double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
+        double withdrawalFee = cryptomusRestClient.getWithdrawalFee(request.getCrypto());
+
+        if (purchaseAmount + withdrawalFee > merchantBalance) {
+            // Send text message to admin
+            String username = request.getEmail().substring(0, request.getEmail().indexOf('@')); // "kingmartin"
+            String message = "Almighty King Plutus, " + username + " is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD" + " but your balance is " + String.format("%.2f", merchantBalance) + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
+            SMSResponse smsResponse = client.sendSMS("233555075023", message);
+            SMSResponse smsResponse1 = client.sendSMS("233599542518", message);
+            log.info(smsResponse.toString());
+            log.info(smsResponse1.toString());
+            throw new AmountNotFeasibleException();
+        }
+
+        request.setDescription("Item Purchase");
+        ordersService.createOrder(request);
+
+        return ResponseEntity.ok(request.getClientReference());
+
+    }
+
+    @PostMapping("/sendCode")
+    public ResponseEntity<?> sendOtpCode(@RequestBody @Valid PaymentOtpRequest otpRequest, @RequestHeader String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        PaymentOrder order = ordersService.findOrderByClientReference(otpRequest.getClientReference());
+        order.setPhoneNumber(otpRequest.getPhoneNumber());
+
+        String otpCode = Function.generateFourDigitCode();
+        String suffux = Function.generateOtpSuffix();
+
+        OrderOtp orderOtp = new OrderOtp(suffux, otpCode, order.getClientReference());
+
+        String otpMessage = "";
+        SMSResponse smsResponse = client.sendSMS(otpRequest.getPhoneNumber(), otpMessage);
+        if (smsResponse.getStatus() == 0) {
+            orderOtpRepository.save(orderOtp);
+        } else {
+            log.info(smsResponse.toString());
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/verifyCode")
+    public ResponseEntity<?> verifyOtpCode(@RequestBody @Valid PaymentOtpVerify otpVerify, @RequestHeader String authHeader) {
+        jwtUtil.verifyToken(authHeader);
+        OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReference(otpVerify.getClientReference()).orElse(null);
+        if (orderOtp == null) {
+            throw new RuntimeException("Order OTP Not Found");
+        }
+
+        if (!orderOtp.getCode().equals(otpVerify.getOtpCode())) {
+            throw new OtpCodeInvalidException();
+        }
+
+        return ResponseEntity.ok().build();
+
+    }
+
+    @PostMapping("/checkPayment/{reference}")
+    public ResponseEntity<?> checkPayment(@RequestHeader String authHeader, @PathVariable(name = "reference") String clientReference) {
+        PaymentOrder order = ordersService.findOrderByClientReference(clientReference);
+        PaymentCheck payment = new PaymentCheck();
+        if (order.getAmountPaid() < order.getAmountGHS()) {
+            double amountRemaining = order.getAmountGHS() - order.getAmountPaid();
+            payment.setAmountRemaining(amountRemaining);
+            payment.setMessage("Incomplete");
+
+        } else {
+            payment.setAmountRemaining(0);
+            payment.setMessage("Complete");
+        }
+
+        return ResponseEntity.ok(payment);
+    }
+
 }

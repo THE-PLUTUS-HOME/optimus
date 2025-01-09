@@ -4,11 +4,10 @@ import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ORDERS")
-public class PaymentOrder {
+public class PaymentOrder extends EntityModel{
     private String description;
     private String callbackUrl;
     private String returnUrl;
@@ -33,34 +32,12 @@ public class PaymentOrder {
     private String address;
     private String phoneNumber;
     private String transactionId;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
-    private LocalDateTime createdAt;
-    @Column(columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
-    private LocalDateTime updatedAt;
+    private double amountPaid;
 
     // No-argument constructor
     public PaymentOrder() { }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    @PrePersist
-    public void setCreatedAt() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    @PreUpdate
-    public void setUpdatedAt() {
-        this.updatedAt = LocalDateTime.now();
-    }
+ 
 
     public double getCryptoAmount() {
         return cryptoAmount;
@@ -183,14 +160,6 @@ public class PaymentOrder {
         this.transactionId = transactionId;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -198,6 +167,16 @@ public class PaymentOrder {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public double getAmountPaid() {
+        return amountPaid;
+    }
+
+    public void setAmountPaid(double amountPaid) {
+        this.amountPaid = amountPaid;
+    }
+    
+    
 
     // toString method
     @Override

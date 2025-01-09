@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
                 .body(errorResponse);
     }
 
-
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleInvalidJson(HttpMessageNotReadableException ex) {
         Map<String, String> error = new HashMap<>();
@@ -60,9 +59,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(OtpCodeInvalidException.class)
+    public ResponseEntity<Map<String, String>> optCodeInvalid(OtpCodeInvalidException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("status", HttpStatus.BAD_REQUEST.name());
+        error.put("message", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.name() ,ex.getMessage(), null);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.name(), ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
@@ -82,7 +89,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleUserNotFoundException(UserNotFoundException ex) {
         Map<String, String> error = new HashMap<>();
@@ -98,7 +104,6 @@ public class GlobalExceptionHandler {
         error.put("message", "Order does not exist.");
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
-
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, String>> handleInvalidLoginCredentials(BadCredentialsException ex) {
@@ -163,4 +168,3 @@ public class GlobalExceptionHandler {
     }
 
 }
-

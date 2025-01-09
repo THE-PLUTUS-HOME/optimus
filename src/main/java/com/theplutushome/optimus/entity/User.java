@@ -15,10 +15,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class User extends EntityModel {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
     @Column(nullable = false)
     private String password;
     private String email;
@@ -39,8 +35,7 @@ public class User extends EntityModel {
     public User() {
     }
 
-    public User(int id, String password, String email, String username, UserType userType, UserAccountStatus userAccountStatus, String referralCode, double balance) {
-        this.id = id;
+    public User(String password, String email, String username, UserType userType, UserAccountStatus userAccountStatus, String referralCode, double balance) {
         this.password = password;
         this.email = email;
         this.username = username;
@@ -48,14 +43,6 @@ public class User extends EntityModel {
         this.userAccountStatus = userAccountStatus;
         this.referralCode = referralCode;
         this.balance = balance;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getPassword() {

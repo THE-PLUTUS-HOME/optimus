@@ -11,6 +11,8 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends CrudRepository<PaymentOrder, String> {
     PaymentOrder findPaymentOrderByClientReference(String clientReference);
+    
+    PaymentOrder findPaymentOrderByPhoneNumber(String phoneNumber);
 
     List<PaymentOrderDto> findAllByEmail(@NotNull String email);
 }

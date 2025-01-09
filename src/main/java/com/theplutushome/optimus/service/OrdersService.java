@@ -36,9 +36,9 @@ public class OrdersService {
         return null;
     }
 
-    public void createOrder(PaymentOrder order, String authHeader) {
-        jwtUtil.verifyToken(authHeader);
+    public void createOrder(PaymentOrder order) {
         order.setStatus(PaymentOrderStatus.PENDING);
+        order.setAmountPaid(0);
         orderRepository.save(order);
     }
 
@@ -48,6 +48,14 @@ public class OrdersService {
 
     public PaymentOrder findOrderByClientReference(String reference) {
         PaymentOrder order = orderRepository.findPaymentOrderByClientReference(reference);
+        if (order == null) {
+            throw new OrderNotFoundException();
+        }
+        return order;
+    }
+    
+     public PaymentOrder findOrderByPhoneNumber(String phoneNumber) {
+        PaymentOrder order = orderRepository.findPaymentOrderByPhoneNumber(phoneNumber);
         if (order == null) {
             throw new OrderNotFoundException();
         }
