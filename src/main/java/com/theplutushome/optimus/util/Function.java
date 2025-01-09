@@ -135,18 +135,18 @@ public class Function {
         return otpCode.toString();
     }
 
-    public static String generateOtpSuffix() {
+    public static String generateOtpPrefix() {
         String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         int CODE_LENGTH = 4;
 
         SecureRandom random = new SecureRandom();
-        StringBuilder suffix = new StringBuilder();
+        StringBuilder prefix = new StringBuilder();
 
         for (int i = 0; i < CODE_LENGTH; i++) {
             int index = random.nextInt(CHARACTERS.length());
-            suffix.append(CHARACTERS.charAt(index));
+            prefix.append(CHARACTERS.charAt(index));
         }
 
-        return suffix.toString();
+        return prefix.toString();
     }
 }

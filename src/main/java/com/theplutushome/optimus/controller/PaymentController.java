@@ -273,11 +273,11 @@ public class PaymentController {
         order.setPhoneNumber(otpRequest.getPhoneNumber());
 
         String otpCode = Function.generateFourDigitCode();
-        String suffux = Function.generateOtpSuffix();
+        String otpPrefix = Function.generateOtpPrefix();
 
-        OrderOtp orderOtp = new OrderOtp(suffux, otpCode, order.getClientReference());
+        OrderOtp orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
 
-        String otpMessage = "";
+        String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code on the designated verification page on our website to proceed with your transaction. This code will expire in 10 minutes. Thank you!", otpPrefix, otpCode);
         SMSResponse smsResponse = client.sendSMS(otpRequest.getPhoneNumber(), otpMessage);
         if (smsResponse.getStatus() == 0) {
             orderOtpRepository.save(orderOtp);
@@ -286,7 +286,7 @@ public class PaymentController {
             return ResponseEntity.badRequest().build();
         }
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(otpPrefix);
     }
 
     @PostMapping("/verifyCode")
