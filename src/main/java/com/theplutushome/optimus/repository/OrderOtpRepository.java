@@ -13,5 +13,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author MalickMoro-Samah
  */
 public interface OrderOtpRepository extends JpaRepository<OrderOtp, Integer> {
-    Optional<OrderOtp> findOrderOtpByClientReference(String clientReference);
+    Optional<OrderOtp> findOrderOtpByClientReferenceAndExpired(String clientReference, boolean expired);
 }

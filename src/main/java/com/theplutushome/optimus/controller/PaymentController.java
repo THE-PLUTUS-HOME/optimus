@@ -282,8 +282,8 @@ public class PaymentController {
         PaymentOrder order = ordersService.findOrderByClientReference(otpRequest.getClientReference());
         order.setPhoneNumber(otpRequest.getPhoneNumber());
 
-        OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReference(order.getClientReference()).orElse(null);
-        if (orderOtp == null) {
+        OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReferenceAndExpired(order.getClientReference(), false).orElse(null);
+        if (orderOtp == null || orderOtp.isExpired()) {
             String otpCode = Function.generateFourDigitCode();
             String otpPrefix = Function.generateOtpPrefix();
             orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
@@ -305,7 +305,7 @@ public class PaymentController {
     @PostMapping("/verifyCode")
     public ResponseEntity<?> verifyOtpCode(@RequestBody @Valid PaymentOtpVerify otpVerify, @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
-        OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReference(otpVerify.getClientReference()).orElse(null);
+        OrderOtp orderOtp = orderOtpRepository.findOrderOtpByClientReferenceAndExpired(otpVerify.getClientReference(), false).orElse(null);
         if (orderOtp == null) {
             throw new RuntimeException("Order OTP Not Found");
         }
@@ -313,6 +313,8 @@ public class PaymentController {
         if (!orderOtp.getCode().equals(otpVerify.getOtpCode())) {
             throw new OtpCodeInvalidException();
         }
+        orderOtp.setExpired(true);
+        orderOtpRepository.save(orderOtp);
 
         return ResponseEntity.ok().build();
 
