@@ -32,7 +32,7 @@ public class PaymentOrder extends EntityModel{
     private String address;
     private String phoneNumber;
     private String transactionId;
-    private double amountPaid;
+    private Double amountPaid = 0.0;
 
     // No-argument constructor
     public PaymentOrder() { }
@@ -168,11 +168,11 @@ public class PaymentOrder extends EntityModel{
         this.phoneNumber = phoneNumber;
     }
 
-    public double getAmountPaid() {
+    public Double  getAmountPaid() {
         return amountPaid;
     }
 
-    public void setAmountPaid(double amountPaid) {
+    public void setAmountPaid(Double  amountPaid) {
         this.amountPaid = amountPaid;
     }
     

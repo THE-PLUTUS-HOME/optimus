@@ -38,7 +38,7 @@ public class OrdersService {
 
     public void createOrder(PaymentOrder order) {
         order.setStatus(PaymentOrderStatus.PENDING);
-        order.setAmountPaid(0);
+        order.setAmountPaid(0.0);
         orderRepository.save(order);
     }
 
