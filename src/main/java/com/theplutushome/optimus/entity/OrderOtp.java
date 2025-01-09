@@ -27,6 +27,8 @@ public class OrderOtp extends EntityModel {
         this.clientReference = clientReference;
     }
 
+    public OrderOtp() {
+    }
     
     public String getSuffix() {
         return suffix;
