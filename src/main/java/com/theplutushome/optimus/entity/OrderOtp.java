@@ -20,11 +20,13 @@ public class OrderOtp extends EntityModel {
     private String suffix;
     private String code;
     private String clientReference;
+    private boolean expired;
 
     public OrderOtp(String suffix, String code, String clientReference) {
         this.suffix = suffix;
         this.code = code;
         this.clientReference = clientReference;
+        this.expired = false;
     }
 
     public OrderOtp() {
@@ -53,6 +55,15 @@ public class OrderOtp extends EntityModel {
     public void setClientReference(String clientReference) {
         this.clientReference = clientReference;
     }
+
+    public boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(boolean expired) {
+        this.expired = expired;
+    }
+   
 
     @Override
     public String toString() {

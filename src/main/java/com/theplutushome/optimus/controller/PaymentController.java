@@ -20,6 +20,7 @@ import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -243,6 +244,15 @@ public class PaymentController {
     public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         System.out.println("The payment request: " + request.toString());
+        
+        List<PaymentOrder> pendingOrders = ordersService.findPendingOrdersByEmail(request.getEmail());
+        if(!pendingOrders.isEmpty()){
+            for(PaymentOrder order : pendingOrders){
+                order.setStatus(PaymentOrderStatus.ABANDONED);
+                ordersService.updateOrder(order);
+            }
+        }
+        
         double merchantBalance = cryptomusRestClient.getMerchantBalance();
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
         double withdrawalFee = cryptomusRestClient.getWithdrawalFee(request.getCrypto());

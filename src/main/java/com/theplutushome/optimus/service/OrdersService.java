@@ -55,10 +55,14 @@ public class OrdersService {
     }
     
      public PaymentOrder findOrderByPhoneNumber(String phoneNumber) {
-        PaymentOrder order = orderRepository.findPaymentOrderByPhoneNumber(phoneNumber);
+        PaymentOrder order = orderRepository.findPaymentOrderByPhoneNumberAndStatus(phoneNumber, PaymentOrderStatus.PENDING);
         if (order == null) {
             throw new OrderNotFoundException();
         }
         return order;
     }
+     
+     public  List<PaymentOrder> findPendingOrdersByEmail(String email){
+         return orderRepository.findPaymentOrdersByEmailAndStatus(email, PaymentOrderStatus.PENDING);
+     }
 }
