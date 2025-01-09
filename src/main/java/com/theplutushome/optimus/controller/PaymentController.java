@@ -229,7 +229,7 @@ public class PaymentController {
             double amountPaid = callback.getData().getAmountAfterCharges();
 
             String[] parts = callback.getData().getClientReference().split("_");
-            String customerPhone = parts[0];
+            String customerPhone = parts[1];
 
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
             order.setAmountPaid(order.getAmountPaid() + amountPaid);
@@ -276,7 +276,7 @@ public class PaymentController {
 
         OrderOtp orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
 
-        String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code on the designated verification page on our website to proceed with your transaction. This code will expire in 10 minutes. Thank you!", otpPrefix, otpCode);
+        String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code to proceed with your transaction. This code will expire in 10 minutes. Thank you!", otpPrefix, otpCode);
         SMSResponse smsResponse = client.sendSMS(otpRequest.getPhoneNumber(), otpMessage);
         if (smsResponse.getStatus() == 0) {
             orderOtpRepository.save(orderOtp);
@@ -319,6 +319,15 @@ public class PaymentController {
         }
 
         return ResponseEntity.ok(payment);
+    }
+    
+    @PostMapping("/cancel/{reference}")
+    public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader, @PathVariable("reference") String reference){
+        jwtUtil.verifyToken(authHeader);
+        PaymentOrder order = ordersService.findOrderByClientReference(reference);
+        order.setStatus(PaymentOrderStatus.FAILED);
+        ordersService.updateOrder(order);
+        return ResponseEntity.ok().build();
     }
 
 }

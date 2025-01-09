@@ -11,9 +11,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
+import org.springframework.core.annotation.Order;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 @Configuration
 public class WebSecurityConfig {
@@ -24,6 +27,19 @@ public class WebSecurityConfig {
         this.apiKeyFilter = apiKeyFilter;
     }
 
+//    @Bean
+//    @Order(HIGHEST_PRECEDENCE)
+//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        http.authorizeHttpRequests(authz -> authz
+//                .requestMatchers("/login").permitAll()
+//                .requestMatchers("/optimus/v1/api/payment/callback")
+//                .access(new WebExpressionAuthorizationManager("isAuthenticated() and hasIpAddress('11.11.11.11')"))
+//                .anyRequest().authenticated()
+//        )
+//                .csrf(AbstractHttpConfigurer::disable);
+//        return http.build();
+//    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         System.out.println("Configuring Security Filter Chain...");
@@ -31,24 +47,24 @@ public class WebSecurityConfig {
                 .cors(withDefaults()) // Enable CORS
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/optimus/v1/api/**",
-                                "/optimus/payment/callback",
-                                "/api/verify-captcha",
-                                "/v2/api-docs",
-                                "/v3/api-docs",
-                                "/v3/api-docs/**",
-                                "/swagger-resources",
-                                "/swagger-resources/**",
-                                "/configuration/ui",
-                                "/configuration/security",
-                                "/swagger-ui/**",
-                                "/webjars/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                .requestMatchers(
+                        "/optimus/v1/api/**",
+                        "/api/verify-captcha",
+                        "/v2/api-docs",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/swagger-resources",
+                        "/swagger-resources/**",
+                        "/configuration/ui",
+                        "/configuration/security",
+                        "/swagger-ui/**",
+                        "/webjars/**",
+                        "/swagger-ui.html"
+                ).permitAll()
+                .anyRequest().authenticated()
                 )
-                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS));
 
         System.out.println("Configuring Success ...");
