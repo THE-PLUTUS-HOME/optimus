@@ -13,6 +13,7 @@ public class PaymentOrder extends EntityModel{
     private String returnUrl;
     private String merchantAccountNumber;
     private String cancellationUrl;
+    @Column(unique = true)
     private String clientReference;
     @NotNull
     private double amountGHS;
