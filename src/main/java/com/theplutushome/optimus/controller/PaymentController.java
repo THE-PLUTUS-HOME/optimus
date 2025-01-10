@@ -301,6 +301,12 @@ public class PaymentController {
             String otpPrefix = Function.generateOtpPrefix();
             orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
             orderOtpRepository.save(orderOtp);
+        } else {
+            orderOtp.setExpired(true);
+            String otpCode = Function.generateFourDigitCode();
+            String otpPrefix = Function.generateOtpPrefix();
+            orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
+            orderOtpRepository.save(orderOtp);
         }
 
         String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code to proceed with your transaction. This code will expire in 10 minutes. Thank you!", orderOtp.getSuffix(), orderOtp.getCode());
