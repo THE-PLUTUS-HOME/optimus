@@ -380,7 +380,7 @@ public class PaymentController {
     public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader, @PathVariable("reference") String reference) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(reference);
-        order.setStatus(PaymentOrderStatus.CANCELED);
+        order.setStatus(PaymentOrderStatus.CANCELLED);
         ordersService.updateOrder(order);
         return ResponseEntity.ok().build();
     }
