@@ -259,9 +259,11 @@ public class PaymentController {
         List<PaymentOrder> pendingOrders = ordersService.findPendingOrdersByEmail(request.getEmail());
         if (!pendingOrders.isEmpty()) {
             for (PaymentOrder order : pendingOrders) {
-                order.setStatus(PaymentOrderStatus.ABANDONED);
-                order.setAmountPaid(0.0);
-                ordersService.updateOrder(order);
+                if (order.getStatus() == PaymentOrderStatus.PENDING) {
+                    order.setStatus(PaymentOrderStatus.ABANDONED);
+                    order.setAmountPaid(0.0);
+                    ordersService.updateOrder(order);
+                }
             }
         }
 
@@ -378,7 +380,7 @@ public class PaymentController {
     public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader, @PathVariable("reference") String reference) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(reference);
-        order.setStatus(PaymentOrderStatus.FAILED);
+        order.setStatus(PaymentOrderStatus.CANCELED);
         ordersService.updateOrder(order);
         return ResponseEntity.ok().build();
     }
