@@ -337,6 +337,7 @@ public class PaymentController {
         PaymentCheck payment = new PaymentCheck();
         if (order.getAmountPaid() < order.getAmountGHS()) {
             double amountRemaining = order.getAmountGHS() - order.getAmountPaid();
+            amountRemaining = Math.round(amountRemaining * 100.0) / 100.0; // Round to 2 decimal places
             payment.setAmountRemaining(amountRemaining);
             payment.setMessage("Incomplete");
 
