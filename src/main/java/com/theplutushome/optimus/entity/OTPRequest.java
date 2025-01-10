@@ -15,7 +15,7 @@ public class OTPRequest implements Serializable {
     @NotNull
     private String email;
     private String otpCode;
-    private boolean used;
+    private boolean expired;
     @Column(columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private LocalDateTime createdAt;
 
@@ -32,12 +32,12 @@ public class OTPRequest implements Serializable {
         return createdAt;
     }
 
-    public boolean isUsed() {
-        return used;
+    public boolean isExpired() {
+        return expired;
     }
 
-    public void setUsed(boolean used) {
-        this.used = used;
+    public void setExpired(boolean expired) {
+        this.expired = expired;
     }
 
     public String getEmail() {
@@ -67,6 +67,6 @@ public class OTPRequest implements Serializable {
     public OTPRequest(String email, String otpCode) {
         this.email = email;
         this.otpCode = otpCode;
-        this.used = false;
+        this.expired = false;
     }
 }

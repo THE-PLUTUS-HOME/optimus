@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 public class PasswordResetRequest {
     @NotBlank(message = "username required")
     private String username;
-    @NotBlank(message = "old password required")
     private String oldPassword;
     @NotBlank(message = "new password required")
     private String newPassword;

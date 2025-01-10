@@ -10,12 +10,14 @@ import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
 import com.theplutushome.optimus.entity.EntityModel;
+import com.theplutushome.optimus.entity.OrderOtp;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;
 import com.theplutushome.optimus.repository.OtpRepository;
 import com.theplutushome.optimus.repository.UserRepository;
 import com.theplutushome.optimus.util.BCryptUtil;
+import com.theplutushome.optimus.util.EmailContentGenerator;
 import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,6 @@ public class UserService {
     private final OtpRepository otpRepository;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
-
 
     @Autowired
     public UserService(UserRepository userRepository, JwtUtil jwtUtil, EmailService emailService, OtpRepository otpRepository) {
@@ -71,9 +72,11 @@ public class UserService {
         userRepository.save(user);
 
         String otpCode = Function.randomOTPCode();
+
+        // DELETE OTP REQUEST IF ONE ALREADY EXITS
         OTPRequest otpRequest = new OTPRequest(user.getEmail(), otpCode);
-        if(otpRepository.findByEmail(user.getEmail()).isPresent()){
-            otpRepository.delete(otpRepository.findByEmail(user.getEmail()).get());
+        if (otpRepository.findByEmailAndExpired(user.getEmail(), false).isPresent()) {
+            otpRepository.delete(otpRepository.findByEmailAndExpired(user.getEmail(), false).get());
         }
         otpRepository.save(otpRequest);
 
@@ -88,79 +91,7 @@ public class UserService {
             }
         }
 
-        String emailContent = String.format("""
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: Arial, sans-serif;
-                            background-color: #f4f4f4;
-                            margin: 0;
-                            padding: 0;
-                        }
-                        .email-container {
-                            max-width: 600px;
-                            margin: 20px auto;
-                            background-color: #ffffff;
-                            border: 1px solid #dddddd;
-                            border-radius: 8px;
-                            overflow: hidden;
-                        }
-                        .header {
-                            background-color: #007BFF;
-                            color: #ffffff;
-                            text-align: center;
-                            padding: 20px;
-                            font-size: 24px;
-                        }
-                        .content {
-                            padding: 20px;
-                            line-height: 1.6;
-                            color: #333333;
-                        }
-                        .otp-code {
-                            display: block;
-                            margin: 20px auto;
-                            text-align: center;
-                            font-size: 32px;
-                            font-weight: bold;
-                            color: #007BFF;
-                            background-color: #f9f9f9;
-                            padding: 10px;
-                            border: 1px dashed #007BFF;
-                            width: fit-content;
-                            border-radius: 8px;
-                        }
-                        .footer {
-                            background-color: #f4f4f4;
-                            text-align: center;
-                            padding: 10px;
-                            font-size: 12px;
-                            color: #888888;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="email-container">
-                        <div class="header">
-                            Welcome to The Plutus Home!
-                        </div>
-                        <div class="content">
-                            <p>Hi %s,</p>
-                            <p>We are excited to have you on board! To complete your registration, please use the OTP code below:</p>
-                            <div class="otp-code">%s</div>
-                            <p>If you did not request this, please ignore this email or contact our support team for assistance.</p>
-                            <p>Thank you for choosing our service!</p>
-                        </div>
-                        <div class="footer">
-                            &copy; 2024 The Plutus Home. All rights reserved.<br>
-                            This is an automated email; please do not reply.
-                        </div>
-                    </div>
-                </body>
-                </html>
-                """, user.getUsername(), otpCode);
-
+        String emailContent = EmailContentGenerator.generateAccountCreationContent(user.getUsername(), otpCode);
         emailService.sendEmail(user.getEmail(), "New Account Created", emailContent);
     }
 
@@ -188,7 +119,7 @@ public class UserService {
 
         User user = userRepository.findByUsernameAndDeleted(loginRequest.getUsername(), false)
                 .orElseGet(() -> userRepository.findByEmailAndDeleted(loginRequest.getUsername(), false)
-                        .orElseThrow(UserNotFoundException::new));
+                .orElseThrow(UserNotFoundException::new));
         // Verify password
         if (!BCryptUtil.verifyPassword(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
@@ -277,20 +208,58 @@ public class UserService {
     }
 
     @Transactional
-    public void verifyAccountCreationOTP(OtpRequestDto otpRequest) {
-        Optional<OTPRequest> otpInfo = otpRepository.findByEmail(otpRequest.email());
-        if (otpInfo.isPresent()) {
+    public void verifyOTPForAccountCreation(OtpRequestDto otpRequest) {
+        Optional<OTPRequest> otpInfo = otpRepository.findByEmailAndExpired(otpRequest.email(), false);
+        if (otpInfo.isPresent() && otpRequest.otpCode().equals(otpInfo.get().getOtpCode())) {
             User user = userRepository.findByEmailAndDeleted(otpRequest.email(), false).orElse(null);
             if (user != null) {
                 user.setUserAccountStatus(UserAccountStatus.ACTIVE);
                 userRepository.save(user);
 
-                otpInfo.get().setUsed(true);
+                otpInfo.get().setExpired(true);
                 otpRepository.save(otpInfo.get());
             }
         } else {
             throw new RuntimeException("OTP Code Invalid");
         }
 
+    }
+
+    @Transactional
+    public void verifyOTPForPasswordReset(OtpRequestDto otpRequest) {
+        Optional<OTPRequest> otpInfo = otpRepository.findByEmailAndExpired(otpRequest.email(), false);
+        if (!otpInfo.isPresent() && !otpRequest.otpCode().equals(otpInfo.get().getOtpCode())) {
+            throw new RuntimeException("OTP Code Invalid");
+        }
+    }
+
+    @Transactional
+    public void sendPasswordResetOtp(OtpRequestDto otpRequestDto) {
+        OTPRequest otpRequest = otpRepository.findByEmailAndExpired(otpRequestDto.email(), false).orElse(null);
+        if (otpRequest != null) {
+            otpRequest.setExpired(true);
+            otpRepository.save(otpRequest);
+        }
+
+        User user = userRepository.findByEmailAndDeleted(otpRequestDto.email(), false).orElse(null);
+        if (user != null) {
+            String otpCode = Function.randomOTPCode();
+            String content = EmailContentGenerator.generateForgotPasswordContent(user.getUsername(), otpCode);
+
+            emailService.sendEmail(user.getEmail(), "Password Reset Request", content);
+
+            OTPRequest request = new OTPRequest(user.getEmail(), otpCode);
+            otpRepository.save(request);
+        }
+    }
+
+    public void changePassword(PasswordResetRequest request) {
+        User user = userRepository.findByUsernameAndDeleted(request.getUsername(), false).orElse(null);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+
+        user.setPassword(BCryptUtil.hashPassword(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

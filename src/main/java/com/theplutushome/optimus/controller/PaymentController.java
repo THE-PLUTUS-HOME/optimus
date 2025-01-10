@@ -303,10 +303,10 @@ public class PaymentController {
             orderOtpRepository.save(orderOtp);
         } else {
             orderOtp.setExpired(true);
+            orderOtpRepository.save(orderOtp);
             String otpCode = Function.generateFourDigitCode();
             String otpPrefix = Function.generateOtpPrefix();
-            orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
-            orderOtpRepository.save(orderOtp);
+            orderOtpRepository.save(new OrderOtp(otpPrefix, otpCode, order.getClientReference()));
         }
 
         String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code to proceed with your transaction. This code will expire in 10 minutes. Thank you!", orderOtp.getSuffix(), orderOtp.getCode());
@@ -343,6 +343,12 @@ public class PaymentController {
     public ResponseEntity<?> checkPayment(@RequestHeader("Authorization") String authHeader, @PathVariable(name = "reference") String clientReference) {
         PaymentOrder order = ordersService.findOrderByClientReference(clientReference);
         PaymentCheck payment = new PaymentCheck();
+
+        if (order.getStatus() == PaymentOrderStatus.PROCESSING) {
+            payment.setAmountRemaining(0.0);
+            payment.setMessage("PROCESSING");
+            return ResponseEntity.ok(payment);
+        }
         if (order.getAmountPaid() < order.getAmountGHS()) {
             double amountRemaining = order.getAmountGHS() - order.getAmountPaid();
             amountRemaining = Math.round(amountRemaining * 100.0) / 100.0; // Round to 2 decimal places
@@ -365,10 +371,10 @@ public class PaymentController {
                 SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
                 if (smsResponse.getStatus() == 0) {
                     payment.setAmountRemaining(0.0);
-                    payment.setMessage("Incomplete");
+                    payment.setMessage("INCOMPLETE");
                 } else {
                     payment.setAmountRemaining(0.0);
-                    payment.setMessage("Sms Error");
+                    payment.setMessage("SMS ERROR");
                 }
             }
 
