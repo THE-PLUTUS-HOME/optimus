@@ -99,13 +99,13 @@ public class UserController {
     public ResponseEntity<?> verifyCode(@PathVariable("referralCode") String referralCode) {
         if (userService.referralCodeValid(referralCode)) {
             return ResponseEntity.ok(Map.of(
-                    "code", 00,
+                "code", "00",
                     "success", true,
                     "message", "Referral Code Valid!"
             ));
         } else {
             return ResponseEntity.badRequest().body(Map.of(
-                    "code", 00,
+                "code", "00",
                     "success", false,
                     "message", "Invalid Referral Code!"
             ));
@@ -122,7 +122,7 @@ public class UserController {
     public ResponseEntity<?> redeemPoints(@RequestBody RedeemRequest request, @RequestHeader("Authorization") String authHeader) {
         userService.redeemPoints(request.getUsername(), authHeader);
         return ResponseEntity.ok(Map.of(
-                "code", 00,
+                "code", "00",
                 "success", true,
                 "message", "Redeemed successfully!"
         ));
@@ -132,7 +132,7 @@ public class UserController {
     public ResponseEntity<?> verifyOtp(@Valid @RequestBody OtpRequestDto otpRequest) {
         userService.verifyOTPForAccountCreation(otpRequest);
         return ResponseEntity.ok(Map.of(
-                "code", 00,
+                "code", "00",
                 "success", true,
                 "message", "Verified successfully!"
         ));
@@ -142,7 +142,7 @@ public class UserController {
     public ResponseEntity<?> verifyOtpForPasswordReset(@Valid @RequestBody OtpRequestDto otpRequest) {
         userService.verifyOTPForPasswordReset(otpRequest);
         return ResponseEntity.ok(Map.of(
-                "code", 00,
+                "code", "00",
                 "success", true,
                 "message", "Verified successfully!"
         ));
@@ -152,7 +152,7 @@ public class UserController {
     public ResponseEntity<?> sendOtpForPasswordReset(@Valid @RequestBody OtpRequestDto otpRequest) {
         userService.sendPasswordResetOtp(otpRequest);
         return ResponseEntity.ok(Map.of(
-                "code", 00,
+                "code", "00",
                 "success", true,
                 "message", "Email Sent Successfully!"
         ));
@@ -162,7 +162,7 @@ public class UserController {
      public ResponseEntity<?> passwordReset(@Valid @RequestBody PasswordResetRequest passwordResetRequest) {
         userService.changePassword(passwordResetRequest);
         return ResponseEntity.ok(Map.of(
-                "code", 00,
+                "code", "00",
                 "success", true,
                 "message", "Password Reset Successfully!"
         ));
