@@ -344,6 +344,31 @@ public class PaymentController {
         } else {
             payment.setAmountRemaining(0.00);
             payment.setMessage("Complete");
+            PayoutRequest request = getPayoutRequest(order);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+
+            // Update order status based on payout response
+            if (payoutResponse.getState() == 0) {
+                order.setStatus(PaymentOrderStatus.PROCESSING);
+
+                String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
+                String message = "Hi " + customerName + ", your payment was successful and your order is now being processed. Thank you for your purchase!.";
+
+                SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
+                if (smsResponse.getStatus() == 0) {
+                    payment.setAmountRemaining(0.0);
+                    payment.setMessage("Incomplete");
+                } else {
+                    payment.setAmountRemaining(0.0);
+                    payment.setMessage("Sms Error");
+                }
+            }
+
+            ordersService.updateOrder(order);
+
+            // Return a success response
+            log.info("Payment processed successfully for order: {}", order.getClientReference());
+            return ResponseEntity.ok(payment);
         }
 
         return ResponseEntity.ok(payment);
