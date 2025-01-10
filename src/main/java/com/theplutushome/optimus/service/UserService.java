@@ -258,6 +258,9 @@ public class UserService {
         if (user == null) {
             throw new UserNotFoundException();
         }
+        String message = EmailContentGenerator.generatePasswordChangeNotificationEmail(user.getUsername());
+                
+        emailService.sendEmail(user.getEmail(), "Account Update", message);
 
         user.setPassword(BCryptUtil.hashPassword(request.getNewPassword()));
         userRepository.save(user);

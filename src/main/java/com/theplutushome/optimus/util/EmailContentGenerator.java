@@ -160,4 +160,67 @@ public class EmailContentGenerator {
             </html>
             """, username, otpCode);
     }
+
+    public static String generatePasswordChangeNotificationEmail(String username) {
+        return String.format("""
+            <html>
+            <head>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .email-container {
+                        max-width: 600px;
+                        margin: 20px auto;
+                        background-color: #ffffff;
+                        border: 1px solid #dddddd;
+                        border-radius: 8px;
+                        overflow: hidden;
+                    }
+                    .header {
+                        background-color: #007BFF;
+                        color: #ffffff;
+                        text-align: center;
+                        padding: 20px;
+                        font-size: 24px;
+                    }
+                    .content {
+                        padding: 20px;
+                        line-height: 1.6;
+                        color: #333333;
+                    }
+                    .footer {
+                        background-color: #f4f4f4;
+                        text-align: center;
+                        padding: 10px;
+                        font-size: 12px;
+                        color: #888888;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="email-container">
+                    <div class="header">
+                        Account Update Notification
+                    </div>
+                    <div class="content">
+                        <p>Hi %s,</p>
+                        <p>We want to let you know that your account password was successfully updated.</p>
+                        <p>If you did not request this change, please contact our support team immediately to secure your account.</p>
+                        <p>For your safety, always ensure your password is strong and unique to your account.</p>
+                        <p>Thank you for using our service!</p>
+                    </div>
+                    <div class="footer">
+                        &copy; 2024 The Plutus Home. All rights reserved.<br>
+                        This is an automated email; please do not reply.
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, username);
+    }
+
 }
