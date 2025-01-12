@@ -37,13 +37,13 @@ public class UserController {
 
     @Operation(summary = "Sign Up", description = "Create a new user account")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Successfully created user account",
-                    content = @Content(mediaType = "application/json",
-                            examples = @ExampleObject(value = """
+        @ApiResponse(responseCode = "201", description = "Successfully created user account",
+                content = @Content(mediaType = "application/json",
+                        examples = @ExampleObject(value = """
                                     """))),
-            @ApiResponse(responseCode = "400", description = "Missing Fields",
-                    content = @Content(mediaType = "application/json",
-                            examples = @ExampleObject(value = """
+        @ApiResponse(responseCode = "400", description = "Missing Fields",
+                content = @Content(mediaType = "application/json",
+                        examples = @ExampleObject(value = """
                                        {
                                            "status": "BAD_REQUEST",
                                            "message": "Validation failed. Please check the input.",
@@ -52,9 +52,9 @@ public class UserController {
                                            }
                                        }
                                     """))),
-            @ApiResponse(responseCode = "500", description = "Internal server error",
-                    content = @Content(mediaType = "application/json",
-                            examples = @ExampleObject(value = """
+        @ApiResponse(responseCode = "500", description = "Internal server error",
+                content = @Content(mediaType = "application/json",
+                        examples = @ExampleObject(value = """
                                         {
                                             "status": "500 INTERNAL_SERVER_ERROR",
                                             "message": "An unexpected error occurred"
@@ -80,9 +80,9 @@ public class UserController {
 
     @Operation(summary = "Get User by ID", description = "Fetch a user based on their unique ID.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved user"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved user"),
+        @ApiResponse(responseCode = "404", description = "User not found"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest) {
@@ -99,11 +99,13 @@ public class UserController {
     public ResponseEntity<?> verifyCode(@PathVariable("referralCode") String referralCode) {
         if (userService.referralCodeValid(referralCode)) {
             return ResponseEntity.ok(Map.of(
+                "code", "00",
                     "success", true,
                     "message", "Referral Code Valid!"
             ));
         } else {
             return ResponseEntity.badRequest().body(Map.of(
+                "code", "00",
                     "success", false,
                     "message", "Invalid Referral Code!"
             ));
@@ -120,6 +122,7 @@ public class UserController {
     public ResponseEntity<?> redeemPoints(@RequestBody RedeemRequest request, @RequestHeader("Authorization") String authHeader) {
         userService.redeemPoints(request.getUsername(), authHeader);
         return ResponseEntity.ok(Map.of(
+                "code", "00",
                 "success", true,
                 "message", "Redeemed successfully!"
         ));
@@ -127,10 +130,42 @@ public class UserController {
 
     @PostMapping("/verifyOtp")
     public ResponseEntity<?> verifyOtp(@Valid @RequestBody OtpRequestDto otpRequest) {
-        userService.verifyAccountCreationOTP(otpRequest);
+        userService.verifyOTPForAccountCreation(otpRequest);
         return ResponseEntity.ok(Map.of(
+                "code", "00",
                 "success", true,
                 "message", "Verified successfully!"
         ));
     }
+
+    @PostMapping("/reset/verifyOtp")
+    public ResponseEntity<?> verifyOtpForPasswordReset(@Valid @RequestBody OtpRequestDto otpRequest) {
+        userService.verifyOTPForPasswordReset(otpRequest);
+        return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "success", true,
+                "message", "Verified successfully!"
+        ));
+    }
+
+    @PostMapping("/reset/sendOtp")
+    public ResponseEntity<?> sendOtpForPasswordReset(@Valid @RequestBody OtpRequestDto otpRequest) {
+        userService.sendPasswordResetOtp(otpRequest);
+        return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "success", true,
+                "message", "Email Sent Successfully!"
+        ));
+    }
+    
+    @PutMapping("/reset")
+     public ResponseEntity<?> passwordReset(@Valid @RequestBody PasswordResetRequest passwordResetRequest) {
+        userService.changePassword(passwordResetRequest);
+        return ResponseEntity.ok(Map.of(
+                "code", "00",
+                "success", true,
+                "message", "Password Reset Successfully!"
+        ));
+    }
+    
 }

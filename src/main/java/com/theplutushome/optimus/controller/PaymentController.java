@@ -259,9 +259,11 @@ public class PaymentController {
         List<PaymentOrder> pendingOrders = ordersService.findPendingOrdersByEmail(request.getEmail());
         if (!pendingOrders.isEmpty()) {
             for (PaymentOrder order : pendingOrders) {
-                order.setStatus(PaymentOrderStatus.ABANDONED);
-                order.setAmountPaid(0.0);
-                ordersService.updateOrder(order);
+                if (order.getStatus() == PaymentOrderStatus.PENDING) {
+                    order.setStatus(PaymentOrderStatus.ABANDONED);
+                    order.setAmountPaid(0.0);
+                    ordersService.updateOrder(order);
+                }
             }
         }
 
@@ -299,6 +301,12 @@ public class PaymentController {
             String otpPrefix = Function.generateOtpPrefix();
             orderOtp = new OrderOtp(otpPrefix, otpCode, order.getClientReference());
             orderOtpRepository.save(orderOtp);
+        } else {
+            orderOtp.setExpired(true);
+            orderOtpRepository.save(orderOtp);
+            String otpCode = Function.generateFourDigitCode();
+            String otpPrefix = Function.generateOtpPrefix();
+            orderOtpRepository.save(new OrderOtp(otpPrefix, otpCode, order.getClientReference()));
         }
 
         String otpMessage = String.format("Your payment verification code is %s-%s. Please enter this code to proceed with your transaction. This code will expire in 10 minutes. Thank you!", orderOtp.getSuffix(), orderOtp.getCode());
@@ -335,14 +343,46 @@ public class PaymentController {
     public ResponseEntity<?> checkPayment(@RequestHeader("Authorization") String authHeader, @PathVariable(name = "reference") String clientReference) {
         PaymentOrder order = ordersService.findOrderByClientReference(clientReference);
         PaymentCheck payment = new PaymentCheck();
+
+        if (order.getStatus() == PaymentOrderStatus.PROCESSING) {
+            payment.setAmountRemaining(0.0);
+            payment.setMessage("PROCESSING");
+            return ResponseEntity.ok(payment);
+        }
         if (order.getAmountPaid() < order.getAmountGHS()) {
             double amountRemaining = order.getAmountGHS() - order.getAmountPaid();
+            amountRemaining = Math.round(amountRemaining * 100.0) / 100.0; // Round to 2 decimal places
             payment.setAmountRemaining(amountRemaining);
             payment.setMessage("Incomplete");
 
         } else {
             payment.setAmountRemaining(0.00);
             payment.setMessage("Complete");
+            PayoutRequest request = getPayoutRequest(order);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+
+            // Update order status based on payout response
+            if (payoutResponse.getState() == 0) {
+                order.setStatus(PaymentOrderStatus.PROCESSING);
+
+                String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
+                String message = "Hi " + customerName + ", your payment was successful and your order is now being processed. Thank you for your purchase!.";
+
+                SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
+                if (smsResponse.getStatus() == 0) {
+                    payment.setAmountRemaining(0.0);
+                    payment.setMessage("INCOMPLETE");
+                } else {
+                    payment.setAmountRemaining(0.0);
+                    payment.setMessage("SMS ERROR");
+                }
+            }
+
+            ordersService.updateOrder(order);
+
+            // Return a success response
+            log.info("Payment processed successfully for order: {}", order.getClientReference());
+            return ResponseEntity.ok(payment);
         }
 
         return ResponseEntity.ok(payment);
@@ -352,7 +392,7 @@ public class PaymentController {
     public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader, @PathVariable("reference") String reference) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(reference);
-        order.setStatus(PaymentOrderStatus.FAILED);
+        order.setStatus(PaymentOrderStatus.CANCELLED);
         ordersService.updateOrder(order);
         return ResponseEntity.ok().build();
     }

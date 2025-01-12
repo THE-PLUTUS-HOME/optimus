@@ -74,7 +74,7 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://theplutushome.com", "http://localhost:5173", "https://plutus-website-lovat.vercel.app"));
+        configuration.setAllowedOrigins(List.of("https://theplutushome.com", "https://www.theplutushome.com", "http://localhost:5173", "https://plutus-website-lovat.vercel.app"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowCredentials(true); // Allow credentials
