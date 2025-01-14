@@ -10,7 +10,6 @@ import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
 import com.theplutushome.optimus.entity.EntityModel;
-import com.theplutushome.optimus.entity.OrderOtp;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import com.theplutushome.optimus.entity.enums.UserType;

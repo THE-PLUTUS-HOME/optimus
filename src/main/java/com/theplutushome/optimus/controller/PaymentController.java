@@ -72,8 +72,8 @@ public class PaymentController {
 
     @Transactional
     @PostMapping("/generate")
-    public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request, @RequestHeader("Authorization") String authHeader) {
-        jwtUtil.verifyToken(authHeader);
+    public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request) {
+//        jwtUtil.verifyToken(authHeader);
         System.out.println("The payment request: " + request.toString());
         double merchantBalance = cryptomusRestClient.getMerchantBalance();
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(), request.getCryptoAmount());
@@ -81,8 +81,7 @@ public class PaymentController {
 
         if (purchaseAmount + withdrawalFee > merchantBalance) {
             // Send text message to admin
-            String username = request.getEmail().substring(0, request.getEmail().indexOf('@')); // "kingmartin"
-            String message = "Almighty King Plutus, " + username + " is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD" + " but your balance is " + String.format("%.2f", merchantBalance) + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
+            String message = "Almighty King Plutus, " + request.getPhoneNumber() + " is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD" + " but your balance is " + String.format("%.2f", merchantBalance) + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
             SMSResponse smsResponse = client.sendSMS("233555075023", message);
             SMSResponse smsResponse1 = client.sendSMS("233599542518", message);
             log.info(smsResponse.toString());
@@ -210,19 +209,6 @@ public class PaymentController {
 
     }
 
-//     USSDCallback{
-//        responseCode=0000,
-//        message=success,
-//        data=Data{amount=5.0, 
-//            charges=0.1, 
-//            amountAfterCharges=5.0, 
-//            description=,
-//            clientReference=NHafa98374a50548369b773ca79b1f2281_233203212972_12221,
-//            transactionId=194478791E66569, externalTransactionId=0000008531731704,
-//            amountCharged=5.1, 
-//            orderId=0565b79b942e420bab0dd35954f39724, 
-//            paymentDate=2025-01-08T20:07:34.6254007+00:00
-//     }}
     @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());

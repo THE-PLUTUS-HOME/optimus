@@ -1,6 +1,5 @@
 package com.theplutushome.optimus.repository;
 
-import com.theplutushome.optimus.dto.UserData;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.entity.enums.UserAccountStatus;
 import org.springframework.data.jpa.repository.JpaRepository;

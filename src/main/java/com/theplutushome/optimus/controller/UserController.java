@@ -7,7 +7,6 @@ import com.theplutushome.optimus.dto.UserRequest;
 import com.theplutushome.optimus.dto.login.LoginRequest;
 import com.theplutushome.optimus.dto.login.LoginResponse;
 import com.theplutushome.optimus.dto.resetPassword.PasswordResetRequest;
-import com.theplutushome.optimus.entity.OTPRequest;
 import com.theplutushome.optimus.entity.User;
 import com.theplutushome.optimus.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

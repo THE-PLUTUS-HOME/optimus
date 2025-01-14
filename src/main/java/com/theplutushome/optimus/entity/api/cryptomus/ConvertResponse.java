@@ -66,5 +66,15 @@ public class ConvertResponse {
         public void setCommission(double commission) {
             this.commission = commission;
         }
+
+        public String toString(){
+            return "ConvertResult{" +
+                    "from=" + getFrom() +
+                    ", to=" + getTo() +
+                    ", approximate_rate=" + getApproximate_rate() +
+                    ", total_amount=" + getTotal_amount() +
+                    ", commission=" + getCommission() +
+                    '}';
+        }
     }
 }

@@ -11,8 +11,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-
-import java.security.PublicKey;
 import java.util.Map;
 
 @PropertySource("classpath:application.properties")

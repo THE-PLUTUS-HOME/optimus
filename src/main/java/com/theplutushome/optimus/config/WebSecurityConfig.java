@@ -11,12 +11,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
-import org.springframework.core.annotation.Order;
-
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 @Configuration
 public class WebSecurityConfig {
