@@ -17,7 +17,9 @@ public class EmailService {
     public EmailService(WebClient.Builder webClientBuilder, Environment env) {
         String API_URL = env.getProperty("smtp2go_api_url");
         this.API_KEY = env.getProperty("smtp2go_api_key");
-        assert API_URL != null;
+        if (API_URL == null) {
+            throw new IllegalStateException("smtp2go_api_url must be configured");
+        }
         this.webClient = webClientBuilder.baseUrl(API_URL).build();
     }
 
