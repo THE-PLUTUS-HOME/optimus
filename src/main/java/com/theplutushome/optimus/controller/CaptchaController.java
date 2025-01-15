@@ -42,9 +42,16 @@ public class CaptchaController {
         params.add("response", captchaResponse);
 
         ResponseEntity<CaptchaResponse> response = restTemplate.postForEntity(url, params, CaptchaResponse.class);
+        CaptchaResponse body = response.getBody();
 
-        // Check if reCAPTCHA validation succeeded
-        if (response.getBody() != null && response.getBody().isSuccess()) {
+        if (body == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Invalid CAPTCHA response"
+            ));
+        }
+
+        if (body.isSuccess()) {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "CAPTCHA verified successfully!"
