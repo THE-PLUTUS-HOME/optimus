@@ -110,7 +110,6 @@ public class CryptomusController {
             ordersService.updateOrder(order);
 
             if (order.getPhoneNumber() != null) {
-                String customerName = order.getEmail().substring(0, order.getEmail().indexOf('@'));
                 String message = "My gee, your order has been finalized successfully. Your transaction hash is " + order.getTransactionId() + ". Thank you!";
 
                 SMSResponse smsResponse = hubtelRestClient.sendSMS(order.getPhoneNumber(), message);
