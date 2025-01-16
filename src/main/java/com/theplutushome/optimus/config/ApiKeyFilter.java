@@ -22,7 +22,11 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     // Inject the Environment and retrieve the API key
     public ApiKeyFilter(Environment environment) {
-        this.EXPECTED_API_KEY = environment.getProperty("application.api.key");
+        String apiKey = environment.getProperty("application.api.key");
+        if (apiKey == null) {
+            throw new IllegalStateException("API key must be configured via application.api.key");
+        }
+        this.EXPECTED_API_KEY = apiKey;
     }
 
     @Override
