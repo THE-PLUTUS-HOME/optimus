@@ -92,4 +92,11 @@ public class RestClientConfig {
                 .baseUrl("https://sms.hubtel.com/v1/messages")
                 .build();
     }
+
+    @Bean(name = "reddeOnlineClient")
+    public RestClient reddeOnlineClient() {
+        return RestClient.builder()
+                .baseUrl("https://api.reddeonline.com/v1")
+                .build();
+    }
 }

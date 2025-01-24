@@ -1,0 +1,57 @@
+package com.theplutushome.optimus.clients.reddeonline;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import com.theplutushome.optimus.entity.api.redde.ReddeDebitRequest;
+import com.theplutushome.optimus.entity.api.redde.ReddeDebitResponse;
+import com.theplutushome.optimus.entity.api.redde.ReddeTransactionResponse;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+public class ReddeOnlineRestClient implements ReddeOnlineHttpClient {
+
+    @Autowired
+    private RestClient reddeOnlineClient;
+
+    private String apiKey;
+    private String appId;
+
+    @Autowired
+    public ReddeOnlineRestClient(Environment env) {
+        this.apiKey = env.getProperty("redde_online_api_key");
+        this.appId = env.getProperty("redde_online_app_id");
+    }
+
+    @Override
+    public ReddeDebitResponse initiatePayment(ReddeDebitRequest debitRequest) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("apikey", apiKey);
+        headers.put("Content-Type", "application/json;charset=UTF-8");
+
+        return reddeOnlineClient.post()
+                .uri("/receive")
+                .headers(httpHeaders -> httpHeaders.setAll(headers))
+                .body(debitRequest)
+                .retrieve()
+                .body(ReddeDebitResponse.class);
+    }
+
+    @Override
+    public ReddeTransactionResponse verifyPayment(String clienttransid) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("apikey", apiKey);
+        headers.put("appid", appId);
+        headers.put("Content-Type", "application/json;charset=UTF-8");
+
+        return reddeOnlineClient.get()
+                .uri("/status/{transactionid}", clienttransid)
+                .headers(httpHeaders -> httpHeaders.setAll(headers))
+                .retrieve()
+                .body(ReddeTransactionResponse.class);
+    }
+
+}

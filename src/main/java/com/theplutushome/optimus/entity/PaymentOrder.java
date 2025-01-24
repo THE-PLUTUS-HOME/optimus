@@ -1,8 +1,13 @@
 package com.theplutushome.optimus.entity;
 
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
+import com.theplutushome.optimus.entity.model.PaymentMethod;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
 
 
 @Entity
@@ -36,6 +41,10 @@ public class PaymentOrder extends EntityModel{
     private Double amountPaid = 0.0;
     
     private String paymentReference;
+
+    @Getter
+    @Setter
+    private PaymentMethod paymentMethod;
 
     // No-argument constructor
     public PaymentOrder() { }
