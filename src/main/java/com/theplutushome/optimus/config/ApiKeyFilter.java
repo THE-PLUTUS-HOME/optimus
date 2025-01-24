@@ -62,6 +62,12 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (path.matches("/optimus/v1/api/payment/redde/callback")) {
+            filterChain.doFilter(request, response);
+            System.out.println("Redde Callback proceeded successfully."); // Debugging line
+            return;
+        }
+
         if (path.matches("/optimus/v1/api/payment/sms/callback")) {
             filterChain.doFilter(request, response);
             System.out.println("USSD Callback proceeded successfully."); // Debugging line
