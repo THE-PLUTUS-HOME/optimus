@@ -4,9 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+
+import com.theplutushome.optimus.entity.api.redde.ReddeCheckoutRequest;
+import com.theplutushome.optimus.entity.api.redde.ReddeCheckoutResponse;
 import com.theplutushome.optimus.entity.api.redde.ReddeDebitRequest;
 import com.theplutushome.optimus.entity.api.redde.ReddeDebitResponse;
 import com.theplutushome.optimus.entity.api.redde.ReddeTransactionResponse;
+
+import jakarta.validation.Valid;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,6 +57,19 @@ public class ReddeOnlineRestClient implements ReddeOnlineHttpClient {
                 .headers(httpHeaders -> httpHeaders.setAll(headers))
                 .retrieve()
                 .body(ReddeTransactionResponse.class);
+    }
+
+    @Override
+    public ReddeCheckoutResponse initiateCheckout(@Valid ReddeCheckoutRequest checkoutRequest) {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json;charset=UTF-8");
+
+        return reddeOnlineClient.post()
+                .uri("/checkout")
+                .headers(httpHeaders -> httpHeaders.setAll(headers))
+                .body(checkoutRequest)
+                .retrieve()
+                .body(ReddeCheckoutResponse.class);
     }
 
 }

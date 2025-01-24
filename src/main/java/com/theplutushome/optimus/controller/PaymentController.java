@@ -16,6 +16,8 @@ import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
 import com.theplutushome.optimus.entity.api.hubtel.*;
 import com.theplutushome.optimus.entity.api.redde.ReddeCallback;
+import com.theplutushome.optimus.entity.api.redde.ReddeCheckoutRequest;
+import com.theplutushome.optimus.entity.api.redde.ReddeCheckoutResponse;
 import com.theplutushome.optimus.entity.api.redde.ReddeDebitRequest;
 import com.theplutushome.optimus.entity.api.redde.ReddeDebitResponse;
 import com.theplutushome.optimus.entity.api.redde.ReddeTransactionResponse;
@@ -60,7 +62,8 @@ public class PaymentController {
 
     private final String merchantAccountNumber;
 
-    private final String appId;
+    private static String appId;
+    private static String apiKey;
 
     @Autowired
     private OrderOtpRepository orderOtpRepository;
@@ -78,7 +81,8 @@ public class PaymentController {
         this.ordersService = ordersService;
         this.cryptomusRestClient = cryptomusRestClient;
         this.merchantAccountNumber = env.getProperty("pos_sales_id");
-        this.appId = env.getProperty("app_id");
+        PaymentController.appId = env.getProperty("redde_online_app_id");
+        PaymentController.apiKey = env.getProperty("redde_online_api_key");
     }
 
     @PostMapping("/sendMessage")
@@ -124,6 +128,53 @@ public class PaymentController {
         PaymentLinkRequest paymentLinkRequest = getPaymentLinkRequest(request);
 
         return client.getPaymentUrl(paymentLinkRequest);
+    }
+
+    @Transactional
+    @PostMapping("/redde/checkout")
+    public ReddeCheckoutResponse initiateReddeCheckout(@RequestBody @Valid PaymentOrder request) {
+        System.out.println("The payment request: " + request.toString());
+        double merchantBalance = cryptomusRestClient.getMerchantBalance();
+        double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(),
+                request.getCryptoAmount());
+        double withdrawalFee = cryptomusRestClient.getWithdrawalFee(request.getCrypto());
+
+        if (purchaseAmount + withdrawalFee > merchantBalance) {
+            // Send text message to admin
+            String message = "Almighty King Plutus, " + request.getPhoneNumber()
+                    + " is trying to purchase an amount of " + String.format("%.2f", purchaseAmount) + " USD"
+                    + " but your balance is " + String.format("%.2f", merchantBalance)
+                    + " USD. Kindly top up to keep your kingdom at peace. Thank you!";
+            SMSResponse smsResponse = client.sendSMS("233555075023", message);
+            SMSResponse smsResponse1 = client.sendSMS("233599542518", message);
+            log.info(smsResponse.toString());
+            log.info(smsResponse1.toString());
+            throw new AmountNotFeasibleException();
+        }
+
+        request.setDescription("Item Purchase");
+        request.setCallbackUrl(
+                "https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/payment/redde/callback");
+        request.setReturnUrl("https://theplutushome.com/payment/success");
+        request.setCancellationUrl("https://theplutushome.com/payment/failed");
+        ordersService.createOrder(request);
+        ReddeCheckoutRequest checkoutRequest = getReddeCheckoutRequest(request);
+
+        return reddeOnlineRestClient.initiateCheckout(checkoutRequest);
+    }
+
+    private static ReddeCheckoutRequest getReddeCheckoutRequest(PaymentOrder request) {
+        ReddeCheckoutRequest checkoutRequest = new ReddeCheckoutRequest();
+        checkoutRequest.setAmount(request.getAmountGHS());
+        checkoutRequest.setApikey(apiKey);
+        checkoutRequest.setFailurecallback(request.getCancellationUrl());
+        checkoutRequest.setSuccesscallback(request.getReturnUrl());
+        checkoutRequest.setLogolink("");
+        checkoutRequest.setMerchantname("The Plutus Home");
+        checkoutRequest.setClienttransid(request.getClientReference());
+        checkoutRequest.setDescription("Item Purchase");
+        checkoutRequest.setAppid(appId);
+        return checkoutRequest;
     }
 
     private static PaymentLinkRequest getPaymentLinkRequest(PaymentOrder request) {
