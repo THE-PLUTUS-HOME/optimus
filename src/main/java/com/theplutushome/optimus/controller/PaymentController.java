@@ -521,6 +521,7 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @Transactional
     @PostMapping("/redde/callback")
     public ResponseEntity<?> reddeCallback(@RequestBody ReddeCallback callback) {
         log.info("Redde payment callback received: {}", callback.toString());
@@ -535,7 +536,7 @@ public class PaymentController {
                 return ResponseEntity.badRequest().body("Order not found");
             }
 
-            // Update order status to PROCESSING
+            // Update order status to PROCESS
             order.setStatus(PaymentOrderStatus.PROCESSING);
             ordersService.updateOrder(order);
 
