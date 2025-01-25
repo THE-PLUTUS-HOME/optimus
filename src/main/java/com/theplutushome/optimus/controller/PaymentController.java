@@ -168,7 +168,7 @@ public class PaymentController {
         checkoutRequest.setApikey(apiKey);
         checkoutRequest.setFailurecallback(request.getCancellationUrl());
         checkoutRequest.setSuccesscallback(request.getReturnUrl());
-        checkoutRequest.setLogolink("");
+        checkoutRequest.setLogolink("https://theplutushome.com/logo4.png");
         checkoutRequest.setMerchantname("The Plutus Home");
         checkoutRequest.setClienttransid(request.getClientReference());
         checkoutRequest.setDescription("Item Purchase");
@@ -288,7 +288,7 @@ public class PaymentController {
 
     }
 
-    @PostMapping("/sms/callback")
+//    @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
