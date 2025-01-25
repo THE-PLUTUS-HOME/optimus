@@ -6,11 +6,12 @@ import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
+import java.lang.Integer;
 
 import java.util.List;
 
 @Repository
-public interface OrderRepository extends CrudRepository<PaymentOrder, String> {
+public interface OrderRepository extends CrudRepository<PaymentOrder, Integer> {
     PaymentOrder findPaymentOrderByClientReference(String clientReference);
     
     PaymentOrder findPaymentOrderByPhoneNumberAndStatus(String phoneNumber, PaymentOrderStatus status);

@@ -68,7 +68,6 @@ public class PaymentController {
     @Autowired
     private OrderOtpRepository orderOtpRepository;
 
-    @Autowired
     public PaymentController(HubtelRestClient client,
             OrdersService ordersService,
             JwtUtil jwtUtil,
@@ -527,7 +526,7 @@ public class PaymentController {
         log.info("Redde payment callback received: {}", callback.toString());
 
         // Find the order by client reference
-        PaymentOrder order = ordersService.findOrderByClientReference(callback.getClientreference());
+        PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
 
         if (callback.getStatus() != null && callback.getStatus().equalsIgnoreCase("PAID")) {
             // Check if the order exists
