@@ -542,13 +542,19 @@ public class PaymentController {
 
             // Send SMS notification to the customer
             String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
-
+            String message1 = "A payment of GHS "
+                    + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
+                    + order.getPhoneNumber() + ". Thank you.";
             SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
-            if (smsResponse.getStatus() == 0) {
+            SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
+
+            if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
                 log.info("SMS sent successfully: {}", smsResponse);
             } else {
                 log.error("Failed to send SMS: {}", smsResponse);
             }
+
+
 
             // Return a success response
             log.info("Payment processed successfully for order: {}", order.getClientReference());
