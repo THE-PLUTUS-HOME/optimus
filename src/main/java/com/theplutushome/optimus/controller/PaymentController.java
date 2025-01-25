@@ -526,35 +526,40 @@ public class PaymentController {
     public ResponseEntity<?> reddeCallback(@RequestBody ReddeCallback callback) {
         log.info("Redde payment callback received: {}", callback.toString());
 
-        // Find the order by client reference
-        PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
-
         if (callback.getStatus() != null && callback.getStatus().equalsIgnoreCase("PAID")) {
+            // Find the order by client reference
+            PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
+
             // Check if the order exists
             if (order == null) {
                 log.error("Order not found for client reference: {}", callback.getClientreference());
                 return ResponseEntity.badRequest().body("Order not found");
             }
 
-            // Update order status to PROCESS
-            order.setStatus(PaymentOrderStatus.PROCESSING);
-            ordersService.updateOrder(order);
+            PayoutRequest request = getPayoutRequest(order);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
 
-            // Send SMS notification to the customer
-            String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
-            String message1 = "A payment of GHS "
-                    + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
-                    + order.getPhoneNumber() + ". Thank you.";
-            SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
-            SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
+            if (payoutResponse.getState() == 0) {
+                order.setStatus(PaymentOrderStatus.PROCESSING);
 
-            if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
-                log.info("SMS sent successfully: {}", smsResponse);
+                // Send SMS notification to the customer
+                String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
+                String message1 = "A payment of GHS "
+                        + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
+                        + order.getPhoneNumber() + ". Thank you.";
+                SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
+                SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
+
+                if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
+                    log.info("SMS sent successfully: {}", smsResponse);
+                } else {
+                    log.error("Failed to send SMS: {}", smsResponse);
+                }
             } else {
-                log.error("Failed to send SMS: {}", smsResponse);
+                order.setStatus(PaymentOrderStatus.FAILED);
             }
 
-
+            ordersService.updateOrder(order);
 
             // Return a success response
             log.info("Payment processed successfully for order: {}", order.getClientReference());
