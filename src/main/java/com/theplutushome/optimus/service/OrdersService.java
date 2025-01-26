@@ -184,50 +184,53 @@ public class OrdersService {
         String[] data = new String[period.equals("week") ? 7
                 : (period.equals("month") || period.equals("year")) ? 12 : 12];
 
+        // Get the current date
+        LocalDate today = LocalDate.now();
+
+        // Calculate the start of the current week (Sunday)
+        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue()); // Sunday of the current week
+
         // Loop through the orders and calculate based on the period and type
         for (PaymentOrder order : orderList) {
             // Get the relevant date for grouping (e.g., created date or timestamp)
             LocalDate orderDate = order.getCreatedAt().toLocalDate(); // Assuming you have an order date or timestamp
 
-            // Calculate the week of the year or month from the orderDate
-            int periodIndex = -1;
+            // Check if the order is within the current week (Sunday to Saturday)
+            if (!orderDate.isBefore(startOfWeek) && !orderDate.isAfter(today)) {
+                // Calculate the day of the week for the order (0 = Sunday, 6 = Saturday)
+                int periodIndex = orderDate.getDayOfWeek().getValue() % 7; // Adjusting so Sunday is 0, Saturday is 6
 
-            if (period.equals("week")) {
-                periodIndex = orderDate.getDayOfWeek().getValue() - 1; // Week day (0-6 for Sunday-Saturday)
-            } else if (period.equals("month")) {
-                periodIndex = orderDate.getMonthValue() - 1; // Month (0-11 for Jan-Dec)
-            } else if (period.equals("year")) {
-                periodIndex = orderDate.getMonthValue() - 1; // Same as month for year-based aggregation
-            }
-
-            // Calculate the value based on the 'type' of data (orders, revenue, profit,
-            // etc.)
-            switch (type) {
-                case "orders":
-                    // Increment the order count for the appropriate period index
-                    data[periodIndex] = String
-                            .valueOf(Integer.parseInt(data[periodIndex] == null ? "0" : data[periodIndex]) + 1);
-                    break;
-                case "revenue":
-                    // Add the revenue (amountGHS) for the corresponding period
-                    double revenue = order.getAmountGHS();
-                    data[periodIndex] = String
-                            .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + revenue);
-                    break;
-                case "costOfSales":
-                    // Calculate cost of sales (amountGHS - fee * rate)
-                    double costOfSales = order.getAmountGHS() - (order.getFee() * order.getRate());
-                    data[periodIndex] = String.valueOf(
-                            Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + costOfSales);
-                    break;
-                case "profit":
-                    // Calculate profit (fee * rate)
-                    double profit = order.getFee() * order.getRate();
-                    data[periodIndex] = String
-                            .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + profit);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid type: " + type);
+                // Calculate the value based on the 'type' of data (orders, revenue, profit,
+                // etc.)
+                switch (type) {
+                    case "orders":
+                        // Increment the order count for the appropriate day of the week
+                        data[periodIndex] = String
+                                .valueOf(Integer.parseInt(data[periodIndex] == null ? "0" : data[periodIndex]) + 1);
+                        break;
+                    case "revenue":
+                        // Add the revenue (amountGHS) for the corresponding day of the week
+                        double revenue = order.getAmountGHS();
+                        data[periodIndex] = String
+                                .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex])
+                                        + revenue);
+                        break;
+                    case "costOfSales":
+                        // Calculate cost of sales (amountGHS - fee * rate)
+                        double costOfSales = order.getAmountGHS() - (order.getFee() * order.getRate());
+                        data[periodIndex] = String.valueOf(
+                                Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + costOfSales);
+                        break;
+                    case "profit":
+                        // Calculate profit (fee * rate)
+                        double profit = order.getFee() * order.getRate();
+                        data[periodIndex] = String
+                                .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex])
+                                        + profit);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid type: " + type);
+                }
             }
         }
 
