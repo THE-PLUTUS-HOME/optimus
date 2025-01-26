@@ -364,11 +364,12 @@ public class OrdersService {
         return ordersDto;
     }
 
-    public List<OrdersDto> getAllOrders() {
-        List<PaymentOrder> orderList = orderRepository.findPaymentOrdersByDeleted(false);
-        if (orderList.isEmpty()) {
-            return null;
-        }
-        return orderList.stream().map(this::convertToDto).collect(Collectors.toList());
+    public List<PaymentOrder> getAllOrders() {
+        // List<PaymentOrder> orderList = orderRepository.findPaymentOrdersByDeleted(false);
+        // if (orderList.isEmpty()) {
+        //     return null;
+        // }
+        // return orderList.stream().map(this::convertToDto).collect(Collectors.toList());
+        return orderRepository.findPaymentOrdersByDeleted(false);
     }
 }
