@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -184,8 +185,10 @@ public class OrdersService {
         String[] data = new String[period.equals("week") ? 7
                 : (period.equals("month") || period.equals("year")) ? 12 : 12];
 
-        // Get the current date
+        // Get the current date and calculate the start of the week (Sunday)
         LocalDate today = LocalDate.now();
+        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() % 7); // Sunday (start of the current
+                                                                                      // week)
 
         // Loop through the orders and calculate based on the period and type
         for (PaymentOrder order : orderList) {
@@ -195,9 +198,8 @@ public class OrdersService {
             int periodIndex = -1;
 
             if (period.equals("week")) {
-                // Weekly aggregation: Determine if the order is within the most recent week
+                // Weekly aggregation: Only consider orders within the current week
                 // (Sunday-Saturday)
-                LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue()); // Sunday of the current week
                 if (!orderDate.isBefore(startOfWeek) && !orderDate.isAfter(today)) {
                     // Calculate the day of the week for the order (0 = Sunday, 6 = Saturday)
                     periodIndex = orderDate.getDayOfWeek().getValue() % 7; // Adjusting so Sunday is 0, Saturday is 6
@@ -212,7 +214,7 @@ public class OrdersService {
                 }
             }
 
-            // Only aggregate if the order matches the period logic (for month, week, or
+            // Only aggregate if the order matches the period logic (for week, month, or
             // year aggregation)
             if (periodIndex >= 0) {
                 // Calculate the value based on the 'type' of data (orders, revenue, profit,
@@ -249,6 +251,11 @@ public class OrdersService {
             }
         }
 
+        // If there are no orders this week, set all values to "0"
+        if (period.equals("week") && !isOrdersInCurrentWeek(orderList, startOfWeek, today)) {
+            Arrays.fill(data, "0");
+        }
+
         return data;
     }
 
@@ -257,6 +264,13 @@ public class OrdersService {
         return (int) orders.stream()
                 .filter(order -> isCurrentWeek(order.getCreatedAt()))
                 .count();
+    }
+
+    private boolean isOrdersInCurrentWeek(List<PaymentOrder> orderList, LocalDate startOfWeek, LocalDate today) {
+        return orderList.stream().anyMatch(order -> {
+            LocalDate orderDate = order.getCreatedAt().toLocalDate();
+            return !orderDate.isBefore(startOfWeek) && !orderDate.isAfter(today);
+        });
     }
 
     private int getOrdersForPreviousWeek(List<PaymentOrder> orders) {
