@@ -1,7 +1,6 @@
 package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.dto.DashboardDto;
-import com.theplutushome.optimus.dto.OrdersDto;
 import com.theplutushome.optimus.dto.PaymentOrderDto;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.service.OrdersService;
@@ -35,9 +34,9 @@ public class OrdersController {
     }
 
 
-    // @GetMapping("/find/order/{orderId}")
-    public ResponseEntity<PaymentOrder> getOrder(@RequestHeader("Authorization") String authHeader, @PathVariable int orderId) {
-        PaymentOrder order = ordersService.findOrder(orderId, authHeader);
+    @GetMapping("/find/order/{orderId}")
+    public ResponseEntity<PaymentOrder> getOrder(@PathVariable int orderId) {
+        PaymentOrder order = ordersService.findOrder(orderId);
         return ResponseEntity.ok(order);
     }
 

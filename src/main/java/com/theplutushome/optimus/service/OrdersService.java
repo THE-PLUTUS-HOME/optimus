@@ -43,8 +43,12 @@ public class OrdersService {
         return null;
     }
 
-    public PaymentOrder findOrder(int orderId, String authHeader) {
-        return null;
+    public PaymentOrder findOrder(int orderId) {
+        PaymentOrder order = orderRepository.findById(String.valueOf(orderId)).orElse(null);
+        if (order == null) {
+            throw new OrderNotFoundException();
+        }
+        return order;
     }
 
     public void createOrder(PaymentOrder order) {
@@ -365,11 +369,13 @@ public class OrdersService {
     }
 
     public List<PaymentOrderDto> getAllOrders() {
-        // List<PaymentOrder> orderList = orderRepository.findPaymentOrdersByDeleted(false);
+        // List<PaymentOrder> orderList =
+        // orderRepository.findPaymentOrdersByDeleted(false);
         // if (orderList.isEmpty()) {
-        //     return null;
+        // return null;
         // }
-        // return orderList.stream().map(this::convertToDto).collect(Collectors.toList());
+        // return
+        // orderList.stream().map(this::convertToDto).collect(Collectors.toList());
         return orderRepository.findAllByDeleted(false);
     }
 }
