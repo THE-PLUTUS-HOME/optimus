@@ -365,7 +365,7 @@ public class OrdersService {
     }
 
     public List<OrdersDto> getAllOrders() {
-        List<PaymentOrder> orderList = orderRepository.findAllOrders();
+        List<PaymentOrder> orderList = orderRepository.findPaymentOrdersByDeleted(false);
         return orderList.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 }
