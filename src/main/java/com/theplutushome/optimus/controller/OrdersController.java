@@ -42,7 +42,7 @@ public class OrdersController {
     }
 
     @GetMapping("/find/all")
-    public List<OrdersDto> getAllOrders(){
+    public List<PaymentOrderDto> getAllOrders(){
         return ordersService.getAllOrders();
     }
 
