@@ -104,14 +104,18 @@ public class OrdersService {
         // 3. Total Revenue (sum of amountGHS)
         double totalRevenue = 0.0;
         for (PaymentOrder order : orderList) {
-            totalRevenue += order.getAmountGHS();
+            if (order.getStatus() == PaymentOrderStatus.COMPLETED) {
+                totalRevenue += order.getAmountGHS();
+            }
         }
         dashboardDto.setTotalRevenue(String.valueOf(totalRevenue));
 
         // 4. Total Profit (fee * rate)
         double totalProfit = 0.0;
         for (PaymentOrder order : orderList) {
-            totalProfit += (order.getFee() * order.getRate());
+            if (order.getStatus() == PaymentOrderStatus.COMPLETED) {
+                totalProfit += (order.getFee() * order.getRate());
+            }
         }
         dashboardDto.setTotalProfit(String.valueOf(totalProfit));
 
