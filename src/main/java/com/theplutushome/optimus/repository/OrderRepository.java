@@ -19,5 +19,5 @@ public interface OrderRepository extends CrudRepository<PaymentOrder, String> {
 
     List<PaymentOrderDto> findAllByEmail(@NotNull String email);
 
-    List<PaymentOrder> findPaymentOrdersByDeleted(boolean deleted);
+    List<PaymentOrderDto> findAllByDeleted(boolean deleted);
 }
