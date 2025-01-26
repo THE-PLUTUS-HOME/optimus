@@ -11,6 +11,7 @@ import com.theplutushome.optimus.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
@@ -91,7 +92,7 @@ public class OrdersService {
         // 2. Total Customers (unique emails)
         Set<String> uniqueCustomers = new HashSet<>();
         for (PaymentOrder order : orderList) {
-            uniqueCustomers.add(order.getEmail());
+            uniqueCustomers.add(order.getPhoneNumber());
         }
         dashboardDto.setTotalCustomers(String.valueOf(uniqueCustomers.size()));
 
@@ -178,13 +179,56 @@ public class OrdersService {
 
     // Helper method to aggregate data by period (week, month, year)
     private String[] aggregateDataForPeriod(List<PaymentOrder> orderList, String period, String type) {
-        String[] data = new String[period.equals("week") ? 7 : (period.equals("month") ? 12 : 12)];
+        // Initialize the array for data (7 days for week, 12 months for month, 12
+        // months for year)
+        String[] data = new String[period.equals("week") ? 7
+                : (period.equals("month") || period.equals("year")) ? 12 : 12];
 
-        // Example aggregation logic
-        for (int i = 0; i < data.length; i++) {
-            // Logic to aggregate data (order counts, revenue, profit, cost of sales) based
-            // on period
-            data[i] = "100"; // Placeholder for actual data aggregation
+        // Loop through the orders and calculate based on the period and type
+        for (PaymentOrder order : orderList) {
+            // Get the relevant date for grouping (e.g., created date or timestamp)
+            LocalDate orderDate = order.getCreatedAt().toLocalDate(); // Assuming you have an order date or timestamp
+
+            // Calculate the week of the year or month from the orderDate
+            int periodIndex = -1;
+
+            if (period.equals("week")) {
+                periodIndex = orderDate.getDayOfWeek().getValue() - 1; // Week day (0-6 for Sunday-Saturday)
+            } else if (period.equals("month")) {
+                periodIndex = orderDate.getMonthValue() - 1; // Month (0-11 for Jan-Dec)
+            } else if (period.equals("year")) {
+                periodIndex = orderDate.getMonthValue() - 1; // Same as month for year-based aggregation
+            }
+
+            // Calculate the value based on the 'type' of data (orders, revenue, profit,
+            // etc.)
+            switch (type) {
+                case "orders":
+                    // Increment the order count for the appropriate period index
+                    data[periodIndex] = String
+                            .valueOf(Integer.parseInt(data[periodIndex] == null ? "0" : data[periodIndex]) + 1);
+                    break;
+                case "revenue":
+                    // Add the revenue (amountGHS) for the corresponding period
+                    double revenue = order.getAmountGHS();
+                    data[periodIndex] = String
+                            .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + revenue);
+                    break;
+                case "costOfSales":
+                    // Calculate cost of sales (amountGHS - fee * rate)
+                    double costOfSales = order.getAmountGHS() - (order.getFee() * order.getRate());
+                    data[periodIndex] = String.valueOf(
+                            Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + costOfSales);
+                    break;
+                case "profit":
+                    // Calculate profit (fee * rate)
+                    double profit = order.getFee() * order.getRate();
+                    data[periodIndex] = String
+                            .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex]) + profit);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid type: " + type);
+            }
         }
 
         return data;
@@ -270,7 +314,7 @@ public class OrdersService {
         return orderDate.toLocalDate().equals(now.toLocalDate());
     }
 
-    public OrdersDto convertToDto(PaymentOrder order){
+    public OrdersDto convertToDto(PaymentOrder order) {
         OrdersDto ordersDto = new OrdersDto();
         ordersDto.setClientReference(order.getClientReference());
         ordersDto.setAmountGHS(order.getAmountGHS());
@@ -286,9 +330,8 @@ public class OrdersService {
         ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
         return ordersDto;
     }
-    
 
-    public List<OrdersDto> getAllOrders(){
+    public List<OrdersDto> getAllOrders() {
         Iterable<PaymentOrder> orders = orderRepository.findAll();
         List<PaymentOrder> orderList = new ArrayList<>();
         orders.forEach(orderList::add);
