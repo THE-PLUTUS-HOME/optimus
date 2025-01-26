@@ -4,7 +4,6 @@ import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.entity.model.PaymentMethod;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,21 +19,14 @@ public class PaymentOrder extends EntityModel{
     private String cancellationUrl;
     @Column(unique = true)
     private String clientReference;
-    @NotNull
     private double amountGHS;
-    @NotNull
     private double fee;
     @Enumerated(EnumType.STRING)
     private PaymentOrderStatus status;
-    @NotNull
     private String crypto;
-    @NotNull
     private double cryptoAmount;
-    @NotNull
     private String email;
-    @NotNull
     private double rate;
-    @NotNull
     private String address;
     private String phoneNumber;
     private String transactionId;
