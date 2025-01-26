@@ -42,7 +42,10 @@ public class OrdersController {
 
     @GetMapping("/find/all")
     public List<PaymentOrderDto> getAllOrders(){
-        return ordersService.getAllOrders();
+        //sort by createdAt in descending order
+        return ordersService.getAllOrders().stream()
+                .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/dashboard/data")
