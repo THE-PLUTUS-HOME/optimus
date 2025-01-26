@@ -366,6 +366,9 @@ public class OrdersService {
 
     public List<OrdersDto> getAllOrders() {
         List<PaymentOrder> orderList = orderRepository.findPaymentOrdersByDeleted(false);
+        if (orderList.isEmpty()) {
+            return null;
+        }
         return orderList.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 }
