@@ -175,7 +175,7 @@ public class OrdersService {
         // 11. Set recent orders (latest 3 orders)
         List<PaymentOrder> recentOrders = orderList.stream()
                 .sorted(Comparator.comparing(PaymentOrder::getCreatedAt).reversed())
-                .limit(3)
+                .limit(6)
                 .collect(Collectors.toList());
         dashboardDto.setRecentOrders(recentOrders.stream().map(this::convertToDto).collect(Collectors.toList()));
 
