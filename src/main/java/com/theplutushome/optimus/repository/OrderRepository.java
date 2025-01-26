@@ -18,4 +18,6 @@ public interface OrderRepository extends CrudRepository<PaymentOrder, String> {
     List<PaymentOrder> findPaymentOrdersByEmailAndStatus(String email, PaymentOrderStatus status);
 
     List<PaymentOrderDto> findAllByEmail(@NotNull String email);
+
+    List<PaymentOrder> findAllOrders();
 }

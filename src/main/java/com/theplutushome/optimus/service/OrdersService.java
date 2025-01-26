@@ -365,9 +365,7 @@ public class OrdersService {
     }
 
     public List<OrdersDto> getAllOrders() {
-        Iterable<PaymentOrder> orders = orderRepository.findAll();
-        List<PaymentOrder> orderList = new ArrayList<>();
-        orders.forEach(orderList::add);
+        List<PaymentOrder> orderList = orderRepository.findAllOrders();
         return orderList.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 }
