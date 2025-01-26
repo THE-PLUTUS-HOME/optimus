@@ -264,7 +264,7 @@ public class OrdersService {
     private int getUniqueCustomersForCurrentWeek(List<PaymentOrder> orders) {
         return (int) orders.stream()
                 .filter(order -> isCurrentWeek(order.getCreatedAt()))
-                .map(PaymentOrder::getEmail)
+                .map(PaymentOrder::getPhoneNumber)
                 .distinct()
                 .count();
     }
@@ -272,7 +272,7 @@ public class OrdersService {
     private int getUniqueCustomersForPreviousWeek(List<PaymentOrder> orders) {
         return (int) orders.stream()
                 .filter(order -> isPreviousWeek(order.getCreatedAt()))
-                .map(PaymentOrder::getEmail)
+                .map(PaymentOrder::getPhoneNumber)
                 .distinct()
                 .count();
     }
