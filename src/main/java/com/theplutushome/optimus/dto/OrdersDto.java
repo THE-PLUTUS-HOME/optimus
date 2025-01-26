@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class OrdersDto {
+    private int id;
     private String clientReference;
     private double amountGHS;
     private double fee;

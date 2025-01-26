@@ -23,7 +23,7 @@ public class OrdersController {
         this.ordersService = ordersService;
     }
 
-    @GetMapping("/list/{email}")
+    // @GetMapping("/list/orders/{email}")
     public List<PaymentOrderDto> getOrders(@PathVariable(value = "email") String email, @RequestHeader("Authorization") String authHeader) {
         List<PaymentOrderDto> orders = ordersService.getAllOrders(email, authHeader);
         if (orders != null) {
@@ -35,18 +35,18 @@ public class OrdersController {
     }
 
 
-    @GetMapping("/{orderId}")
+    // @GetMapping("/find/order/{orderId}")
     public ResponseEntity<PaymentOrder> getOrder(@RequestHeader("Authorization") String authHeader, @PathVariable int orderId) {
         PaymentOrder order = ordersService.findOrder(orderId, authHeader);
         return ResponseEntity.ok(order);
     }
 
-    @GetMapping("/findAll")
+    @GetMapping("/find/all")
     public List<OrdersDto> getAllOrders(){
         return ordersService.getAllOrders();
     }
 
-    @GetMapping("/dashboard")
+    @GetMapping("/dashboard/data")
     public DashboardDto getDashboardData(){
         return ordersService.getDashboardData();
     }

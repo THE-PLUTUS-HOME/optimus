@@ -360,6 +360,7 @@ public class OrdersService {
         ordersDto.setTransactionId(order.getTransactionId());
         ordersDto.setCreatedAt(order.getCreatedAt().toString());
         ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
+        ordersDto.setId(order.getId());
         return ordersDto;
     }
 
