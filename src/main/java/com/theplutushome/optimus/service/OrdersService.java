@@ -187,29 +187,44 @@ public class OrdersService {
         // Get the current date
         LocalDate today = LocalDate.now();
 
-        // Calculate the start of the current week (Sunday)
-        LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue()); // Sunday of the current week
-
         // Loop through the orders and calculate based on the period and type
         for (PaymentOrder order : orderList) {
             // Get the relevant date for grouping (e.g., created date or timestamp)
             LocalDate orderDate = order.getCreatedAt().toLocalDate(); // Assuming you have an order date or timestamp
 
-            // Check if the order is within the current week (Sunday to Saturday)
-            if (!orderDate.isBefore(startOfWeek) && !orderDate.isAfter(today)) {
-                // Calculate the day of the week for the order (0 = Sunday, 6 = Saturday)
-                int periodIndex = orderDate.getDayOfWeek().getValue() % 7; // Adjusting so Sunday is 0, Saturday is 6
+            int periodIndex = -1;
 
+            if (period.equals("week")) {
+                // Weekly aggregation: Determine if the order is within the most recent week
+                // (Sunday-Saturday)
+                LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue()); // Sunday of the current week
+                if (!orderDate.isBefore(startOfWeek) && !orderDate.isAfter(today)) {
+                    // Calculate the day of the week for the order (0 = Sunday, 6 = Saturday)
+                    periodIndex = orderDate.getDayOfWeek().getValue() % 7; // Adjusting so Sunday is 0, Saturday is 6
+                }
+            } else if (period.equals("month")) {
+                // Monthly aggregation: Use the month (0-11 for Jan-Dec)
+                periodIndex = orderDate.getMonthValue() - 1; // Month (0-11 for Jan-Dec)
+            } else if (period.equals("year")) {
+                // Yearly aggregation: Use the month (0-11 for Jan-Dec) for the current year
+                if (orderDate.getYear() == today.getYear()) {
+                    periodIndex = orderDate.getMonthValue() - 1; // Month (0-11 for Jan-Dec)
+                }
+            }
+
+            // Only aggregate if the order matches the period logic (for month, week, or
+            // year aggregation)
+            if (periodIndex >= 0) {
                 // Calculate the value based on the 'type' of data (orders, revenue, profit,
                 // etc.)
                 switch (type) {
                     case "orders":
-                        // Increment the order count for the appropriate day of the week
+                        // Increment the order count for the appropriate period index
                         data[periodIndex] = String
                                 .valueOf(Integer.parseInt(data[periodIndex] == null ? "0" : data[periodIndex]) + 1);
                         break;
                     case "revenue":
-                        // Add the revenue (amountGHS) for the corresponding day of the week
+                        // Add the revenue (amountGHS) for the corresponding period
                         double revenue = order.getAmountGHS();
                         data[periodIndex] = String
                                 .valueOf(Double.parseDouble(data[periodIndex] == null ? "0" : data[periodIndex])
