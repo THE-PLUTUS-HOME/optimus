@@ -41,7 +41,7 @@ public class OrdersController {
         return ResponseEntity.ok(order);
     }
 
-    @GetMapping("/all")
+    @GetMapping("/findAll")
     public List<OrdersDto> getAllOrders(){
         return ordersService.getAllOrders();
     }
