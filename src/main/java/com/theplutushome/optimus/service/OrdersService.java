@@ -9,6 +9,7 @@ import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.repository.OrderRepository;
 import com.theplutushome.optimus.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -381,5 +382,21 @@ public class OrdersService {
         // return
         // orderList.stream().map(this::convertToDto).collect(Collectors.toList());
         return orderRepository.findAllByDeleted(false);
+    }
+
+    // THE FUNCTION CHGECKS IF THE ROEDER IS PENDING , SETIS IT TO aBANDONED AND
+    // ANYTHING OTHER THAN COMPLETED, SETS IT TO FAILED
+    @Scheduled(cron = "0 0 0 * * *")
+    public void updatePendingOrders() {
+        List<PaymentOrder> pendingOrders = orderRepository.findPaymentOrdersByStatusAndCreatedAtBefore(
+                PaymentOrderStatus.PENDING, LocalDateTime.now().minusMinutes(10));
+        for (PaymentOrder order : pendingOrders) {
+            if (order.getStatus() == PaymentOrderStatus.PENDING) {
+                order.setStatus(PaymentOrderStatus.ABANDONED);
+            } else if (order.getStatus() != PaymentOrderStatus.COMPLETED) {
+                order.setStatus(PaymentOrderStatus.FAILED);
+            }
+            orderRepository.save(order);
+        }
     }
 }

@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -20,4 +21,6 @@ public interface OrderRepository extends CrudRepository<PaymentOrder, String> {
     List<PaymentOrderDto> findAllByEmail(@NotNull String email);
 
     List<PaymentOrderDto> findAllByDeleted(boolean deleted);
+
+    List<PaymentOrder> findPaymentOrdersByStatusAndCreatedAtBefore(PaymentOrderStatus status, LocalDateTime createdAt);
 }
