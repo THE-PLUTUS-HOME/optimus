@@ -2,9 +2,11 @@ package com.theplutushome.optimus.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -49,6 +51,7 @@ public class WebSecurityConfig {
                 .cors(withDefaults()) // Enable CORS
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permit all OPTIONS requests
                         .requestMatchers(
                                 "/optimus/v1/api/**",
                                 "/api/verify-captcha",
@@ -66,7 +69,7 @@ public class WebSecurityConfig {
                         .anyRequest().authenticated())
                 .addFilterBefore(rateLimitingFilter, ApiKeyFilter.class)
                 .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         System.out.println("Configuring Success ...");
         return http.build();
@@ -81,7 +84,7 @@ public class WebSecurityConfig {
                 "http://localhost:5173",
                 "https://admin.theplutushome.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
-        configuration.setAllowedHeaders(List.of("*")); // Allow all headers
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify headers
         configuration.setAllowCredentials(true); // Allow credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

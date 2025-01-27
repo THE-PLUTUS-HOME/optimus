@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.lang.NonNull;
@@ -39,8 +40,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             "/optimus/v1/api/cryptomus/callback",
             "/optimus/v1/api/payment/callback",
             "/optimus/v1/api/payment/redde/callback",
-            "/optimus/v1/api/payment/sms/callback"
-    );
+            "/optimus/v1/api/payment/sms/callback");
 
     // Inject the Environment and retrieve the API key
     public ApiKeyFilter(Environment environment, JwtUtil jwtUtil) {
@@ -54,8 +54,14 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
+                
+        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String path = request.getRequestURI();
 
         // Exclude specific paths from filtering
