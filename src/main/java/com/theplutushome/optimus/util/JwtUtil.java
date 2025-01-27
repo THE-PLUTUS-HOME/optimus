@@ -3,6 +3,8 @@ package com.theplutushome.optimus.util;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.impl.DefaultHeader;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
@@ -31,7 +33,7 @@ public class JwtUtil {
     }
 
     public String generateToken(String username) {
-        long EXPIRATION_TIME = 60_000 * 20;
+        long EXPIRATION_TIME = 60_000 * 60 * 24;
         return Jwts.builder()
                 .subject(username)
                 .issuedAt(new Date(System.currentTimeMillis()))
@@ -86,7 +88,7 @@ public class JwtUtil {
             if (this.isTokenExpired(token)) {
                 Map<String, Object> headerValues = new HashMap<>();
                 headerValues.put("alg", "HS256"); // Algorithm
-                headerValues.put("typ", "JWT");  // Token type
+                headerValues.put("typ", "JWT"); // Token type
 
                 Header header = new DefaultHeader(headerValues);
                 Claims claims = this.extractClaim(token); // Ensure this method properly extracts claims
@@ -97,6 +99,31 @@ public class JwtUtil {
         } catch (IllegalArgumentException ex) {
             throw new JwtException("Invalid or empty JWT: " + ex.getMessage());
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    public boolean validateToken(String token) {
+        try {
+            ((JwtParser) Jwts.parser()
+                    .setSigningKey(SIGNING_KEY))
+                    .parseSignedClaims(token);
+            return true;
+        } catch (SignatureException | MalformedJwtException | ExpiredJwtException |
+                 UnsupportedJwtException | IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    public String extractJwtFromRequest(HttpServletRequest request) {
+        if (request.getCookies() == null)
+            return null;
+
+        for (Cookie cookie : request.getCookies()) {
+            if ("JWT".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
     }
 
 }

@@ -4,15 +4,13 @@ public class LoginResponse {
     private String status;
     private String message;
     private String lastLoggedIn;
-    private String token;
     private String email;
     private String username;
 
-    public LoginResponse(String status, String message, String lastLoggedIn, String token, String email, String username) {
+    public LoginResponse(String status, String message, String lastLoggedIn, String email, String username) {
         this.status = status;
         this.message = message;
         this.lastLoggedIn = lastLoggedIn;
-        this.token = token;
         this.email = email;
         this.username = username;
     }
@@ -50,14 +48,6 @@ public class LoginResponse {
 
     public void setLastLoggedIn(String lastLoggedIn) {
         this.lastLoggedIn = lastLoggedIn;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
     }
 
     public String getEmail() {

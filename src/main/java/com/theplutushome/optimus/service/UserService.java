@@ -125,7 +125,6 @@ public class UserService {
         }
 
         // Generate JWT token
-        String token = jwtUtil.generateToken(user.getUsername());
 
         user.setLastLoggedIn(LocalDateTime.now());
         userRepository.save(user);
@@ -134,7 +133,6 @@ public class UserService {
                 "success",
                 "Login successful",
                 user.getLastLoggedIn().toString(),
-                token,
                 user.getEmail(),
                 user.getUsername()
         );

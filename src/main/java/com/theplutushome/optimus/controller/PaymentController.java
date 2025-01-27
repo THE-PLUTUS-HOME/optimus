@@ -153,8 +153,7 @@ public class PaymentController {
         }
 
         request.setDescription("Item Purchase");
-        request.setCallbackUrl(
-                "https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/payment/redde/callback");
+        request.setCallbackUrl("https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/payment/redde/callback");
         request.setReturnUrl("https://theplutushome.com/payment/success");
         request.setCancellationUrl("https://theplutushome.com/payment/failed");
         ordersService.createOrder(request);

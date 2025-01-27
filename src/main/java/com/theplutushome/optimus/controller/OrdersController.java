@@ -4,6 +4,8 @@ import com.theplutushome.optimus.dto.DashboardDto;
 import com.theplutushome.optimus.dto.PaymentOrderDto;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.service.OrdersService;
+import com.theplutushome.optimus.util.JwtUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +18,11 @@ import java.util.stream.Collectors;
 public class OrdersController {
 
     private final OrdersService ordersService;
-
+    private final JwtUtil jwtUtil;
     @Autowired
-    public OrdersController(OrdersService ordersService) {
+    public OrdersController(OrdersService ordersService, JwtUtil jwtUtil) {
         this.ordersService = ordersService;
+        this.jwtUtil = jwtUtil;
     }
 
     // @GetMapping("/list/orders/{email}")
@@ -41,15 +44,17 @@ public class OrdersController {
     }
 
     @GetMapping("/find/all")
-    public List<PaymentOrderDto> getAllOrders(){
+    public List<PaymentOrderDto> getAllOrders(@RequestHeader("Authorization") String authHeader){
         //sort by createdAt in descending order
+        jwtUtil.verifyToken(authHeader);
         return ordersService.getAllOrders().stream()
                 .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt()))
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/dashboard/data")
-    public DashboardDto getDashboardData(){
+    public DashboardDto getDashboardData(@RequestHeader("Authorization") String authHeader){
+        jwtUtil.verifyToken(authHeader);
         return ordersService.getDashboardData();
     }
 
