@@ -68,7 +68,6 @@ public class PaymentController {
     @Autowired
     private OrderOtpRepository orderOtpRepository;
 
-    @Autowired
     public PaymentController(HubtelRestClient client,
             OrdersService ordersService,
             JwtUtil jwtUtil,
@@ -168,7 +167,7 @@ public class PaymentController {
         checkoutRequest.setApikey(apiKey);
         checkoutRequest.setFailurecallback(request.getCancellationUrl());
         checkoutRequest.setSuccesscallback(request.getReturnUrl());
-        checkoutRequest.setLogolink("");
+        checkoutRequest.setLogolink("https://theplutushome.com/logo4.png");
         checkoutRequest.setMerchantname("The Plutus Home");
         checkoutRequest.setClienttransid(request.getClientReference());
         checkoutRequest.setDescription("Item Purchase");
@@ -288,7 +287,7 @@ public class PaymentController {
 
     }
 
-    @PostMapping("/sms/callback")
+//    @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
@@ -521,37 +520,54 @@ public class PaymentController {
         return ResponseEntity.ok(response);
     }
 
+    @Transactional
     @PostMapping("/redde/callback")
     public ResponseEntity<?> reddeCallback(@RequestBody ReddeCallback callback) {
         log.info("Redde payment callback received: {}", callback.toString());
 
-        // Find the order by client reference
-        PaymentOrder order = ordersService.findOrderByClientReference(callback.getClientreference());
-
         if (callback.getStatus() != null && callback.getStatus().equalsIgnoreCase("PAID")) {
+            // Find the order by client reference
+            PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
+
             // Check if the order exists
             if (order == null) {
                 log.error("Order not found for client reference: {}", callback.getClientreference());
                 return ResponseEntity.badRequest().body("Order not found");
             }
 
-            // Update order status to PROCESSING
-            order.setStatus(PaymentOrderStatus.PROCESSING);
-            ordersService.updateOrder(order);
+            PayoutRequest request = getPayoutRequest(order);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
 
-            // Send SMS notification to the customer
-            String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
+            if (payoutResponse.getState() == 0) {
+                order.setStatus(PaymentOrderStatus.PROCESSING);
 
-            SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
-            if (smsResponse.getStatus() == 0) {
-                log.info("SMS sent successfully: {}", smsResponse);
+                // Send SMS notification to the customer
+                String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
+                String message1 = "A payment of GHS "
+                        + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
+                        + order.getPhoneNumber() + ". Thank you.";
+                SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
+                SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
+
+                if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
+                    log.info("SMS sent successfully: {}", smsResponse);
+                } else {
+                    log.error("Failed to send SMS: {}", smsResponse);
+                }
             } else {
-                log.error("Failed to send SMS: {}", smsResponse);
+                order.setStatus(PaymentOrderStatus.FAILED);
             }
+
+            ordersService.updateOrder(order);
 
             // Return a success response
             log.info("Payment processed successfully for order: {}", order.getClientReference());
             return ResponseEntity.ok("Payment processed successfully");
+        } else {
+
+            PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
+            order.setStatus(PaymentOrderStatus.FAILED);
+            ordersService.updateOrder(order);
         }
 
         // If the status is not PAID, handle accordingly
