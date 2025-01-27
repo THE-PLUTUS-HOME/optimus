@@ -71,13 +71,11 @@ public class WebSecurityConfig {
                 "http://localhost:5173",
                 "https://admin.theplutushome.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify
-                                                                                                                 // headers
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify                                                          // headers
         configuration.setAllowCredentials(true); // Allow credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // Apply this CORS configuration to all endpoints
         return source;
     }
-
 }
