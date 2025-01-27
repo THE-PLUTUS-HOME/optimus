@@ -14,12 +14,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+
 import static org.springframework.security.config.Customizer.withDefaults;
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
 @EnableWebSecurity
-
 public class WebSecurityConfig {
 
     private final ApiKeyFilter apiKeyFilter;
@@ -29,20 +28,6 @@ public class WebSecurityConfig {
         this.apiKeyFilter = apiKeyFilter;
         this.rateLimitingFilter = rateLimitingFilter;
     }
-
-    // @Bean
-    // @Order(HIGHEST_PRECEDENCE)
-    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    // http.authorizeHttpRequests(authz -> authz
-    // .requestMatchers("/login").permitAll()
-    // .requestMatchers("/optimus/v1/api/payment/callback")
-    // .access(new WebExpressionAuthorizationManager("isAuthenticated() and
-    // hasIpAddress('11.11.11.11')"))
-    // .anyRequest().authenticated()
-    // )
-    // .csrf(AbstractHttpConfigurer::disable);
-    // return http.build();
-    // }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -67,7 +52,9 @@ public class WebSecurityConfig {
                                 "/swagger-ui.html")
                         .permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(rateLimitingFilter, ApiKeyFilter.class)
+                // Add RateLimitingFilter before UsernamePasswordAuthenticationFilter
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
+                // Add ApiKeyFilter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -84,7 +71,8 @@ public class WebSecurityConfig {
                 "http://localhost:5173",
                 "https://admin.theplutushome.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify headers
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify
+                                                                                                                 // headers
         configuration.setAllowCredentials(true); // Allow credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
