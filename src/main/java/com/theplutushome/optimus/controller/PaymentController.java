@@ -152,7 +152,8 @@ public class PaymentController {
         }
 
         request.setDescription("Item Purchase");
-        request.setCallbackUrl("https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/payment/redde/callback");
+        request.setCallbackUrl(
+                "https://optimus-backend-49b31c7c7d3a.herokuapp.com/optimus/v1/api/payment/redde/callback");
         request.setReturnUrl("https://theplutushome.com/payment/success");
         request.setCancellationUrl("https://theplutushome.com/payment/failed");
         ordersService.createOrder(request);
@@ -199,18 +200,9 @@ public class PaymentController {
         }
 
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
-            // Find the order by client reference
-
-            if (order == null) {
-                log.error("Order not found for client reference: {}", callBack.getData().getClientReference());
-                return ResponseEntity.badRequest().body("Order not found");
-            }
-
-            // Process the payout request
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
-
-            // Update order status based on payout response
+                
             if (payoutResponse.getState() == 0) {
                 order.setStatus(PaymentOrderStatus.PROCESSING);
 
@@ -287,7 +279,7 @@ public class PaymentController {
 
     }
 
-//    @PostMapping("/sms/callback")
+    // @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
@@ -524,55 +516,41 @@ public class PaymentController {
     @PostMapping("/redde/callback")
     public ResponseEntity<?> reddeCallback(@RequestBody ReddeCallback callback) {
         log.info("Redde payment callback received: {}", callback.toString());
-
-        if (callback.getStatus() != null && callback.getStatus().equalsIgnoreCase("PAID")) {
-            // Find the order by client reference
-            PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
-
-            // Check if the order exists
-            if (order == null) {
-                log.error("Order not found for client reference: {}", callback.getClientreference());
-                return ResponseEntity.badRequest().body("Order not found");
-            }
-
-            PayoutRequest request = getPayoutRequest(order);
-            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
-
-            if (payoutResponse.getState() == 0) {
-                order.setStatus(PaymentOrderStatus.PROCESSING);
-
-                // Send SMS notification to the customer
-                String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
-                String message1 = "A payment of GHS "
-                        + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
-                        + order.getPhoneNumber() + ". Thank you.";
-                SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
-                SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
-
-                if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
-                    log.info("SMS sent successfully: {}", smsResponse);
-                } else {
-                    log.error("Failed to send SMS: {}", smsResponse);
-                }
-            } else {
-                order.setStatus(PaymentOrderStatus.FAILED);
-            }
-
-            ordersService.updateOrder(order);
-
-            // Return a success response
-            log.info("Payment processed successfully for order: {}", order.getClientReference());
-            return ResponseEntity.ok("Payment processed successfully");
-        } else {
-
+        if (callback.getStatus() != null && callback.getStatus().equalsIgnoreCase("FAILED")) {
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
             order.setStatus(PaymentOrderStatus.FAILED);
             ordersService.updateOrder(order);
+            return ResponseEntity.ok().body("Order Processed");
         }
 
-        // If the status is not PAID, handle accordingly
-        log.info("Invalid callback status: {}", callback.getStatus());
-        return ResponseEntity.ok().body("Order Processed");
+        PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
+        PayoutRequest request = getPayoutRequest(order);
+        PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+
+        if (payoutResponse.getState() == 0) {
+            order.setStatus(PaymentOrderStatus.PROCESSING);
+
+            String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
+            String message1 = "A payment of GHS "
+                    + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
+                    + order.getPhoneNumber() + ". Thank you.";
+            SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
+            SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
+
+            if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
+                log.info("SMS sent successfully: {}", smsResponse);
+            } else {
+                log.error("Failed to send SMS: {}", smsResponse);
+            }
+        } else {
+            order.setStatus(PaymentOrderStatus.FAILED);
+        }
+
+        ordersService.updateOrder(order);
+
+        log.info("Payment processed successfully for order: {}", order.getClientReference());
+        return ResponseEntity.ok("Payment processed successfully");
+
     }
 
 }

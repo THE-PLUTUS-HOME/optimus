@@ -8,7 +8,6 @@ import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.repository.OrderRepository;
 import com.theplutushome.optimus.util.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,6 @@ public class OrdersService {
     private OrderRepository orderRepository;
     private JwtUtil jwtUtil;
 
-    @Autowired
     public OrdersService(OrderRepository orderRepository, JwtUtil jwtUtil) {
         this.orderRepository = orderRepository;
         this.jwtUtil = jwtUtil;
@@ -45,7 +43,7 @@ public class OrdersService {
     }
 
     public PaymentOrder findOrder(int orderId) {
-        PaymentOrder order = orderRepository.findById(String.valueOf(orderId)).orElse(null);
+        PaymentOrder order = orderRepository.findById(orderId).orElse(null);
         if (order == null) {
             throw new OrderNotFoundException();
         }

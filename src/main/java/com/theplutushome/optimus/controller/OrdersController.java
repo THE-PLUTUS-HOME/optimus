@@ -19,6 +19,7 @@ public class OrdersController {
 
     private final OrdersService ordersService;
     private final JwtUtil jwtUtil;
+
     @Autowired
     public OrdersController(OrdersService ordersService, JwtUtil jwtUtil) {
         this.ordersService = ordersService;
@@ -26,16 +27,17 @@ public class OrdersController {
     }
 
     // @GetMapping("/list/orders/{email}")
-    public List<PaymentOrderDto> getOrders(@PathVariable(value = "email") String email, @RequestHeader("Authorization") String authHeader) {
+    public List<PaymentOrderDto> getOrders(@PathVariable(value = "email") String email,
+            @RequestHeader("Authorization") String authHeader) {
         List<PaymentOrderDto> orders = ordersService.getAllOrders(email, authHeader);
         if (orders != null) {
             return orders.stream()
-                    .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt())) // Sort by createdAt in descending order
+                    .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt())) // Sort by createdAt in descending
+                                                                                  // order
                     .collect(Collectors.toList());
         }
         return null;
     }
-
 
     @GetMapping("/find/order/{orderId}")
     public ResponseEntity<PaymentOrder> getOrder(@PathVariable int orderId) {
@@ -44,17 +46,16 @@ public class OrdersController {
     }
 
     @GetMapping("/find/all")
-    public List<PaymentOrderDto> getAllOrders(@RequestHeader("Authorization") String authHeader){
-        //sort by createdAt in descending order
-        jwtUtil.verifyToken(authHeader);
+    public List<PaymentOrderDto> getAllOrders(@CookieValue("JWT") String token) {
+        jwtUtil.verifyToken(token);
         return ordersService.getAllOrders().stream()
                 .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt()))
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/dashboard/data")
-    public DashboardDto getDashboardData(@RequestHeader("Authorization") String authHeader){
-        jwtUtil.verifyToken(authHeader);
+    public DashboardDto getDashboardData(@CookieValue("JWT") String token) {
+        jwtUtil.verifyToken(token);
         return ordersService.getDashboardData();
     }
 

@@ -3,6 +3,7 @@ package com.theplutushome.optimus.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -15,26 +16,31 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
+@EnableWebSecurity
+
 public class WebSecurityConfig {
 
     private final ApiKeyFilter apiKeyFilter;
+    private final RateLimitingFilter rateLimitingFilter;
 
-    public WebSecurityConfig(ApiKeyFilter apiKeyFilter) {
+    public WebSecurityConfig(ApiKeyFilter apiKeyFilter, RateLimitingFilter rateLimitingFilter) {
         this.apiKeyFilter = apiKeyFilter;
+        this.rateLimitingFilter = rateLimitingFilter;
     }
 
-//    @Bean
-//    @Order(HIGHEST_PRECEDENCE)
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http.authorizeHttpRequests(authz -> authz
-//                .requestMatchers("/login").permitAll()
-//                .requestMatchers("/optimus/v1/api/payment/callback")
-//                .access(new WebExpressionAuthorizationManager("isAuthenticated() and hasIpAddress('11.11.11.11')"))
-//                .anyRequest().authenticated()
-//        )
-//                .csrf(AbstractHttpConfigurer::disable);
-//        return http.build();
-//    }
+    // @Bean
+    // @Order(HIGHEST_PRECEDENCE)
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    // http.authorizeHttpRequests(authz -> authz
+    // .requestMatchers("/login").permitAll()
+    // .requestMatchers("/optimus/v1/api/payment/callback")
+    // .access(new WebExpressionAuthorizationManager("isAuthenticated() and
+    // hasIpAddress('11.11.11.11')"))
+    // .anyRequest().authenticated()
+    // )
+    // .csrf(AbstractHttpConfigurer::disable);
+    // return http.build();
+    // }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,24 +49,23 @@ public class WebSecurityConfig {
                 .cors(withDefaults()) // Enable CORS
                 .csrf(AbstractHttpConfigurer::disable) // Disable CSRF
                 .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(
-                        "/optimus/v1/api/**",
-                        "/api/verify-captcha",
-                        "/v2/api-docs",
-                        "/v3/api-docs",
-                        "/v3/api-docs/**",
-                        "/swagger-resources",
-                        "/swagger-resources/**",
-                        "/configuration/ui",
-                        "/configuration/security",
-                        "/swagger-ui/**",
-                        "/webjars/**",
-                        "/swagger-ui.html"
-                ).permitAll()
-                .anyRequest().authenticated()
-                )
-                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class
-                )
+                        .requestMatchers(
+                                "/optimus/v1/api/**",
+                                "/api/verify-captcha",
+                                "/v2/api-docs",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**",
+                                "/swagger-resources",
+                                "/swagger-resources/**",
+                                "/configuration/ui",
+                                "/configuration/security",
+                                "/swagger-ui/**",
+                                "/webjars/**",
+                                "/swagger-ui.html")
+                        .permitAll()
+                        .anyRequest().authenticated())
+                .addFilterBefore(rateLimitingFilter, ApiKeyFilter.class)
+                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS));
 
         System.out.println("Configuring Success ...");
@@ -70,7 +75,11 @@ public class WebSecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("https://theplutushome.com", "https://www.theplutushome.com", "http://localhost:5173", "https://admin.theplutushome.com"));
+        configuration.setAllowedOrigins(List.of(
+                "https://theplutushome.com",
+                "https://www.theplutushome.com",
+                "http://localhost:5173",
+                "https://admin.theplutushome.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowCredentials(true); // Allow credentials
