@@ -564,6 +564,11 @@ public class PaymentController {
             // Return a success response
             log.info("Payment processed successfully for order: {}", order.getClientReference());
             return ResponseEntity.ok("Payment processed successfully");
+        } else {
+
+            PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
+            order.setStatus(PaymentOrderStatus.FAILED);
+            ordersService.updateOrder(order);
         }
 
         // If the status is not PAID, handle accordingly
