@@ -15,7 +15,8 @@ import org.springframework.lang.NonNull;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,7 +24,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @Component
 @PropertySource("classpath:application.properties")
 public class ApiKeyFilter extends OncePerRequestFilter {
-
+    Logger logger = LoggerFactory.getLogger(ApiKeyFilter.class);
     private static final String API_KEY_HEADER = "X-API-KEY";
     private final String EXPECTED_API_KEY; // Replace with your API key
 
@@ -40,7 +41,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-
+        logger.info("ApiKeyFilter: doFilterInternal");
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
@@ -62,12 +63,14 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     "apiClient", null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_API")));
             SecurityContextHolder.getContext().setAuthentication(auth);
+            logger.info("ApiKeyFilter: doFilterInternal: Authentication set");
             filterChain.doFilter(request, response);
             return;
         }
         // If neither API Key nor JWT is valid, deny access
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.getWriter().write("Forbidden: Invalid API Key");
+        logger.info("ApiKeyFilter: doFilterInternal: Forbidden");
     }
 
     // Helper method to check if the path should be excluded
