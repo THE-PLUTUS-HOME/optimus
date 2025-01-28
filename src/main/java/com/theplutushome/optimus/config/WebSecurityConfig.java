@@ -59,8 +59,8 @@ public class WebSecurityConfig {
                         .anyRequest().authenticated())
                 // Add RateLimitingFilter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(apiKeyFilter, JwtFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, JwtFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         System.out.println("Configuring Success ...");
