@@ -55,8 +55,11 @@ public class OrdersController {
 
     @GetMapping("/dashboard/data")
     public DashboardDto getDashboardData(@CookieValue("JWT") String token) {
-        jwtUtil.verifyToken(token);
-        return ordersService.getDashboardData();
+        System.out.println("Token: " + token);
+        if (jwtUtil.validateToken(token)) {
+            return ordersService.getDashboardData();
+        }
+        return null;
     }
 
 }
