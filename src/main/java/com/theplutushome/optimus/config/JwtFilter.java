@@ -46,7 +46,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         // Extract JWT from cookies
         String jwt = extractJwtFromCookies(request);
-
+        logger.info("JwtFilter: doFilterInternal: JWT: " + jwt);
         if (jwt != null && jwtUtil.validateToken(jwt)) {
             String username = jwtUtil.extractClaim(jwt).getSubject();
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
@@ -61,6 +61,7 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String extractJwtFromCookies(HttpServletRequest request) {
+        logger.info("JwtFilter: extractJwtFromCookies: " + request.toString());
         if (request.getCookies() == null) {
             logger.info("JwtFilter: extractJwtFromCookies: No cookies");
             return null;
