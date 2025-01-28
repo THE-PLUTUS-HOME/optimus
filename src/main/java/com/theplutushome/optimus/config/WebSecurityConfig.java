@@ -3,6 +3,7 @@ package com.theplutushome.optimus.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,14 +20,18 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
+
 public class WebSecurityConfig {
 
     private final ApiKeyFilter apiKeyFilter;
     private final RateLimitingFilter rateLimitingFilter;
+    private final JwtFilter jwtFilter;
 
-    public WebSecurityConfig(ApiKeyFilter apiKeyFilter, RateLimitingFilter rateLimitingFilter) {
+    public WebSecurityConfig(ApiKeyFilter apiKeyFilter, RateLimitingFilter rateLimitingFilter, JwtFilter jwtFilter) {
         this.apiKeyFilter = apiKeyFilter;
         this.rateLimitingFilter = rateLimitingFilter;
+        this.jwtFilter = jwtFilter;
     }
 
     @Bean
@@ -54,8 +59,8 @@ public class WebSecurityConfig {
                         .anyRequest().authenticated())
                 // Add RateLimitingFilter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
-                // Add ApiKeyFilter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(apiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyFilter, JwtFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         System.out.println("Configuring Success ...");

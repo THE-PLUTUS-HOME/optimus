@@ -8,6 +8,8 @@ import com.theplutushome.optimus.util.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,27 +41,25 @@ public class OrdersController {
         return null;
     }
 
+
     @GetMapping("/find/order/{orderId}")
     public ResponseEntity<PaymentOrder> getOrder(@PathVariable int orderId) {
         PaymentOrder order = ordersService.findOrder(orderId);
         return ResponseEntity.ok(order);
     }
 
+    @Secured("ROLE_USER")
     @GetMapping("/find/all")
-    public List<PaymentOrderDto> getAllOrders(@CookieValue("JWT") String token) {
-        jwtUtil.verifyToken(token);
+    public List<PaymentOrderDto> getAllOrders() {
         return ordersService.getAllOrders().stream()
                 .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt()))
                 .collect(Collectors.toList());
     }
 
+    @Secured("ROLE_USER")
     @GetMapping("/dashboard/data")
-    public DashboardDto getDashboardData(@CookieValue("JWT") String token) {
-        System.out.println("Token: " + token);
-        if (jwtUtil.validateToken(token)) {
-            return ordersService.getDashboardData();
-        }
-        return null;
+    public DashboardDto getDashboardData() {
+        return ordersService.getDashboardData();
     }
 
 }
