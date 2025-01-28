@@ -95,7 +95,7 @@ public class UserController {
                     .secure(false) // Set to true in production
                     .path("/")
                     .maxAge(24 * 60 * 60) // 1 day
-                    .sameSite("Lax")
+                    .sameSite("None")
                     .build();
             // Add cookie to response
             response.addHeader("Set-Cookie", cookie.toString());
