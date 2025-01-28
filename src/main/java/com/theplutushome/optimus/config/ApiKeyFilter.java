@@ -14,7 +14,6 @@ import org.springframework.lang.NonNull;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,15 +46,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        String path = request.getRequestURI();
-
-        // Exclude specific paths from filtering
-        if (isExcludedPath(path)) {
-            logger.info("ApiKeyFilter: Excluded path: {}", path);
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         // Attempt API Key validation
         String apiKey = request.getHeader(API_KEY_HEADER);
         if (apiKey != null) { // API Key is present
@@ -79,21 +69,5 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         // API Key is absent, allow other filters (like JwtFilter) to handle
         // authentication
         filterChain.doFilter(request, response);
-    }
-
-    // Helper method to check if the path should be excluded
-    private boolean isExcludedPath(String path) {
-        logger.info("Checking excluded path for: {}", path);
-        return List.of(
-                "/swagger-ui",
-                "/api-docs",
-                "/v3/api-docs",
-                "/swagger-resources",
-                "/webjars",
-                "/optimus/v1/api/cryptomus/callback",
-                "/optimus/v1/api/payment/callback",
-                "/optimus/v1/api/payment/redde/callback",
-                "/optimus/v1/api/payment/sms/callback").stream()
-                .anyMatch(path::equals); // Use equals for exact matching
     }
 }

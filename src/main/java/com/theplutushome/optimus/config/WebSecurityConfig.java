@@ -43,17 +43,25 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permit all OPTIONS requests
                         .requestMatchers(
                                 "/api/verify-captcha",
+                                "/swagger-ui",
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/api-docs",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
                                 "/swagger-resources",
                                 "/swagger-resources/**",
+                                "/webjars",
+                                "/webjars/**",
                                 "/configuration/ui",
                                 "/configuration/security",
-                                "/swagger-ui/**",
-                                "/webjars/**",
-                                "/swagger-ui.html")
+                                "/optimus/v1/api/cryptomus/callback",
+                                "/optimus/v1/api/payment/callback",
+                                "/optimus/v1/api/payment/redde/callback",
+                                "/optimus/v1/api/payment/sms/callback")
                         .permitAll()
+
                         .anyRequest().authenticated())
                 // Add RateLimitingFilter before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
@@ -74,7 +82,9 @@ public class WebSecurityConfig {
                 "http://localhost:5173",
                 "https://admin.theplutushome.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify                                                          // headers
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify
+                                                                                                                 // //
+                                                                                                                 // headers
         configuration.setAllowCredentials(true); // Allow credentials
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

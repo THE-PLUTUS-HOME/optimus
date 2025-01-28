@@ -3,13 +3,11 @@ package com.theplutushome.optimus.config;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -39,11 +37,6 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (HttpMethod.OPTIONS.matches(request.getMethod()) || isExcludedPath(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         // Extract JWT from cookies
         String jwt = extractJwtFromCookies(request);
         logger.info("JwtFilter: doFilterInternal: JWT: " + jwt);
@@ -71,20 +64,5 @@ public class JwtFilter extends OncePerRequestFilter {
                 .findFirst();
         return jwtCookie.map(Cookie::getValue).orElse(null);
 
-    }
-
-    private boolean isExcludedPath(String path) {
-        // Define excluded paths
-        return List.of(
-                "/swagger-ui",
-                "/api-docs",
-                "/v3/api-docs",
-                "/swagger-resources",
-                "/webjars",
-                "/optimus/v1/api/cryptomus/callback",
-                "/optimus/v1/api/payment/callback",
-                "/optimus/v1/api/payment/redde/callback",
-                "/optimus/v1/api/payment/sms/callback").stream()
-                .anyMatch(path::equals);
     }
 }
