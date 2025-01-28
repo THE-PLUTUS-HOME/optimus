@@ -4,11 +4,9 @@ import com.theplutushome.optimus.dto.DashboardDto;
 import com.theplutushome.optimus.dto.PaymentOrderDto;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.service.OrdersService;
-import com.theplutushome.optimus.util.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +18,10 @@ import java.util.stream.Collectors;
 public class OrdersController {
 
     private final OrdersService ordersService;
-    private final JwtUtil jwtUtil;
 
     @Autowired
-    public OrdersController(OrdersService ordersService, JwtUtil jwtUtil) {
+    public OrdersController(OrdersService ordersService) {
         this.ordersService = ordersService;
-        this.jwtUtil = jwtUtil;
     }
 
     // @GetMapping("/list/orders/{email}")
@@ -48,7 +44,7 @@ public class OrdersController {
         return ResponseEntity.ok(order);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER)")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/find/all")
     public List<PaymentOrderDto> getAllOrders() {
         return ordersService.getAllOrders().stream()
@@ -56,7 +52,7 @@ public class OrdersController {
                 .collect(Collectors.toList());
     }
 
-    @Secured("ROLE_USER")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/dashboard/data")
     public DashboardDto getDashboardData() {
         return ordersService.getDashboardData();

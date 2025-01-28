@@ -21,7 +21,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -92,7 +91,7 @@ public class UserController {
             String token = jwtUtil.generateToken(loginRequest.getUsername());
             ResponseCookie cookie = ResponseCookie.from("JWT", token)
                     .httpOnly(true)
-                    .secure(false) // Set to true in production
+                    .secure(true) // Set to true in production
                     .path("/")
                     .maxAge(24 * 60 * 60) // 1 day
                     .sameSite("None")
