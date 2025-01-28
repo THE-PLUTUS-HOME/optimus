@@ -20,8 +20,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
-
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfig {
 
     private final ApiKeyFilter apiKeyFilter;
@@ -43,7 +42,6 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Permit all OPTIONS requests
                         .requestMatchers(
-                                "/optimus/v1/api/**",
                                 "/api/verify-captcha",
                                 "/v2/api-docs",
                                 "/v3/api-docs",

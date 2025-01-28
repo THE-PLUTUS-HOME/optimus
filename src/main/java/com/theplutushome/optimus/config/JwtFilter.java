@@ -1,9 +1,11 @@
 package com.theplutushome.optimus.config;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-    
+import java.util.Optional;
+
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,6 +18,7 @@ import com.theplutushome.optimus.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -33,29 +36,32 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+        if (HttpMethod.OPTIONS.matches(request.getMethod()) || isExcludedPath(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String path = request.getRequestURI();
-        if (isExcludedPath(path)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+        // Extract JWT from cookies
+        String jwt = extractJwtFromCookies(request);
 
-        String jwt = jwtUtil.extractJwtFromRequest(request);
         if (jwt != null && jwtUtil.validateToken(jwt)) {
             String username = jwtUtil.extractClaim(jwt).getSubject();
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     username, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
             SecurityContextHolder.getContext().setAuthentication(auth);
-            filterChain.doFilter(request, response);
-            return;
         }
 
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("Forbidden: Invalid JWT");
+        filterChain.doFilter(request, response);
+    }
+
+    private String extractJwtFromCookies(HttpServletRequest request) {
+        if (request.getCookies() == null)
+            return null;
+        Optional<Cookie> jwtCookie = Arrays.stream(request.getCookies())
+                .filter(cookie -> "JWT".equals(cookie.getName()))
+                .findFirst();
+        return jwtCookie.map(Cookie::getValue).orElse(null);
+
     }
 
     private boolean isExcludedPath(String path) {
