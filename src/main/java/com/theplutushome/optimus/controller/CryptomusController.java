@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,14 +25,17 @@ public class CryptomusController {
     private final OrdersService ordersService;
     private final HubtelRestClient hubtelRestClient;
 
-    public CryptomusController(CryptomusRestClient client, OrdersService ordersService, HubtelRestClient hubtelRestClient) {
+    public CryptomusController(CryptomusRestClient client, OrdersService ordersService,
+            HubtelRestClient hubtelRestClient) {
         this.client = client;
         this.ordersService = ordersService;
         this.hubtelRestClient = hubtelRestClient;
     }
 
+    @PreAuthorize("hasRole('ROLE_API')")
     @GetMapping(value = "/exchange-rate/{currency}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ExchangeRateResponse getAllUsers(@PathVariable("currency") String currency, @RequestParam(value = "to", required = false) String to) {
+    public ExchangeRateResponse getAllUsers(@PathVariable("currency") String currency,
+            @RequestParam(value = "to", required = false) String to) {
         ExchangeRateResponse response = client.getExchangeRate(currency);
         response.getResult().removeIf(r -> !r.getTo().equals(to));
         response.getResult().get(0).setWithdrawalFee(client.getWithdrawalFee(currency));
@@ -39,7 +43,7 @@ public class CryptomusController {
         return response;
     }
 
-//    @PostMapping("/balance")
+    // @PostMapping("/balance")
     public BalanceResponse getBalance(@RequestParam(value = "currency_code", required = false) String currency) {
         BalanceResponse response = client.getBalance();
 
@@ -59,18 +63,21 @@ public class CryptomusController {
         return response;
     }
 
-//    @PostMapping(value = "/payout/info", produces = MediaType.APPLICATION_JSON_VALUE)
+    // @PostMapping(value = "/payout/info", produces =
+    // MediaType.APPLICATION_JSON_VALUE)
     public PayoutResponse getPayoutInfo(@RequestBody @Valid PayoutInfoRequest request) {
         return client.payOutInfoRequest(request);
     }
 
-//    @PostMapping(value = "/payout/history", produces = MediaType.APPLICATION_JSON_VALUE)
+    // @PostMapping(value = "/payout/history", produces =
+    // MediaType.APPLICATION_JSON_VALUE)
     public PayoutHistoryResponse getPayoutHistory(@RequestBody PayoutHistoryRequest request) {
         return client.getPayoutHistory(request);
     }
 
     @PostMapping(value = "/payout/services", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ServiceList getPayoutServices(@RequestParam(value = "currency", required = true) String currency, @RequestParam(value = "network", required = true) String network) throws BadRequestException {
+    public ServiceList getPayoutServices(@RequestParam(value = "currency", required = true) String currency,
+            @RequestParam(value = "network", required = true) String network) throws BadRequestException {
         if (currency.isBlank() || network.isBlank()) {
             throw new BadRequestException("Currency and network parameters are required");
         }
@@ -86,7 +93,7 @@ public class CryptomusController {
         return client.getPayout(request);
     }
 
-//    @PostMapping(value = "/convert")
+    // @PostMapping(value = "/convert")
     public ConvertResponse convert(@RequestBody @Valid ConvertRequest request) {
         return client.convertAsset(request);
     }
@@ -110,7 +117,8 @@ public class CryptomusController {
             ordersService.updateOrder(order);
 
             if (order.getPhoneNumber() != null) {
-                String message = "My gee, your order has been finalized successfully. Your transaction hash is " + order.getTransactionId() + ". Thank you!";
+                String message = "My gee, your order has been finalized successfully. Your transaction hash is "
+                        + order.getTransactionId() + ". Thank you!";
 
                 SMSResponse smsResponse = hubtelRestClient.sendSMS(order.getPhoneNumber(), message);
                 if (smsResponse.getStatus() == 0) {

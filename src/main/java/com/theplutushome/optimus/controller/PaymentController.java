@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -95,6 +96,7 @@ public class PaymentController {
         return null;
     }
 
+    @PreAuthorize("hasRole('ROLE_API')")
     @Transactional
     @PostMapping("/generate")
     public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request) {
@@ -129,6 +131,7 @@ public class PaymentController {
         return client.getPaymentUrl(paymentLinkRequest);
     }
 
+    @PreAuthorize("hasRole('ROLE_API')")
     @Transactional
     @PostMapping("/redde/checkout")
     public ReddeCheckoutResponse initiateReddeCheckout(@RequestBody @Valid PaymentOrder request) {
@@ -202,7 +205,7 @@ public class PaymentController {
         if (callBack.getStatus() != null && callBack.getStatus().equalsIgnoreCase("Success")) {
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
-                
+
             if (payoutResponse.getState() == 0) {
                 order.setStatus(PaymentOrderStatus.PROCESSING);
 
@@ -309,6 +312,7 @@ public class PaymentController {
         return ResponseEntity.ok("DONE");
     }
 
+    @PreAuthorize("hasRole('ROLE_API')")
     @PostMapping("/initiate")
     public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request,
             @RequestHeader("Authorization") String authHeader) {
