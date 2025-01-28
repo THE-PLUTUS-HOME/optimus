@@ -48,7 +48,7 @@ public class OrdersController {
         return ResponseEntity.ok(order);
     }
 
-    @Secured("ROLE_USER")
+    @PreAuthorize("hasRole('ROLE_USER)")
     @GetMapping("/find/all")
     public List<PaymentOrderDto> getAllOrders() {
         return ordersService.getAllOrders().stream()

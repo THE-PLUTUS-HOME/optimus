@@ -37,11 +37,11 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         this.EXPECTED_API_KEY = apiKey;
     }
 
-    @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
         logger.info("ApiKeyFilter: doFilterInternal");
+
         if (HttpMethod.OPTIONS.matches(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
@@ -55,22 +55,29 @@ public class ApiKeyFilter extends OncePerRequestFilter {
             return;
         }
 
-        // First, attempt API Key validation
+        // Attempt API Key validation
         String apiKey = request.getHeader(API_KEY_HEADER);
-        if (EXPECTED_API_KEY.equals(apiKey)) {
-            // Optionally, you can set authentication here if needed
-            // For example, set a specific role or authority
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    "apiClient", null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_API")));
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            logger.info("ApiKeyFilter: doFilterInternal: Authentication set");
-            filterChain.doFilter(request, response);
-            return;
+        if (apiKey != null) { // API Key is present
+            if (EXPECTED_API_KEY.equals(apiKey)) {
+                // Set authentication with ROLE_API
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        "apiClient", null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_API")));
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                logger.info("ApiKeyFilter: Authentication set for ROLE_API");
+                filterChain.doFilter(request, response);
+                return;
+            } else {
+                // Invalid API Key provided
+                logger.warn("ApiKeyFilter: Invalid API Key provided");
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Forbidden: Invalid API Key");
+                return;
+            }
         }
-        // If neither API Key nor JWT is valid, deny access
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("Forbidden: Invalid API Key");
-        logger.info("ApiKeyFilter: doFilterInternal: Forbidden");
+
+        // API Key is absent, allow other filters (like JwtFilter) to handle
+        // authentication
+        filterChain.doFilter(request, response);
     }
 
     // Helper method to check if the path should be excluded
