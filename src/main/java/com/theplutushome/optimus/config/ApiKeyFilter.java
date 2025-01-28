@@ -51,6 +51,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
         // Exclude specific paths from filtering
         if (isExcludedPath(path)) {
+            logger.info("ApiKeyFilter: Excluded path: {}", path);
             filterChain.doFilter(request, response);
             return;
         }
@@ -82,7 +83,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
 
     // Helper method to check if the path should be excluded
     private boolean isExcludedPath(String path) {
-        // Define excluded paths
+        logger.info("Checking excluded path for: {}", path);
         return List.of(
                 "/swagger-ui",
                 "/api-docs",
@@ -93,6 +94,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
                 "/optimus/v1/api/payment/callback",
                 "/optimus/v1/api/payment/redde/callback",
                 "/optimus/v1/api/payment/sms/callback").stream()
-                .anyMatch(path::startsWith);
+                .anyMatch(path::equals); // Use equals for exact matching
     }
 }

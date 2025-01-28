@@ -85,6 +85,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 "/optimus/v1/api/payment/callback",
                 "/optimus/v1/api/payment/redde/callback",
                 "/optimus/v1/api/payment/sms/callback").stream()
-                .anyMatch(path::startsWith);
+                .anyMatch(path::equals);
     }
 }
