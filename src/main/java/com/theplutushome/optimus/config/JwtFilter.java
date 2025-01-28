@@ -38,9 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
-        logger.info("JwtFilter: doFilterInternal");
+
         if (HttpMethod.OPTIONS.matches(request.getMethod()) || isExcludedPath(request.getRequestURI())) {
-            logger.info("JwtFilter: doFilterInternal: Excluded path");
             filterChain.doFilter(request, response);
             return;
         }
@@ -54,21 +53,16 @@ public class JwtFilter extends OncePerRequestFilter {
                     username, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
             SecurityContextHolder.getContext().setAuthentication(auth);
             logger.info("JwtFilter: doFilterInternal: Authentication set");
-            filterChain.doFilter(request, response);
-            return;
-
+        } else {
+            logger.info("JwtFilter: doFilterInternal: Authentication not set");
         }
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        response.getWriter().write("Forbidden: Invalid JWT");
-        logger.info("JwtFilter: doFilterInternal: Forbidden");
+
+        filterChain.doFilter(request, response);
     }
 
     private String extractJwtFromCookies(HttpServletRequest request) {
-        logger.info("JwtFilter: extractJwtFromCookies");
-        if (request.getCookies() == null) {
-            logger.info("JwtFilter: extractJwtFromCookies: No cookies");
+        if (request.getCookies() == null)
             return null;
-        }
         Optional<Cookie> jwtCookie = Arrays.stream(request.getCookies())
                 .filter(cookie -> "JWT".equals(cookie.getName()))
                 .findFirst();
