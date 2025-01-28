@@ -61,8 +61,10 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String extractJwtFromCookies(HttpServletRequest request) {
-        if (request.getCookies() == null)
+        if (request.getCookies() == null) {
+            logger.info("JwtFilter: extractJwtFromCookies: No cookies");
             return null;
+        }
         Optional<Cookie> jwtCookie = Arrays.stream(request.getCookies())
                 .filter(cookie -> "JWT".equals(cookie.getName()))
                 .findFirst();
