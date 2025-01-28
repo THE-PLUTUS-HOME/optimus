@@ -89,12 +89,11 @@ public class UserController {
             String token = jwtUtil.generateToken(loginRequest.getUsername());
             ResponseCookie cookie = ResponseCookie.from("JWT", token)
                     .httpOnly(true)
-                    .secure(true) // Set to true in production
+                    .secure(false) // Set to true in production
                     .path("/")
                     .maxAge(24 * 60 * 60) // 1 day
-                    .sameSite("Strict")
+                    .sameSite("Lax")
                     .build();
-
             // Add cookie to response
             response.addHeader("Set-Cookie", cookie.toString());
             return ResponseEntity.ok(loginResponse);

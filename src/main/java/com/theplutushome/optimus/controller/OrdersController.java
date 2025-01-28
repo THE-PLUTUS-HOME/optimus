@@ -8,8 +8,6 @@ import com.theplutushome.optimus.util.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,23 +47,16 @@ public class OrdersController {
 
     @GetMapping("/find/all")
     public List<PaymentOrderDto> getAllOrders(@CookieValue("JWT") String token) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); 
-        if (authentication != null && authentication.isAuthenticated()) {
-            return ordersService.getAllOrders().stream()
-                    .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt()))
-                    .collect(Collectors.toList());
-        }
-        return null;
+        jwtUtil.verifyToken(token);
+        return ordersService.getAllOrders().stream()
+                .sorted((o1, o2) -> o2.createdAt().compareTo(o1.createdAt()))
+                .collect(Collectors.toList());
     }
-
 
     @GetMapping("/dashboard/data")
     public DashboardDto getDashboardData(@CookieValue("JWT") String token) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            return ordersService.getDashboardData();
-        }
-        return null;
+        jwtUtil.verifyToken(token);
+        return ordersService.getDashboardData();
     }
 
 }
