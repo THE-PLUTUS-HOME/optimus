@@ -527,32 +527,33 @@ public class PaymentController {
             return ResponseEntity.ok().body("Order Processed");
         }
 
-        PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
-        PayoutRequest request = getPayoutRequest(order);
-        PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
+        if (callback.getStatus() != null && callback.getStatus().equals("SUCCESS")) {
+            PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
+            PayoutRequest request = getPayoutRequest(order);
+            PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
 
-        if (payoutResponse.getState() == 0) {
-            order.setStatus(PaymentOrderStatus.PROCESSING);
+            if (payoutResponse.getState() == 0) {
+                order.setStatus(PaymentOrderStatus.PROCESSING);
 
-            String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
-            String message1 = "A payment of GHS "
-                    + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
-                    + order.getPhoneNumber() + ". Thank you.";
-            SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
-            SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
+                String message = "Hi there, your payment was successful and your order is now being processed. Thank you for your purchase!.";
+                String message1 = "A payment of GHS "
+                        + String.format("%.2f", order.getAmountGHS()) + " has been received at REDDE from "
+                        + order.getPhoneNumber() + ". Thank you.";
+                SMSResponse smsResponse = client.sendSMS(order.getPhoneNumber(), message);
+                SMSResponse smsResponse1 = client.sendSMS("233555075023", message1);
 
-            if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
-                log.info("SMS sent successfully: {}", smsResponse);
+                if (smsResponse.getStatus() == 0 && smsResponse1.getStatus() == 0) {
+                    log.info("SMS sent successfully: {}", smsResponse);
+                } else {
+                    log.error("Failed to send SMS: {}", smsResponse);
+                }
             } else {
-                log.error("Failed to send SMS: {}", smsResponse);
+                order.setStatus(PaymentOrderStatus.FAILED);
             }
-        } else {
-            order.setStatus(PaymentOrderStatus.FAILED);
+
+            ordersService.updateOrder(order);
+            log.info("Payment processed successfully for order: {}", order.getClientReference());
         }
-
-        ordersService.updateOrder(order);
-
-        log.info("Payment processed successfully for order: {}", order.getClientReference());
         return ResponseEntity.ok("Payment processed successfully");
 
     }
