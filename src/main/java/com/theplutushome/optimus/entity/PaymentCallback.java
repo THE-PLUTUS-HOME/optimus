@@ -11,6 +11,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class PaymentCallback {
+public class PaymentCallback extends EntityModel {
 
 }
