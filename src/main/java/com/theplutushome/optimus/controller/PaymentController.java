@@ -11,6 +11,7 @@ import com.theplutushome.optimus.dto.PaymentOtpRequest;
 import com.theplutushome.optimus.dto.PaymentOtpVerify;
 import com.theplutushome.optimus.dto.SMSRequest;
 import com.theplutushome.optimus.entity.OrderOtp;
+import com.theplutushome.optimus.entity.PaymentCallback;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutRequest;
 import com.theplutushome.optimus.entity.api.cryptomus.PayoutResponse;
@@ -22,7 +23,9 @@ import com.theplutushome.optimus.entity.api.redde.ReddeDebitRequest;
 import com.theplutushome.optimus.entity.api.redde.ReddeDebitResponse;
 import com.theplutushome.optimus.entity.api.redde.ReddeTransactionResponse;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
+import com.theplutushome.optimus.entity.enums.PaymentProvider;
 import com.theplutushome.optimus.repository.OrderOtpRepository;
+import com.theplutushome.optimus.repository.PaymentCallbackRepository;
 import com.theplutushome.optimus.service.OrdersService;
 import com.theplutushome.optimus.util.Function;
 import com.theplutushome.optimus.util.JwtUtil;
@@ -68,6 +71,9 @@ public class PaymentController {
 
     @Autowired
     private OrderOtpRepository orderOtpRepository;
+
+    @Autowired
+    private PaymentCallbackRepository paymentCallbackRepository;
 
     public PaymentController(HubtelRestClient client,
             OrdersService ordersService,
@@ -191,9 +197,13 @@ public class PaymentController {
         return paymentLinkRequest;
     }
 
+    @Transactional
     @PostMapping("/callback")
     public ResponseEntity<?> paymentCallback(@RequestBody HubtelCallBack callBack) {
         log.info("Payment callback received: {}", callBack.toString());
+        PaymentCallback cb = createRecordOfCallback(callBack);
+        paymentCallbackRepository.save(cb);
+
         PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
         if (callBack.toString().equalsIgnoreCase("Failed")) {
             order.setStatus(PaymentOrderStatus.FAILED);
@@ -282,9 +292,13 @@ public class PaymentController {
 
     }
 
+    @Transactional
     @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
+        PaymentCallback cb = createRecordOfCallback(callback);
+        paymentCallbackRepository.save(cb);
+
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
             double amountPaid = callback.getData().getAmountAfterCharges();
             String paymentReference = callback.getData().getOrderId();
@@ -520,6 +534,9 @@ public class PaymentController {
     @PostMapping("/redde/callback")
     public ResponseEntity<?> reddeCallback(@RequestBody ReddeCallback callback) {
         log.info("Redde payment callback received: {}", callback.toString());
+        PaymentCallback cb = createRecordOfCallback(callback);
+        paymentCallbackRepository.save(cb);
+
         if (callback.getStatus() != null && callback.getStatus().equalsIgnoreCase("FAILED")) {
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
             order.setStatus(PaymentOrderStatus.FAILED);
@@ -558,4 +575,55 @@ public class PaymentController {
 
     }
 
+    private PaymentCallback createRecordOfCallback(ReddeCallback callback) {
+        PaymentCallback c = new PaymentCallback();
+        c.setClientReference(callback.getClienttransid());
+        c.setClienttransid(callback.getClientreference());
+        c.setStatus(callback.getStatus());
+        c.setStatusdate(c.getStatusdate());
+        c.setReason(callback.getReason());
+        c.setProvider(PaymentProvider.REDDE);
+        c.setTelcotransid(callback.getTelcotransid());
+        c.setTransactionid(callback.getTransactionid());
+        return c;
+    }
+
+    private PaymentCallback createRecordOfCallback(USSDCallback callback) {
+        String paymentReference = callback.getData().getOrderId();
+        String[] parts = callback.getData().getClientReference().split("_");
+        String customerPhone = parts[1];
+
+        PaymentCallback c = new PaymentCallback();
+        c.setAmount(callback.getData().getAmount());
+        c.setClientReference(callback.getData().getClientReference());
+        c.setCustomerPhoneNumber(customerPhone);
+        c.setProvider(PaymentProvider.HUBTEL);
+        c.setDescription(callback.getData().getDescription());
+        c.setRequestStatus(callback.getResponseCode());
+        c.setReason(callback.getMessage());
+        c.setResponseCode(callback.getResponseCode());
+        c.setTelcotransid(callback.getData().getExternalTransactionId());
+        c.setTransactionid(callback.getData().getTransactionId());
+        c.setPaymentReference(paymentReference);
+        return c;
+
+    }
+
+    private PaymentCallback createRecordOfCallback(HubtelCallBack callback) {
+        PaymentCallback c = new PaymentCallback();
+        c.setAmount(callback.getData().getAmount());
+        c.setClientReference(callback.getData().getClientReference());
+        c.setCustomerPhoneNumber(callback.getData().getPaymentDetails().getMobileMoneyNumber());
+        c.setProvider(PaymentProvider.HUBTEL);
+        c.setDescription(callback.getData().getDescription());
+        c.setRequestStatus(callback.getResponseCode());
+        c.setRequestStatus(callback.getStatus());
+        c.setResponseCode(callback.getResponseCode());
+        c.setTransactionid(callback.getData().getCheckoutId());
+        c.setPaymentType(callback.getData().getPaymentDetails().getPaymentType());
+        c.setPaymentReference(callback.getData().getSalesInvoiceId());
+        c.setChannel(callback.getData().getPaymentDetails().getChannel());
+        c.setStatus(callback.getData().getStatus());
+        return c;
+    }
 }

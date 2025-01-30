@@ -3,14 +3,17 @@ package com.theplutushome.optimus.controller;
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
 import com.theplutushome.optimus.entity.PaymentOrder;
+import com.theplutushome.optimus.entity.PayoutCallback;
 import com.theplutushome.optimus.entity.api.cryptomus.*;
 import com.theplutushome.optimus.entity.api.hubtel.SMSResponse;
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
+import com.theplutushome.optimus.repository.PayoutCallbackRepository;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
 import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,6 +22,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/optimus/v1/api/cryptomus")
 public class CryptomusController {
+
+    @Autowired
+    private PayoutCallbackRepository payoutCallbackRepository;
 
     private static final Logger log = LoggerFactory.getLogger(CryptomusController.class);
     private final CryptomusRestClient client;
@@ -101,6 +107,8 @@ public class CryptomusController {
     @PostMapping("/callback")
     public ResponseEntity<?> getCallback(@RequestBody Webhook callback) {
         log.info("Incoming Webhook: {}", callback.toString());
+        PayoutCallback cb = createPayoutCallback(callback);
+        payoutCallbackRepository.save(cb);
 
         if (callback.isIs_final()) {
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getOrder_id());
@@ -133,6 +141,24 @@ public class CryptomusController {
         // Log for non-final statuses
         log.info("Webhook received for non-final status: {}", callback);
         return ResponseEntity.ok("Non-final status received");
+    }
+
+    private PayoutCallback createPayoutCallback(Webhook callback) {
+        PayoutCallback call = new PayoutCallback();
+        call.setAmount(callback.getAmount());
+        call.setCommission(callback.getCommission());
+        call.setCurrency(callback.getCurrency());
+        call.setMerchant_amount(callback.getMerchant_amount());
+        call.setNetwork(callback.getNetwork());
+        call.setOrder_id(callback.getOrder_id());
+        call.setPayer_amount(callback.getPayer_amount());
+        call.setPayer_currency(callback.getPayer_currency());
+        call.setStatus(callback.getStatus());
+        call.setTxid(call.getTxid());
+        call.setType(callback.getType());
+        call.setUuid(callback.getUuid());
+        call.set_final(callback.isIs_final());
+        return call;
     }
 
 }
