@@ -1,5 +1,5 @@
 package com.theplutushome.optimus.entity.enums;
 
 public enum PaymentProvider {
-    REDDE, HUBTEL
+    REDDE, HUBTEL, HUBTEL_USSD
 }

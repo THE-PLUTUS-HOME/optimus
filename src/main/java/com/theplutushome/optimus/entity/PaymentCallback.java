@@ -1,5 +1,6 @@
 package com.theplutushome.optimus.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.theplutushome.optimus.entity.enums.PaymentProvider;
 
 import jakarta.persistence.Entity;
@@ -15,17 +16,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentCallback extends EntityModel {
     private PaymentProvider provider;
     private String responseCode;
     private String requestStatus;
-    private String checkoutId;
     private String salesInvoiceId;
     private String clientReference;
     private String status;
     private double amount;
     private String customerPhoneNumber;
-    private String mobileMoneyNumber;
     private String paymentType;
     private String channel;
     private String description;

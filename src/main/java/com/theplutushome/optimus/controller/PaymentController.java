@@ -306,22 +306,22 @@ public class PaymentController {
             String customerPhone = parts[1];
 
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
+            if (order != null) {
+                if (order.getPaymentReference() == null) {
+                    log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid,
+                            order.getAmountGHS()));
+                    order.setPaymentReference(paymentReference);
+                    order.setAmountPaid(amountPaid);
+                }
 
-            if (order.getPaymentReference() == null) {
-                log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid,
-                        order.getAmountGHS()));
-                order.setPaymentReference(paymentReference);
-                order.setAmountPaid(amountPaid);
+                if (!order.getPaymentReference().equals(paymentReference)) {
+                    log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid,
+                            order.getAmountGHS()));
+                    order.setAmountPaid(order.getAmountPaid() + amountPaid);
+                    order.setPaymentReference(paymentReference);
+                }
+                ordersService.updateOrder(order);
             }
-
-            if (!order.getPaymentReference().equals(paymentReference)) {
-                log.info(String.format("The amount paid is %s and the amount in the system is %s", amountPaid,
-                        order.getAmountGHS()));
-                order.setAmountPaid(order.getAmountPaid() + amountPaid);
-                order.setPaymentReference(paymentReference);
-            }
-
-            ordersService.updateOrder(order);
         }
         return ResponseEntity.ok("DONE");
     }
@@ -589,24 +589,34 @@ public class PaymentController {
     }
 
     private PaymentCallback createRecordOfCallback(USSDCallback callback) {
-        String paymentReference = callback.getData().getOrderId();
-        String[] parts = callback.getData().getClientReference().split("_");
-        String customerPhone = parts[1];
+        PaymentCallback foundRecord = paymentCallbackRepository
+                .findPaymentCallbackByClientReference(callback.getData().getClientReference()).orElse(null);
 
-        PaymentCallback c = new PaymentCallback();
-        c.setAmount(callback.getData().getAmount());
-        c.setClientReference(callback.getData().getClientReference());
-        c.setCustomerPhoneNumber(customerPhone);
-        c.setProvider(PaymentProvider.HUBTEL);
-        c.setDescription(callback.getData().getDescription());
-        c.setRequestStatus(callback.getResponseCode());
-        c.setReason(callback.getMessage());
-        c.setResponseCode(callback.getResponseCode());
-        c.setTelcotransid(callback.getData().getExternalTransactionId());
-        c.setTransactionid(callback.getData().getTransactionId());
-        c.setPaymentReference(paymentReference);
-        return c;
+        if (foundRecord == null) {
 
+            String paymentReference = callback.getData().getOrderId();
+            String[] parts = callback.getData().getClientReference().split("_");
+            String customerPhone = parts[1];
+
+            PaymentCallback c = new PaymentCallback();
+            c.setAmount(callback.getData().getAmount());
+            c.setClientReference(callback.getData().getClientReference());
+            c.setCustomerPhoneNumber(customerPhone);
+            c.setProvider(PaymentProvider.HUBTEL);
+            c.setDescription(callback.getData().getDescription());
+            c.setRequestStatus(callback.getResponseCode());
+            c.setReason(callback.getMessage());
+            c.setResponseCode(callback.getResponseCode());
+            c.setTelcotransid(callback.getData().getExternalTransactionId());
+            c.setTransactionid(callback.getData().getTransactionId());
+            c.setPaymentReference(paymentReference);
+
+            return c;
+        } else {
+            foundRecord.setStatusdate(callback.getData().getPaymentDate());
+            foundRecord.setTelcotransid(callback.getData().getExternalTransactionId());
+            return foundRecord;
+        }
     }
 
     private PaymentCallback createRecordOfCallback(HubtelCallBack callback) {

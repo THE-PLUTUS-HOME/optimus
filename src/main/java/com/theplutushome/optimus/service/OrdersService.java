@@ -72,7 +72,7 @@ public class OrdersService {
         PaymentOrder order = orderRepository.findPaymentOrderByPhoneNumberAndStatus(phoneNumber,
                 PaymentOrderStatus.PENDING);
         if (order == null) {
-            throw new OrderNotFoundException();
+            return null;
         }
         return order;
     }
