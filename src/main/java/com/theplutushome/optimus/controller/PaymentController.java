@@ -202,7 +202,7 @@ public class PaymentController {
     public ResponseEntity<?> paymentCallback(@RequestBody HubtelCallBack callBack) {
         log.info("Payment callback received: {}", callBack.toString());
         PaymentCallback cb = createRecordOfCallback(callBack);
-        paymentCallbackRepository.save(cb);
+        paymentCallbackRepository.saveAndFlush(cb);
 
         PaymentOrder order = ordersService.findOrderByClientReference(callBack.getData().getClientReference());
         if (callBack.toString().equalsIgnoreCase("Failed")) {
@@ -297,13 +297,18 @@ public class PaymentController {
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
         PaymentCallback cb = createRecordOfCallback(callback);
-        paymentCallbackRepository.save(cb);
+        paymentCallbackRepository.saveAndFlush(cb);
 
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
             double amountPaid = callback.getData().getAmountAfterCharges();
             String paymentReference = callback.getData().getOrderId();
             String[] parts = callback.getData().getClientReference().split("_");
             String customerPhone = parts[1];
+
+            if (parts.length < 2) {
+                log.error("Invalid clientReference format: " + callback.getData().getClientReference());
+                return ResponseEntity.badRequest().body("Invalid client reference format");
+            }
 
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
             if (order != null) {
@@ -589,11 +594,12 @@ public class PaymentController {
     }
 
     private PaymentCallback createRecordOfCallback(USSDCallback callback) {
+
         PaymentCallback foundRecord = paymentCallbackRepository
                 .findPaymentCallbackByClientReference(callback.getData().getClientReference()).orElse(null);
 
         if (foundRecord == null) {
-
+            log.info("We could not find the callback");
             String paymentReference = callback.getData().getOrderId();
             String[] parts = callback.getData().getClientReference().split("_");
             String customerPhone = parts[1];
@@ -602,7 +608,7 @@ public class PaymentController {
             c.setAmount(callback.getData().getAmount());
             c.setClientReference(callback.getData().getClientReference());
             c.setCustomerPhoneNumber(customerPhone);
-            c.setProvider(PaymentProvider.HUBTEL);
+            c.setProvider(PaymentProvider.HUBTEL_USSD);
             c.setDescription(callback.getData().getDescription());
             c.setRequestStatus(callback.getResponseCode());
             c.setReason(callback.getMessage());
@@ -613,6 +619,7 @@ public class PaymentController {
 
             return c;
         } else {
+            log.info("We found the callback");
             foundRecord.setStatusdate(callback.getData().getPaymentDate());
             foundRecord.setTelcotransid(callback.getData().getExternalTransactionId());
             return foundRecord;
@@ -620,21 +627,38 @@ public class PaymentController {
     }
 
     private PaymentCallback createRecordOfCallback(HubtelCallBack callback) {
-        PaymentCallback c = new PaymentCallback();
-        c.setAmount(callback.getData().getAmount());
-        c.setClientReference(callback.getData().getClientReference());
-        c.setCustomerPhoneNumber(callback.getData().getPaymentDetails().getMobileMoneyNumber());
-        c.setProvider(PaymentProvider.HUBTEL);
-        c.setDescription(callback.getData().getDescription());
-        c.setRequestStatus(callback.getResponseCode());
-        c.setRequestStatus(callback.getStatus());
-        c.setResponseCode(callback.getResponseCode());
-        c.setTransactionid(callback.getData().getCheckoutId());
-        c.setPaymentType(callback.getData().getPaymentDetails().getPaymentType());
-        c.setPaymentReference(callback.getData().getSalesInvoiceId());
-        c.setChannel(callback.getData().getPaymentDetails().getChannel());
-        c.setStatus(callback.getData().getStatus());
-        return c;
+
+        PaymentCallback foundRecord = paymentCallbackRepository
+                .findPaymentCallbackByClientReference(callback.getData().getClientReference()).orElse(null);
+
+        if (foundRecord == null) {
+            PaymentCallback c = new PaymentCallback();
+            c.setAmount(callback.getData().getAmount());
+            c.setClientReference(callback.getData().getClientReference());
+            c.setCustomerPhoneNumber(callback.getData().getPaymentDetails().getMobileMoneyNumber());
+            c.setProvider(PaymentProvider.HUBTEL);
+            c.setDescription(callback.getData().getDescription());
+            c.setRequestStatus(callback.getStatus());
+            c.setResponseCode(callback.getResponseCode());
+            c.setTransactionid(callback.getData().getCheckoutId());
+            c.setPaymentType(callback.getData().getPaymentDetails().getPaymentType());
+            c.setPaymentReference(callback.getData().getSalesInvoiceId());
+            c.setChannel(callback.getData().getPaymentDetails().getChannel());
+            c.setStatus(callback.getData().getStatus());
+            return c;
+        } else {
+            foundRecord.setAmount(callback.getData().getAmount());
+            foundRecord.setCustomerPhoneNumber(callback.getData().getPaymentDetails().getMobileMoneyNumber());
+            foundRecord.setProvider(PaymentProvider.HUBTEL);
+            foundRecord.setDescription(callback.getData().getDescription());
+            foundRecord.setRequestStatus(callback.getResponseCode());
+            foundRecord.setRequestStatus(callback.getStatus());
+            foundRecord.setResponseCode(callback.getResponseCode());
+            foundRecord.setPaymentType(callback.getData().getPaymentDetails().getPaymentType());
+            foundRecord.setChannel(callback.getData().getPaymentDetails().getChannel());
+            foundRecord.setStatus(callback.getData().getStatus());
+            return foundRecord;
+        }
     }
 
     @PreAuthorize("hasRole('ROLE_USER')")
