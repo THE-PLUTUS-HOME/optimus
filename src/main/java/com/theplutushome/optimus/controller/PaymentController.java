@@ -44,6 +44,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
+
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
@@ -76,11 +77,11 @@ public class PaymentController {
     private PaymentCallbackRepository paymentCallbackRepository;
 
     public PaymentController(HubtelRestClient client,
-            OrdersService ordersService,
-            JwtUtil jwtUtil,
-            CryptomusRestClient cryptomusRestClient,
-            ReddeOnlineRestClient reddeOnlineRestClient,
-            Environment env) {
+                             OrdersService ordersService,
+                             JwtUtil jwtUtil,
+                             CryptomusRestClient cryptomusRestClient,
+                             ReddeOnlineRestClient reddeOnlineRestClient,
+                             Environment env) {
         this.jwtUtil = jwtUtil;
         this.reddeOnlineRestClient = reddeOnlineRestClient;
         this.client = client;
@@ -98,7 +99,7 @@ public class PaymentController {
 
     // @GetMapping("/verifyOtp")
     public ResponseEntity<Void> verifyOtp(@RequestParam(value = "code") String code,
-            @RequestParam(value = "phone") String phoneNumber) {
+                                          @RequestParam(value = "phone") String phoneNumber) {
         return null;
     }
 
@@ -249,7 +250,7 @@ public class PaymentController {
 
     @GetMapping("/verify/{reference}")
     public ResponseEntity<?> verifyPayment(@PathVariable("reference") String reference,
-            @RequestHeader("Authorization") String authHeader) {
+                                           @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         TransactionStatusCheckResponse response = client.checkTransaction(reference);
         if (Objects.equals(response.getResponseCode(), "0000")
@@ -285,7 +286,7 @@ public class PaymentController {
 
     @PostMapping("/direct-debit")
     public ResponseEntity<?> directDebit(@RequestBody PaymentRequest request,
-            @RequestHeader("Authorization") String authHeader) {
+                                         @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         PaymentResponse response = client.initiatePayment(request);
         return ResponseEntity.ok(response);
@@ -304,11 +305,6 @@ public class PaymentController {
             String paymentReference = callback.getData().getOrderId();
             String[] parts = callback.getData().getClientReference().split("_");
             String customerPhone = parts[1];
-
-            if (parts.length < 2) {
-                log.error("Invalid clientReference format: " + callback.getData().getClientReference());
-                return ResponseEntity.badRequest().body("Invalid client reference format");
-            }
 
             PaymentOrder order = ordersService.findOrderByPhoneNumber(customerPhone);
             if (order != null) {
@@ -334,7 +330,7 @@ public class PaymentController {
     @PreAuthorize("hasRole('ROLE_API')")
     @PostMapping("/initiate")
     public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request,
-            @RequestHeader("Authorization") String authHeader) {
+                                             @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         System.out.println("The payment request: " + request.toString());
 
@@ -377,7 +373,7 @@ public class PaymentController {
 
     @PostMapping("/sendCode")
     public ResponseEntity<?> sendOtpCode(@RequestBody @Valid PaymentOtpRequest otpRequest,
-            @RequestHeader("Authorization") String authHeader) {
+                                         @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(otpRequest.getClientReference());
         order.setPhoneNumber(otpRequest.getPhoneNumber());
@@ -413,7 +409,7 @@ public class PaymentController {
 
     @PostMapping("/verifyCode")
     public ResponseEntity<?> verifyOtpCode(@RequestBody @Valid PaymentOtpVerify otpVerify,
-            @RequestHeader("Authorization") String authHeader) {
+                                           @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
         OrderOtp orderOtp = orderOtpRepository
                 .findOrderOtpByClientReferenceAndExpired(otpVerify.getClientReference(), false).orElse(null);
@@ -433,7 +429,7 @@ public class PaymentController {
 
     @PostMapping("/checkPayment/{reference}")
     public ResponseEntity<?> checkPayment(@RequestHeader("Authorization") String authHeader,
-            @PathVariable(name = "reference") String clientReference) {
+                                          @PathVariable(name = "reference") String clientReference) {
         PaymentOrder order = ordersService.findOrderByClientReference(clientReference);
         PaymentCheck payment = new PaymentCheck();
 
@@ -482,7 +478,7 @@ public class PaymentController {
 
     @PostMapping("/cancel/{reference}")
     public ResponseEntity<?> cancelOrder(@RequestHeader("Authorization") String authHeader,
-            @PathVariable("reference") String reference) {
+                                         @PathVariable("reference") String reference) {
         jwtUtil.verifyToken(authHeader);
         PaymentOrder order = ordersService.findOrderByClientReference(reference);
         order.setStatus(PaymentOrderStatus.CANCELLED);
@@ -492,7 +488,7 @@ public class PaymentController {
 
     @PostMapping("/redde/initiate")
     public ResponseEntity<?> initiateReddePayment(@RequestBody @Valid PaymentOrder request,
-            @RequestHeader("Authorization") String authHeader) {
+                                                  @RequestHeader("Authorization") String authHeader) {
         jwtUtil.verifyToken(authHeader);
 
         ReddeDebitRequest debitRequest = new ReddeDebitRequest();
@@ -549,7 +545,7 @@ public class PaymentController {
             return ResponseEntity.ok().body("Order Processed");
         }
 
-        if (callback.getStatus() != null && callback.getStatus().equals("SUCCESS")) {
+        if (callback.getStatus() != null && callback.getStatus().equals("PAID")) {
             PaymentOrder order = ordersService.findOrderByClientReference(callback.getClienttransid());
             PayoutRequest request = getPayoutRequest(order);
             PayoutResponse payoutResponse = cryptomusRestClient.getPayout(request);
@@ -581,16 +577,29 @@ public class PaymentController {
     }
 
     private PaymentCallback createRecordOfCallback(ReddeCallback callback) {
-        PaymentCallback c = new PaymentCallback();
-        c.setClientReference(callback.getClienttransid());
-        c.setClienttransid(callback.getClientreference());
-        c.setStatus(callback.getStatus());
-        c.setStatusdate(c.getStatusdate());
-        c.setReason(callback.getReason());
-        c.setProvider(PaymentProvider.REDDE);
-        c.setTelcotransid(callback.getTelcotransid());
-        c.setTransactionid(callback.getTransactionid());
-        return c;
+
+        PaymentCallback foundRecord = paymentCallbackRepository
+                .findPaymentCallbackByClientReference(callback.getClienttransid()).orElse(null);
+
+        if (foundRecord == null) {
+            PaymentCallback c = new PaymentCallback();
+            c.setClientReference(callback.getClienttransid());
+            c.setClienttransid(callback.getClientreference());
+            c.setStatus(callback.getStatus());
+            c.setStatusdate(c.getStatusdate());
+            c.setReason(callback.getReason());
+            c.setProvider(PaymentProvider.REDDE);
+            c.setTelcotransid(callback.getTelcotransid());
+            c.setTransactionid(callback.getTransactionid());
+            return c;
+        } else {
+            foundRecord.setStatus(callback.getStatus());
+            foundRecord.setStatusdate(callback.getStatusdate());
+            foundRecord.setReason(callback.getReason());
+            foundRecord.setTelcotransid(callback.getTelcotransid());
+            foundRecord.setTransactionid(callback.getTransactionid());
+            return foundRecord;
+        }
     }
 
     private PaymentCallback createRecordOfCallback(USSDCallback callback) {
