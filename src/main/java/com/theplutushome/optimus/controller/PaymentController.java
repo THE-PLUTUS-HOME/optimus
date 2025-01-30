@@ -626,4 +626,10 @@ public class PaymentController {
         c.setStatus(callback.getData().getStatus());
         return c;
     }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/logs")
+    public List<PaymentCallback> getPaymentCallbacks() {
+        return paymentCallbackRepository.findAll();
+    }
 }

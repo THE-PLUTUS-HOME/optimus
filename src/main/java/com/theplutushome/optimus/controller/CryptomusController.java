@@ -10,6 +10,9 @@ import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 import com.theplutushome.optimus.repository.PayoutCallbackRepository;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,4 +164,9 @@ public class CryptomusController {
         return call;
     }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/logs")
+    public List<PayoutCallback> getPayoutCallbacks() {
+        return payoutCallbackRepository.findAll();
+    }
 }
