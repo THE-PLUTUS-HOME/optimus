@@ -282,7 +282,7 @@ public class PaymentController {
 
     }
 
-    // @PostMapping("/sms/callback")
+    @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
         if (callback.getResponseCode().equals("0000") && callback.getMessage().equalsIgnoreCase("success")) {
