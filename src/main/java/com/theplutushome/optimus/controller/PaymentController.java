@@ -142,7 +142,7 @@ public class PaymentController {
     @Transactional
     @PostMapping("/redde/checkout")
     public ReddeCheckoutResponse initiateReddeCheckout(@RequestBody @Valid PaymentOrder request) {
-        System.out.println("The payment request: " + request.toString());
+        System.out.println("The payment request-: " + request.toString());
         double merchantBalance = cryptomusRestClient.getMerchantBalance();
         double purchaseAmount = cryptomusRestClient.convertCryptoAmountToUsd(request.getCrypto(),
                 request.getCryptoAmount());
