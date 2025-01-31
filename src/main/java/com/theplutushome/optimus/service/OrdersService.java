@@ -193,6 +193,8 @@ public class OrdersService {
         dashboardDto.setYearCostOfSales(aggregateDataForPeriod(orderList, "year", "costOfSales"));
         dashboardDto.setYearProfit(aggregateDataForPeriod(orderList, "year", "profit"));
 
+        logger.info("Aggregates are successful");
+
         // 10. Set recent orders (latest 6 orders)
         List<PaymentOrder> recentOrders = orderList.stream()
                 .sorted(Comparator.comparing(PaymentOrder::getCreatedAt).reversed())
