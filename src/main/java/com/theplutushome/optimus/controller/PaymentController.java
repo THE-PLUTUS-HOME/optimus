@@ -293,7 +293,7 @@ public class PaymentController {
     }
 
     @Transactional
-    @PostMapping("/sms/callback")
+    // @PostMapping("/sms/callback")
     public ResponseEntity<?> ussdPaymentResponse(@RequestBody USSDCallback callback) {
         log.info(callback.toString());
         PaymentCallback cb = createRecordOfCallback(callback);

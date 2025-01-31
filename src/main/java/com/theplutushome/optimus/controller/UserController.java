@@ -128,8 +128,6 @@ public class UserController {
         return ResponseEntity.ok(loginResponse);
     }
 
-    }
-
     @Operation(summary = "Logout", description = "Logout the user and clear the JWT cookie.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully logged out"),
