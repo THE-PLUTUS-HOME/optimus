@@ -207,7 +207,6 @@ public class OrdersService {
         return dashboardDto;
     }
 
-
     // Helper method to aggregate data by period (week, month, year)
     private String[] aggregateDataForPeriod(List<PaymentOrder> orderList, String period, String type) {
         // Initialize the array for data (7 days for week, 12 months for month, 12
@@ -387,9 +386,10 @@ public class OrdersService {
         ordersDto.setRate(order.getRate());
         ordersDto.setAddress(order.getAddress());
         ordersDto.setPhoneNumber(order.getPhoneNumber());
-        ordersDto.setTransactionId(order.getTransactionId());
+        if (order.getTransactionId() != null) {
+            ordersDto.setTransactionId(order.getTransactionId());
+        }
         ordersDto.setCreatedAt(order.getCreatedAt().toString());
-        ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
         ordersDto.setId(order.getId());
         return ordersDto;
     }
