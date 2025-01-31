@@ -610,8 +610,7 @@ public class PaymentController {
             c.setCustomerPhoneNumber(customerPhone);
             c.setProvider(PaymentProvider.HUBTEL_USSD);
             c.setDescription(callback.getData().getDescription());
-            c.setRequestStatus(callback.getResponseCode());
-            c.setReason(callback.getMessage());
+            c.setRequestStatus(callback.getMessage());
             c.setResponseCode(callback.getResponseCode());
             c.setTelcotransid(callback.getData().getExternalTransactionId());
             c.setTransactionid(callback.getData().getTransactionId());

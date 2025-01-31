@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.theplutushome.optimus.entity.enums.PaymentProvider;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,6 +20,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PaymentCallback extends EntityModel {
+
+    @Enumerated(EnumType.STRING)
     private PaymentProvider provider;
     private String responseCode;
     private String requestStatus;
