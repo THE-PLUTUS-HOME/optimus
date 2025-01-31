@@ -641,6 +641,7 @@ public class PaymentController {
                 .findPaymentCallbackByClientReference(callback.getData().getClientReference()).orElse(null);
 
         if (foundRecord == null) {
+            log.info("We could not find the callback");
             PaymentCallback c = new PaymentCallback();
             c.setAmount(callback.getData().getAmount());
             c.setClientReference(callback.getData().getClientReference());
@@ -656,6 +657,7 @@ public class PaymentController {
             c.setStatus(callback.getData().getStatus());
             return c;
         } else {
+            log.info("We found the callback");
             foundRecord.setAmount(callback.getData().getAmount());
             foundRecord.setCustomerPhoneNumber(callback.getData().getPaymentDetails().getMobileMoneyNumber());
             foundRecord.setProvider(PaymentProvider.HUBTEL);
