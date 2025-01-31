@@ -10,6 +10,8 @@ import com.theplutushome.optimus.repository.OrderRepository;
 import com.theplutushome.optimus.util.JwtUtil;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrdersService {
+    private static final Logger logger = LoggerFactory.getLogger(OrdersService.class);
 
     private OrderRepository orderRepository;
     private JwtUtil jwtUtil;
@@ -82,23 +85,28 @@ public class OrdersService {
     }
 
     public DashboardDto getDashboardData() {
+        logger.info("Fetching all orders from the repository...");
+
         // Fetch all orders
         Iterable<PaymentOrder> orders = orderRepository.findAll();
         List<PaymentOrder> orderList = new ArrayList<>();
         orders.forEach(orderList::add);
+        logger.info("Total orders retrieved: {}", orderList.size());
 
         DashboardDto dashboardDto = new DashboardDto();
 
         // 1. Total Orders
         int totalOrders = orderList.size();
         dashboardDto.setTotalOrders(String.valueOf(totalOrders));
+        logger.info("Total Orders: {}", totalOrders);
 
-        // 2. Total Customers (unique emails)
+        // 2. Total Customers (unique phone numbers)
         Set<String> uniqueCustomers = new HashSet<>();
         for (PaymentOrder order : orderList) {
             uniqueCustomers.add(order.getPhoneNumber());
         }
         dashboardDto.setTotalCustomers(String.valueOf(uniqueCustomers.size()));
+        logger.info("Total Unique Customers: {}", uniqueCustomers.size());
 
         // 3. Total Revenue (sum of amountGHS)
         double totalRevenue = 0.0;
@@ -108,6 +116,7 @@ public class OrdersService {
             }
         }
         dashboardDto.setTotalRevenue(String.valueOf(totalRevenue));
+        logger.info("Total Revenue (GHS): {}", totalRevenue);
 
         // 4. Total Profit (fee * rate)
         double totalProfit = 0.0;
@@ -117,8 +126,9 @@ public class OrdersService {
             }
         }
         dashboardDto.setTotalProfit(String.valueOf(totalProfit));
+        logger.info("Total Profit: {}", totalProfit);
 
-        // 6. Total Week Orders Percentage Increase
+        // 5. Total Week Orders Percentage Increase
         int currentWeekOrders = getOrdersForCurrentWeek(orderList);
         int previousWeekOrders = getOrdersForPreviousWeek(orderList);
         double totalWeekOrdersPercentageIncrease = 0.0;
@@ -127,8 +137,10 @@ public class OrdersService {
                     * 100;
         }
         dashboardDto.setTotalWeekOrdersPercentageIncrease(String.format("%.2f", totalWeekOrdersPercentageIncrease));
+        logger.info("Current Week Orders: {}, Previous Week Orders: {}, Percentage Increase: {}%",
+                currentWeekOrders, previousWeekOrders, totalWeekOrdersPercentageIncrease);
 
-        // 7. Total Week Revenue Percentage Increase
+        // 6. Total Week Revenue Percentage Increase
         double currentWeekRevenue = getRevenueForCurrentWeek(orderList);
         double previousWeekRevenue = getRevenueForPreviousWeek(orderList);
         double totalWeekRevenuePercentageIncrease = 0.0;
@@ -137,8 +149,10 @@ public class OrdersService {
                     * 100;
         }
         dashboardDto.setTotalWeekRevenuePercentageIncrease(String.format("%.2f", totalWeekRevenuePercentageIncrease));
+        logger.info("Current Week Revenue: {}, Previous Week Revenue: {}, Percentage Increase: {}%",
+                currentWeekRevenue, previousWeekRevenue, totalWeekRevenuePercentageIncrease);
 
-        // 8. Total Week Customers Percentage Increase
+        // 7. Total Week Customers Percentage Increase
         int currentWeekCustomers = getUniqueCustomersForCurrentWeek(orderList);
         int previousWeekCustomers = getUniqueCustomersForPreviousWeek(orderList);
         double totalWeekCustomersPercentageIncrease = 0.0;
@@ -148,8 +162,10 @@ public class OrdersService {
         }
         dashboardDto
                 .setTotalWeekCustomersPercentageIncrease(String.format("%.2f", totalWeekCustomersPercentageIncrease));
+        logger.info("Current Week Customers: {}, Previous Week Customers: {}, Percentage Increase: {}%",
+                currentWeekCustomers, previousWeekCustomers, totalWeekCustomersPercentageIncrease);
 
-        // 9. Total Day Profit Percentage Increase
+        // 8. Total Day Profit Percentage Increase
         double currentDayProfit = getProfitForCurrentDay(orderList);
         double previousDayProfit = getProfitForPreviousDay(orderList);
         double totalDayProfitPercentageIncrease = 0.0;
@@ -157,8 +173,10 @@ public class OrdersService {
             totalDayProfitPercentageIncrease = ((currentDayProfit - previousDayProfit) / previousDayProfit) * 100;
         }
         dashboardDto.setTotalDayProfitPercentageIncrease(String.format("%.2f", totalDayProfitPercentageIncrease));
+        logger.info("Current Day Profit: {}, Previous Day Profit: {}, Percentage Increase: {}%",
+                currentDayProfit, previousDayProfit, totalDayProfitPercentageIncrease);
 
-        // 10. Set weekly and monthly data (orders, revenue, profit, cost of sales)
+        // 9. Set weekly and monthly data
         dashboardDto.setWeekOrders(aggregateDataForPeriod(orderList, "week", "orders"));
         dashboardDto.setMonthOrders(aggregateDataForPeriod(orderList, "month", "orders"));
 
@@ -175,15 +193,18 @@ public class OrdersService {
         dashboardDto.setYearCostOfSales(aggregateDataForPeriod(orderList, "year", "costOfSales"));
         dashboardDto.setYearProfit(aggregateDataForPeriod(orderList, "year", "profit"));
 
-        // 11. Set recent orders (latest 3 orders)
+        // 10. Set recent orders (latest 6 orders)
         List<PaymentOrder> recentOrders = orderList.stream()
                 .sorted(Comparator.comparing(PaymentOrder::getCreatedAt).reversed())
                 .limit(6)
                 .collect(Collectors.toList());
         dashboardDto.setRecentOrders(recentOrders.stream().map(this::convertToDto).collect(Collectors.toList()));
 
+        logger.info("Dashboard Data Computed Successfully");
+
         return dashboardDto;
     }
+
 
     // Helper method to aggregate data by period (week, month, year)
     private String[] aggregateDataForPeriod(List<PaymentOrder> orderList, String period, String type) {
