@@ -179,7 +179,7 @@ public class OrdersService {
         List<PaymentOrder> recentOrders = orderList.stream()
                 .sorted(Comparator.comparing(PaymentOrder::getCreatedAt).reversed())
                 .limit(6)
-                .collect(Collectors.toList());
+                .toList();
         dashboardDto.setRecentOrders(recentOrders.stream().map(this::convertToDto).collect(Collectors.toList()));
 
         return dashboardDto;
@@ -195,7 +195,7 @@ public class OrdersService {
         // Get the current date and calculate the start of the week (Sunday)
         LocalDate today = LocalDate.now();
         LocalDate startOfWeek = today.minusDays(today.getDayOfWeek().getValue() % 7); // Sunday (start of the current
-                                                                                      // week)
+        // week)
 
         // Loop through the orders and calculate based on the period and type
         for (PaymentOrder order : orderList) {
@@ -363,7 +363,10 @@ public class OrdersService {
         ordersDto.setCryptoAmount(order.getCryptoAmount());
         ordersDto.setRate(order.getRate());
         ordersDto.setAddress(order.getAddress());
-        ordersDto.setPhoneNumber(order.getPhoneNumber());
+        if (order.getPhoneNumber() != null) {
+            ordersDto.setPhoneNumber(order.getPhoneNumber());
+        }
+
         ordersDto.setTransactionId(order.getTransactionId());
         ordersDto.setCreatedAt(order.getCreatedAt().toString());
         ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
@@ -372,13 +375,6 @@ public class OrdersService {
     }
 
     public List<PaymentOrderDto> getAllOrders() {
-        // List<PaymentOrder> orderList =
-        // orderRepository.findPaymentOrdersByDeleted(false);
-        // if (orderList.isEmpty()) {
-        // return null;
-        // }
-        // return
-        // orderList.stream().map(this::convertToDto).collect(Collectors.toList());
         return orderRepository.findAllByDeleted(false);
     }
 
