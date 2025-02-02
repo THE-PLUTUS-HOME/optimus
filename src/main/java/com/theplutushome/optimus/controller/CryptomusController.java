@@ -160,7 +160,7 @@ public class CryptomusController {
         call.setTxid(call.getTxid());
         call.setType(callback.getType());
         call.setUuid(callback.getUuid());
-        call.set_final(callback.isIs_final());
+        call.setFinalized(callback.isIs_final());
         return call;
     }
 
