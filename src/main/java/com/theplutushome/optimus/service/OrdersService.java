@@ -176,7 +176,7 @@ public class OrdersService {
         dashboardDto.setYearProfit(aggregateDataForPeriod(orderList, "year", "profit"));
 
         System.out.println("I am finally here");
-        // 11. Set recent orders (latest 3 orders)
+        // 11. Set recent orders (latest 6 orders)
         List<PaymentOrder> recentOrders = orderList.stream()
                 .sorted(Comparator.comparing(PaymentOrder::getCreatedAt).reversed())
                 .limit(6)
@@ -370,10 +370,6 @@ public class OrdersService {
             ordersDto.setTransactionId(order.getTransactionId());
         }
         ordersDto.setCreatedAt(order.getCreatedAt().toString());
-        if (order.getUpdatedAt() != null) {
-            ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
-        }
-        ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
         ordersDto.setId(order.getId());
         return ordersDto;
     }
