@@ -363,11 +363,10 @@ public class OrdersService {
         ordersDto.setCryptoAmount(order.getCryptoAmount());
         ordersDto.setRate(order.getRate());
         ordersDto.setAddress(order.getAddress());
-        if (order.getPhoneNumber() != null) {
-            ordersDto.setPhoneNumber(order.getPhoneNumber());
+        ordersDto.setPhoneNumber(order.getPhoneNumber());
+        if (order.getTransactionId() != null) {
+            ordersDto.setTransactionId(order.getTransactionId());
         }
-
-        ordersDto.setTransactionId(order.getTransactionId());
         ordersDto.setCreatedAt(order.getCreatedAt().toString());
         ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
         ordersDto.setId(order.getId());
