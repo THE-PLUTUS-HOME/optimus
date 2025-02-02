@@ -582,6 +582,7 @@ public class PaymentController {
                 .findPaymentCallbackByClientReference(callback.getClienttransid()).orElse(null);
 
         if (foundRecord == null) {
+            log.info("We could not find the callback");
             PaymentCallback c = new PaymentCallback();
             c.setClientReference(callback.getClienttransid());
             c.setClienttransid(callback.getClientreference());
@@ -593,6 +594,7 @@ public class PaymentController {
             c.setTransactionid(callback.getTransactionid());
             return c;
         } else {
+            log.info("We found the callback");
             foundRecord.setStatus(callback.getStatus());
             foundRecord.setStatusdate(callback.getStatusdate());
             foundRecord.setReason(callback.getReason());
