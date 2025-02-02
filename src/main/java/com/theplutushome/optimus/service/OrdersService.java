@@ -175,6 +175,7 @@ public class OrdersService {
         dashboardDto.setYearCostOfSales(aggregateDataForPeriod(orderList, "year", "costOfSales"));
         dashboardDto.setYearProfit(aggregateDataForPeriod(orderList, "year", "profit"));
 
+        System.out.println("I am finally here");
         // 11. Set recent orders (latest 3 orders)
         List<PaymentOrder> recentOrders = orderList.stream()
                 .sorted(Comparator.comparing(PaymentOrder::getCreatedAt).reversed())
