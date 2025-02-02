@@ -597,7 +597,7 @@ public class PaymentController {
             return c;
         } else {
             log.info("We found the callback");
-            foundRecord.setStatus(callback.getStatus());
+            foundRecord.setStatus(callback.getStatus().toUpperCase());
             foundRecord.setStatusdate(callback.getStatusdate());
             foundRecord.setDescription(callback.getReason());
             foundRecord.setTelcotransid(callback.getTelcotransid());

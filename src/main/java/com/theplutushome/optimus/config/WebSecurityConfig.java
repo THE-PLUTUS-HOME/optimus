@@ -80,6 +80,7 @@ public class WebSecurityConfig {
                 "https://theplutushome.com",
                 "https://www.theplutushome.com",
                 "http://localhost:5173",
+                "https://4cxk0ffs-5173.uks1.devtunnels.ms/",
                 "https://admin.theplutushome.com"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Add allowed methods
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-API-KEY")); // Specify
