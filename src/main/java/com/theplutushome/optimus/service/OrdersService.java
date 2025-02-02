@@ -369,6 +369,9 @@ public class OrdersService {
             ordersDto.setTransactionId(order.getTransactionId());
         }
         ordersDto.setCreatedAt(order.getCreatedAt().toString());
+        if (order.getUpdatedAt() != null) {
+            ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
+        }
         ordersDto.setUpdatedAt(order.getUpdatedAt().toString());
         ordersDto.setId(order.getId());
         return ordersDto;
