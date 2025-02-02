@@ -80,12 +80,14 @@ public class PaymentController {
                              OrderOtpRepository orderOtpRepository,
                              CryptomusRestClient cryptomusRestClient,
                              ReddeOnlineRestClient reddeOnlineRestClient,
+                             PaymentCallbackRepository paymentCallbackRepository,
                              Environment env) {
         this.jwtUtil = jwtUtil;
         this.reddeOnlineRestClient = reddeOnlineRestClient;
         this.client = client;
         this.ordersService = ordersService;
         this.orderOtpRepository = orderOtpRepository;
+        this.paymentCallbackRepository = paymentCallbackRepository;
         this.cryptomusRestClient = cryptomusRestClient;
         this.merchantAccountNumber = env.getProperty("pos_sales_id");
         PaymentController.appId = env.getProperty("redde_online_app_id");
