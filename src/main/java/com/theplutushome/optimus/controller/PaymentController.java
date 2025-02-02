@@ -70,15 +70,14 @@ public class PaymentController {
     private static String appId;
     private static String apiKey;
 
-    @Autowired
-    private OrderOtpRepository orderOtpRepository;
+    private final OrderOtpRepository orderOtpRepository;
 
-    @Autowired
     private PaymentCallbackRepository paymentCallbackRepository;
 
     public PaymentController(HubtelRestClient client,
                              OrdersService ordersService,
                              JwtUtil jwtUtil,
+                             OrderOtpRepository orderOtpRepository,
                              CryptomusRestClient cryptomusRestClient,
                              ReddeOnlineRestClient reddeOnlineRestClient,
                              Environment env) {
@@ -86,6 +85,7 @@ public class PaymentController {
         this.reddeOnlineRestClient = reddeOnlineRestClient;
         this.client = client;
         this.ordersService = ordersService;
+        this.orderOtpRepository = orderOtpRepository;
         this.cryptomusRestClient = cryptomusRestClient;
         this.merchantAccountNumber = env.getProperty("pos_sales_id");
         PaymentController.appId = env.getProperty("redde_online_app_id");
@@ -103,7 +103,7 @@ public class PaymentController {
         return null;
     }
 
-    @PreAuthorize("hasRole('ROLE_API')")
+    @PreAuthorize("hasRole('API')")
     @Transactional
     @PostMapping("/generate")
     public PaymentLinkResponse generateLink(@RequestBody @Valid PaymentOrder request) {
@@ -138,7 +138,7 @@ public class PaymentController {
         return client.getPaymentUrl(paymentLinkRequest);
     }
 
-    @PreAuthorize("hasRole('ROLE_API')")
+    @PreAuthorize("hasRole('API')")
     @Transactional
     @PostMapping("/redde/checkout")
     public ReddeCheckoutResponse initiateReddeCheckout(@RequestBody @Valid PaymentOrder request) {
@@ -327,7 +327,7 @@ public class PaymentController {
         return ResponseEntity.ok("DONE");
     }
 
-    @PreAuthorize("hasRole('ROLE_API')")
+    @PreAuthorize("hasRole('API')")
     @PostMapping("/initiate")
     public ResponseEntity<?> initiatePayment(@RequestBody @Valid PaymentOrder request,
                                              @RequestHeader("Authorization") String authHeader) {
@@ -597,7 +597,7 @@ public class PaymentController {
             log.info("We found the callback");
             foundRecord.setStatus(callback.getStatus());
             foundRecord.setStatusdate(callback.getStatusdate());
-            foundRecord.setReason(callback.getReason());
+            foundRecord.setDescription(callback.getReason());
             foundRecord.setTelcotransid(callback.getTelcotransid());
             foundRecord.setTransactionid(callback.getTransactionid());
             return foundRecord;
@@ -674,7 +674,7 @@ public class PaymentController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/logs")
     public List<PaymentCallback> getPaymentCallbacks() {
         return paymentCallbackRepository.findAll();

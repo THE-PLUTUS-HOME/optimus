@@ -164,7 +164,7 @@ public class CryptomusController {
         return call;
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/logs")
     public List<PayoutCallback> getPayoutCallbacks() {
         return payoutCallbackRepository.findAll();

@@ -44,7 +44,7 @@ public class OrdersController {
         return ResponseEntity.ok(order);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/find/all")
     public List<PaymentOrderDto> getAllOrders() {
         return ordersService.getAllOrders().stream()
@@ -52,7 +52,7 @@ public class OrdersController {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/dashboard/data")
     public DashboardDto getDashboardData() {
         return ordersService.getDashboardData();

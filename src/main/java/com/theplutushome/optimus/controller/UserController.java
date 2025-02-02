@@ -84,7 +84,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("hasRole('ROLE_API')")
+    @PreAuthorize("hasRole('USER') or hasRole('API')")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest, HttpServletResponse response) {
         LoginResponse loginResponse = userService.login(loginRequest);
@@ -110,7 +110,7 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "Successfully logged out"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         // Clear the JWT cookie
