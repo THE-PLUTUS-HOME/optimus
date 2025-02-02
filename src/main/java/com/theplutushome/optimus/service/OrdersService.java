@@ -355,6 +355,7 @@ public class OrdersService {
     }
 
     public OrdersDto convertToDto(PaymentOrder order) {
+        System.out.println("The order id is " + order.getId());
         OrdersDto ordersDto = new OrdersDto();
         ordersDto.setClientReference(order.getClientReference());
         ordersDto.setAmountGHS(order.getAmountGHS());
