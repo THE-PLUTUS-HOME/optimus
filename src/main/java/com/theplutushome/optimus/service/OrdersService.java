@@ -392,16 +392,18 @@ public class OrdersService {
                 order.setStatus(PaymentOrderStatus.FAILED);
             }
 
-            if(null != order.getPhoneNumber() && order.getPhoneNumber().startsWith("0")){ {
-                order.setPhoneNumber(order.getPhoneNumber().replaceFirst("0", "233"));
+            if (null != order.getPhoneNumber() && order.getPhoneNumber().startsWith("0")) {
+                {
+                    order.setPhoneNumber(order.getPhoneNumber().replaceFirst("0", "233"));
+                }
+                orderRepository.save(order);
             }
-            orderRepository.save(order);
+
+
         }
-
-
     }
 
-    public List<CustomerDto>  getCustomers() {
+    public List<CustomerDto> getCustomers() {
         Iterable<PaymentOrder> orders = orderRepository.findAll();
         List<PaymentOrder> orderList = new ArrayList<>();
         orders.forEach(orderList::add);
