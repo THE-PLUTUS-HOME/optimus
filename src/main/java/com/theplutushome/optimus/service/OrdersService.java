@@ -15,12 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.IsoFields;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -410,16 +405,41 @@ public class OrdersService {
 
         orderList.removeIf(order -> order.getStatus() != PaymentOrderStatus.COMPLETED);
         orderList.removeIf(order -> order.getPhoneNumber() == null);
+        public List<CustomerDto> getCustomers () {
+            // Fetch orders
+            Iterable<PaymentOrder> orders = orderRepository.findAll();
+            List<PaymentOrder> orderList = new ArrayList<>();
+            orders.forEach(orderList::add);
 
-        List<CustomerDto> customers = new ArrayList<>();
+            // Filter and modify orders in one step
+            orderList = orderList.stream()
+                    .filter(order -> order.getStatus() == PaymentOrderStatus.COMPLETED && order.getPhoneNumber() != null)
+                    .peek(order -> {
+                        // Modify phone numbers if they start with "0"
+                        if (order.getPhoneNumber().startsWith("0")) {
+                            order.setPhoneNumber(order.getPhoneNumber().replaceFirst("0", "233"));
+                            orderRepository.save(order); // Save once after modification
+                        }
+                    })
+                    .collect(Collectors.toList());
 
-        for (PaymentOrder order : orderList) {
-            // FInd first purchase and last purchase
-            String phone = order.getPhoneNumber();
-            CustomerDto customer = getCustomerDto(order, orderList, phone);
-            customers.add(customer);
+            // Create customer DTOs
+            List<CustomerDto> customers = new ArrayList<>();
+            Map<String, CustomerDto> customerMap = new HashMap<>();
+
+            // Generate customer DTOs, making sure to find the first and last purchase
+            for (PaymentOrder order : orderList) {
+                String phone = order.getPhoneNumber();
+                // Avoid duplicate customer entries based on phone number
+                if (!customerMap.containsKey(phone)) {
+                    CustomerDto customer = getCustomerDto(order, orderList, phone);
+                    customers.add(customer);
+                    customerMap.put(phone, customer); // Add to map to avoid duplicates
+                }
+            }
+
+            return customers;
         }
-        return customers;
     }
 
     private static CustomerDto getCustomerDto(PaymentOrder order, List<PaymentOrder> orderList, String phone) {
