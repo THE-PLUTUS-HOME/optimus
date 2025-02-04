@@ -412,14 +412,33 @@ public class OrdersService {
         orderList.removeIf(order -> order.getPhoneNumber() == null);
 
         List<CustomerDto> customers = new ArrayList<>();
+
         for (PaymentOrder order : orderList) {
-            if (customers.stream().anyMatch(c -> c.phone().equals(order.getPhoneNumber()))) {
-                CustomerDto customer = customers.stream().filter(c -> c.phone().equals(order.getPhoneNumber())).findFirst().get();
-                customer = new CustomerDto(customer.phone(), customer.purchases() + 1, customer.totalSpent() + order.getAmountGHS());
-            } else {
-                customers.add(new CustomerDto(order.getPhoneNumber(), 1, order.getAmountGHS()));
-            }
+            // FInd first purchase and last purchase
+            String phone = order.getPhoneNumber();
+            CustomerDto customer = getCustomerDto(order, orderList, phone);
+            customers.add(customer);
         }
         return customers;
+    }
+
+    private static CustomerDto getCustomerDto(PaymentOrder order, List<PaymentOrder> orderList, String phone) {
+        int purchases = 1;
+        double totalSpent = order.getAmountGHS();
+        String first_purchase = order.getCreatedAt().toString();
+        String last_purchase = order.getCreatedAt().toString();
+        for (PaymentOrder order2 : orderList) {
+            if (order2.getPhoneNumber().equals(phone)) {
+                purchases++;
+                totalSpent += order2.getAmountGHS();
+                if (order2.getCreatedAt().isBefore(order.getCreatedAt())) {
+                    first_purchase = order2.getCreatedAt().toString();
+                }
+                if (order2.getCreatedAt().isAfter(order.getCreatedAt())) {
+                    last_purchase = order2.getCreatedAt().toString();
+                }
+            }
+        }
+        return new CustomerDto(phone, purchases, totalSpent, first_purchase, last_purchase);
     }
 }
