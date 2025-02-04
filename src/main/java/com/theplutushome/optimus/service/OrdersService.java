@@ -391,8 +391,14 @@ public class OrdersService {
             } else if (order.getStatus() != PaymentOrderStatus.COMPLETED) {
                 order.setStatus(PaymentOrderStatus.FAILED);
             }
+
+            if(null != order.getPhoneNumber() && order.getPhoneNumber().startsWith("0")){ {
+                order.setPhoneNumber(order.getPhoneNumber().replaceFirst("0", "233"));
+            }
             orderRepository.save(order);
         }
+
+
     }
 
     public List<CustomerDto>  getCustomers() {
