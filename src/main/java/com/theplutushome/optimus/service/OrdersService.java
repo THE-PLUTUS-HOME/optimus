@@ -1,6 +1,7 @@
 package com.theplutushome.optimus.service;
 
 import com.theplutushome.optimus.advice.OrderNotFoundException;
+import com.theplutushome.optimus.dto.CustomerDto;
 import com.theplutushome.optimus.dto.DashboardDto;
 import com.theplutushome.optimus.dto.OrdersDto;
 import com.theplutushome.optimus.dto.PaymentOrderDto;
@@ -392,5 +393,25 @@ public class OrdersService {
             }
             orderRepository.save(order);
         }
+    }
+
+    public List<CustomerDto>  getCustomers() {
+        Iterable<PaymentOrder> orders = orderRepository.findAll();
+        List<PaymentOrder> orderList = new ArrayList<>();
+        orders.forEach(orderList::add);
+
+        orderList.removeIf(order -> order.getStatus() != PaymentOrderStatus.COMPLETED);
+        orderList.removeIf(order -> order.getPhoneNumber() == null);
+
+        List<CustomerDto> customers = new ArrayList<>();
+        for (PaymentOrder order : orderList) {
+            if (customers.stream().anyMatch(c -> c.phone().equals(order.getPhoneNumber()))) {
+                CustomerDto customer = customers.stream().filter(c -> c.phone().equals(order.getPhoneNumber())).findFirst().get();
+                customer = new CustomerDto(customer.phone(), customer.purchases() + 1, customer.totalSpent() + order.getAmountGHS());
+            } else {
+                customers.add(new CustomerDto(order.getPhoneNumber(), 1, order.getAmountGHS()));
+            }
+        }
+        return customers;
     }
 }
