@@ -436,7 +436,7 @@ public class OrdersService {
     }
 
     private static CustomerDto getCustomerDto(PaymentOrder order, List<PaymentOrder> orderList, String phone) {
-        int purchases = 1;
+        int purchases = 0;
         double totalSpent = order.getAmountGHS();
         String first_purchase = order.getCreatedAt().toString();
         String last_purchase = order.getCreatedAt().toString();
