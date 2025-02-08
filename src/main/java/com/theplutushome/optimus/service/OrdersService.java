@@ -441,7 +441,7 @@ public class OrdersService {
         String first_purchase = order.getCreatedAt().toString();
         String last_purchase = order.getCreatedAt().toString();
         for (PaymentOrder order2 : orderList) {
-            if (order2.getPhoneNumber().equals(phone) && order.getStatus() == PaymentOrderStatus.COMPLETED) {
+            if (order2.getPhoneNumber().equals(phone)) {
                 purchases++;
                 totalSpent += order2.getAmountGHS();
                 if (order2.getCreatedAt().isBefore(order.getCreatedAt())) {
