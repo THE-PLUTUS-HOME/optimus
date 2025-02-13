@@ -2,6 +2,7 @@ package com.theplutushome.optimus.controller;
 
 import com.theplutushome.optimus.clients.cryptomus.CryptomusRestClient;
 import com.theplutushome.optimus.clients.hubtel.HubtelRestClient;
+import com.theplutushome.optimus.entity.PaymentCallback;
 import com.theplutushome.optimus.entity.PaymentOrder;
 import com.theplutushome.optimus.entity.PayoutCallback;
 import com.theplutushome.optimus.entity.api.cryptomus.*;
@@ -11,6 +12,7 @@ import com.theplutushome.optimus.repository.PayoutCallbackRepository;
 import com.theplutushome.optimus.service.OrdersService;
 import jakarta.validation.Valid;
 
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.coyote.BadRequestException;
@@ -35,7 +37,7 @@ public class CryptomusController {
     private final HubtelRestClient hubtelRestClient;
 
     public CryptomusController(CryptomusRestClient client, OrdersService ordersService,
-            HubtelRestClient hubtelRestClient) {
+                               HubtelRestClient hubtelRestClient) {
         this.client = client;
         this.ordersService = ordersService;
         this.hubtelRestClient = hubtelRestClient;
@@ -44,7 +46,7 @@ public class CryptomusController {
     @PreAuthorize("hasRole('ROLE_API')")
     @GetMapping(value = "/exchange-rate/{currency}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ExchangeRateResponse getAllUsers(@PathVariable("currency") String currency,
-            @RequestParam(value = "to", required = false) String to) {
+                                            @RequestParam(value = "to", required = false) String to) {
         ExchangeRateResponse response = client.getExchangeRate(currency);
         response.getResult().removeIf(r -> !r.getTo().equals(to));
         response.getResult().get(0).setWithdrawalFee(client.getWithdrawalFee(currency));
@@ -86,7 +88,7 @@ public class CryptomusController {
 
     @PostMapping(value = "/payout/services", produces = MediaType.APPLICATION_JSON_VALUE)
     public ServiceList getPayoutServices(@RequestParam(value = "currency", required = true) String currency,
-            @RequestParam(value = "network", required = true) String network) throws BadRequestException {
+                                         @RequestParam(value = "network", required = true) String network) throws BadRequestException {
         if (currency.isBlank() || network.isBlank()) {
             throw new BadRequestException("Currency and network parameters are required");
         }
@@ -160,13 +162,16 @@ public class CryptomusController {
         call.setTxid(call.getTxid());
         call.setType(callback.getType());
         call.setUuid(callback.getUuid());
-        call.set_final(callback.isIs_final());
+        call.setFinalized(callback.isIs_final());
         return call;
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/logs")
     public List<PayoutCallback> getPayoutCallbacks() {
-        return payoutCallbackRepository.findAll();
+        return payoutCallbackRepository.findAll()
+                .stream()
+                .sorted(Comparator.comparing(PayoutCallback::getCreatedAt).reversed())
+                .toList();
     }
 }

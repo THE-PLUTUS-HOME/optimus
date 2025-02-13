@@ -20,7 +20,7 @@ public class PayoutCallback extends EntityModel {
     private String amount;
     private String merchant_amount;
     private String commission;
-    private boolean is_final;
+    private boolean finalized;
     private String status;
     private String txid;
     private String currency;

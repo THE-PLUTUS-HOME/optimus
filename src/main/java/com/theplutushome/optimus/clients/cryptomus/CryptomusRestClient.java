@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -168,11 +169,25 @@ public class CryptomusRestClient implements CryptomusHttpClient {
         }
     }
 
-    public double convertCryptoAmountToUsd(String crypto, double cryptoAmount) {
+    public double convertCryptoAmountToUsd(String crypto, BigDecimal cryptoAmount) {
+        // Get exchange rate response for the given crypto
         ExchangeRateResponse response = this.getExchangeRate(crypto);
+
+        // Filter the results to only keep the ones with "USD" as the target currency
         response.getResult().removeIf(r -> !r.getTo().equals("USD"));
-        return Double.parseDouble(response.getResult().get(0).getCourse()) * cryptoAmount;
+
+        if (response.getResult().isEmpty()) {
+            throw new IllegalArgumentException("No USD exchange rate found for " + crypto);
+        }
+
+        double course = Double.parseDouble(response.getResult().get(0).getCourse());
+        BigDecimal exchangeRate = BigDecimal.valueOf(course);
+        BigDecimal result = cryptoAmount.multiply(exchangeRate);
+
+        // Return the result as a double
+        return result.doubleValue();
     }
+
 
     public double getWithdrawalFee(String crypto) {
         ServiceList list = this.getServiceList();
@@ -181,7 +196,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
 
         if (!list.getResult().isEmpty()) {
             double fee = Double.parseDouble(list.getResult().get(0).getCommission().getFee_amount());
-            return this.convertCryptoAmountToUsd(crypto, fee);
+            return this.convertCryptoAmountToUsd(crypto, BigDecimal.valueOf(fee));
         }
         return 0;
     }
@@ -198,7 +213,7 @@ public class CryptomusRestClient implements CryptomusHttpClient {
             // Filter user balances
             balance.getUser().removeIf(u -> !"USDT".equalsIgnoreCase(u.getCurrency_code()));
         });
-        
+
         return Double.parseDouble(cryptoBalance.getResult().get(0).getBalance().getMerchant().get(0).getBalance());
     }
 }

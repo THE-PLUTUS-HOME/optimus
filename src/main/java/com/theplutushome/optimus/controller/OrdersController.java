@@ -1,5 +1,6 @@
 package com.theplutushome.optimus.controller;
 
+import com.theplutushome.optimus.dto.CustomerDto;
 import com.theplutushome.optimus.dto.DashboardDto;
 import com.theplutushome.optimus.dto.PaymentOrderDto;
 import com.theplutushome.optimus.entity.PaymentOrder;
@@ -44,7 +45,7 @@ public class OrdersController {
         return ResponseEntity.ok(order);
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/find/all")
     public List<PaymentOrderDto> getAllOrders() {
         return ordersService.getAllOrders().stream()
@@ -52,10 +53,16 @@ public class OrdersController {
                 .collect(Collectors.toList());
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/dashboard/data")
     public DashboardDto getDashboardData() {
         return ordersService.getDashboardData();
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/customers/list")
+    public List<CustomerDto> getAllCustomers(){
+        return ordersService.getCustomers();
     }
 
 }

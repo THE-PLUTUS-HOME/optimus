@@ -25,7 +25,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +84,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("hasRole('ROLE_API') or hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER') or hasRole('API')")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid LoginRequest loginRequest, HttpServletResponse response) {
         LoginResponse loginResponse = userService.login(loginRequest);
@@ -106,34 +105,12 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_API') or hasRole('ROLE_USER')")
-    @GetMapping("/login/passkey")
-    public ResponseEntity<?> loginPasskey(HttpServletResponse response) {
-        LoginResponse loginResponse = new LoginResponse(
-                "success",
-                "Login successful",
-                new Date().toString(),
-                "admin@theplutushome.com",
-                "admin");
-        String token = jwtUtil.generateToken("admin");
-        ResponseCookie cookie = ResponseCookie.from("JWT", token)
-                .httpOnly(true)
-                .secure(true) // Set to true in production
-                .path("/")
-                .maxAge(24 * 60 * 60) // 1 day
-                .sameSite("None")
-                .build();
-        // Add cookie to response
-        response.addHeader("Set-Cookie", cookie.toString());
-        return ResponseEntity.ok(loginResponse);
-    }
-
     @Operation(summary = "Logout", description = "Logout the user and clear the JWT cookie.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully logged out"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
         // Clear the JWT cookie

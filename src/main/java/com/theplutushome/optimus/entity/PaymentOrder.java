@@ -7,11 +7,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 
 
 @Entity
 @Table(name = "ORDERS")
-public class PaymentOrder extends EntityModel{
+public class PaymentOrder extends EntityModel {
     private String description;
     private String callbackUrl;
     private String returnUrl;
@@ -24,14 +25,14 @@ public class PaymentOrder extends EntityModel{
     @Enumerated(EnumType.STRING)
     private PaymentOrderStatus status;
     private String crypto;
-    private double cryptoAmount;
+    private BigDecimal cryptoAmount;
     private String email;
     private double rate;
     private String address;
     private String phoneNumber;
     private String transactionId;
     private Double amountPaid = 0.0;
-    
+
     private String paymentReference;
 
     @Getter
@@ -39,7 +40,8 @@ public class PaymentOrder extends EntityModel{
     private PaymentMethod paymentMethod;
 
     // No-argument constructor
-    public PaymentOrder() { }
+    public PaymentOrder() {
+    }
 
     public String getPaymentReference() {
         return paymentReference;
@@ -49,11 +51,11 @@ public class PaymentOrder extends EntityModel{
         this.paymentReference = paymentReference;
     }
 
-    public double getCryptoAmount() {
+    public BigDecimal getCryptoAmount() {
         return cryptoAmount;
     }
 
-    public void setCryptoAmount(double cryptoAmount) {
+    public void setCryptoAmount(BigDecimal cryptoAmount) {
         this.cryptoAmount = cryptoAmount;
     }
 
@@ -178,34 +180,34 @@ public class PaymentOrder extends EntityModel{
         this.phoneNumber = phoneNumber;
     }
 
-    public Double  getAmountPaid() {
+    public Double getAmountPaid() {
         return amountPaid;
     }
 
-    public void setAmountPaid(Double  amountPaid) {
+    public void setAmountPaid(Double amountPaid) {
         this.amountPaid = amountPaid;
     }
-    
-    
+
 
     // toString method
     @Override
     public String toString() {
         return "PaymentOrder{" +
-               ", description='" + description + '\'' +
-               ", callbackUrl='" + callbackUrl + '\'' +
-               ", returnUrl='" + returnUrl + '\'' +
-               ", merchantAccountNumber='" + merchantAccountNumber + '\'' +
-               ", cancellationUrl='" + cancellationUrl + '\'' +
-               ", clientReference='" + clientReference + '\'' +
-               ", amountGHS=" + amountGHS +
-               ", fee=" + fee +
-               ", status='" + status + '\'' +
-               ", crypto='" + crypto + '\'' +
-               ", email='" + email + '\'' +
-               ", rate=" + rate +
-               ", address='" + address + '\'' +
-               ", transactionId='" + transactionId + '\'' +
-               '}';
+                ", description='" + description + '\'' +
+                ", callbackUrl='" + callbackUrl + '\'' +
+                ", returnUrl='" + returnUrl + '\'' +
+                ", merchantAccountNumber='" + merchantAccountNumber + '\'' +
+                ", cancellationUrl='" + cancellationUrl + '\'' +
+                ", clientReference='" + clientReference + '\'' +
+                ", amountGHS=" + amountGHS +
+                ", fee=" + fee +
+                ", status='" + status + '\'' +
+                ", crypto='" + crypto + '\'' +
+                ", cryptoAmount='" + cryptoAmount + '\'' +
+                ", email='" + email + '\'' +
+                ", rate=" + rate +
+                ", address='" + address + '\'' +
+                ", transactionId='" + transactionId + '\'' +
+                '}';
     }
 }
