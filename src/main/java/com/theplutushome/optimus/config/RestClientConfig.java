@@ -40,7 +40,7 @@ public class RestClientConfig {
     @Bean(name = "cryptomusClient")
     public RestClient cryptomusRestClient() {
         return RestClient.builder()
-                .baseUrl("https://api.cryptomus.com/")
+                .baseUrl("https://api.heleket.com/")
                 .build();
     }
 
