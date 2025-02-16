@@ -2,6 +2,7 @@ package com.theplutushome.optimus.dto;
 
 import com.theplutushome.optimus.entity.enums.PaymentOrderStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record PaymentOrderDto(
@@ -10,7 +11,7 @@ public record PaymentOrderDto(
         double fee,
         PaymentOrderStatus status,
         String crypto,
-        double cryptoAmount,
+        BigDecimal cryptoAmount,
         double rate,
         String clientReference,
         String address,
